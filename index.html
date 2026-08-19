@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#FAFAFA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="GINapp">
+<title>GINapp · conexión</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<style>
+:root{
+  --papa:#12B76A; --papa-l:#D1FADF;
+  --mama:#7A5AF8; --mama-l:#EBE9FE;
+  --acento:#F79009; --acento-l:#FEF0C7;
+  --ok:#12B76A; --err:#F04438; --err-l:#FEE4E2;
+  --bg:#FAFAFA; --card:#FFFFFF;
+  --ink:#101828; --ink2:#667085; --ink3:#98A2B3;
+  --line:#EEF0F2; --line2:#E4E7EC;
+  --r:18px; --r-sm:12px;
+  --shadow:0 1px 3px rgba(16,24,40,.04), 0 1px 2px rgba(16,24,40,.03);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,sans-serif;
+  background:var(--bg); color:var(--ink);
+  max-width:440px; margin:0 auto; min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  padding:0 16px calc(32px + var(--safe-b));
+}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+input{font-family:inherit;font-size:16px}
+
+.hd{padding:22px 0 16px;display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--acento);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;
+  letter-spacing:-1px;flex-shrink:0}
+.hd h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.6px}
+.hd p{margin:2px 0 0;font-size:13px;color:var(--ink2)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 4px;font-size:15px;font-weight:700;letter-spacing:-.2px}
+.card p{margin:0;font-size:13px;color:var(--ink2);line-height:1.45}
+
+.campo{width:100%;padding:11px 12px;border:1px solid var(--line2);border-radius:var(--r-sm);
+  margin:10px 0 8px;background:#fff}
+.campo:focus{outline:none;border-color:var(--acento)}
+.btn{display:block;width:100%;padding:12px;border-radius:var(--r-sm);background:var(--ink);
+  color:#fff;font-size:14.5px;font-weight:600}
+.btn:active{opacity:.85}
+.btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line2)}
+
+.estado{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:var(--r-sm);
+  font-size:13.5px;font-weight:600;margin-bottom:10px}
+.estado.wait{background:#F2F4F7;color:var(--ink2)}
+.estado.ok{background:var(--papa-l);color:#05603A}
+.estado.ko{background:var(--err-l);color:#912018}
+.punto{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.punto.wait{background:var(--ink3);animation:pulso 1s infinite}
+.punto.ok{background:var(--ok)}
+.punto.ko{background:var(--err)}
+@keyframes pulso{50%{opacity:.25}}
+
+.filas{display:flex;flex-direction:column;gap:1px;margin-top:10px}
+.fila{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  padding:7px 0;border-bottom:1px solid var(--line)}
+.fila:last-child{border-bottom:none}
+.fila span{font-size:13px;color:var(--ink2)}
+.fila b{font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.fila b.cero{color:var(--ink3);font-weight:500}
+
+.cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-hd b{font-size:14.5px;text-transform:capitalize}
+.cal-nav{display:flex;gap:4px}
+.cal-nav button{width:30px;height:30px;border-radius:9px;border:1px solid var(--line2);
+  background:#fff;font-size:15px;color:var(--ink2);line-height:1}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dow{font-size:10.5px;color:var(--ink3);text-align:center;font-weight:600;padding-bottom:3px;
+  text-transform:uppercase;letter-spacing:.3px}
+.dia{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-size:12.5px;font-weight:600;
+  background:#F7F8FA;color:var(--ink3)}
+.dia.papa{background:var(--papa-l);color:#05603A}
+.dia.mama{background:var(--mama-l);color:#4A1FB8}
+.dia.hoy{outline:2px solid var(--ink);outline-offset:-2px}
+.dia small{font-size:8px;font-weight:700;opacity:.6;line-height:1}
+.leyenda{display:flex;gap:14px;margin-top:12px;font-size:12px;color:var(--ink2)}
+.leyenda i{width:11px;height:11px;border-radius:4px;display:inline-block;margin-right:5px;
+  vertical-align:-1px}
+.reparto{display:flex;gap:8px;margin-top:12px}
+.reparto div{flex:1;background:#F7F8FA;border-radius:var(--r-sm);padding:9px;text-align:center}
+.reparto b{display:block;font-size:19px;font-weight:700;letter-spacing:-.5px}
+.reparto span{font-size:11px;color:var(--ink2)}
+
+.pie{text-align:center;font-size:11.5px;color:var(--ink3);padding:6px 0 0}
+code{font-size:11.5px;background:#F2F4F7;padding:1px 5px;border-radius:5px;
+  word-break:break-all;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="logo">G</div>
+  <div>
+    <h1>GINapp</h1>
+    <p>Paso 1 · comprobación de conexión</p>
+  </div>
+</div>
+
+<!-- URL del backend -->
+<div class="card" id="cardUrl">
+  <h2>Backend</h2>
+  <p>Pega aquí la URL <code>/exec</code> de tu implementación de Apps Script.</p>
+  <input class="campo" id="inpUrl" type="url" inputmode="url" autocomplete="off"
+         placeholder="https://script.google.com/macros/s/…/exec">
+  <button class="btn" id="btnConectar">Conectar</button>
+</div>
+
+<div id="estado" class="estado wait"><i class="punto wait"></i><span>Esperando URL…</span></div>
+
+<!-- Resultado -->
+<div class="card" id="cardDatos" hidden>
+  <h2>Qué hay en el Sheet</h2>
+  <p>Si una tabla marca 0 y esperabas datos, revisa la pestaña correspondiente.</p>
+  <div class="filas" id="filas"></div>
+</div>
+
+<!-- Custodia -->
+<div class="card" id="cardCal" hidden>
+  <div class="cal-hd">
+    <b id="calTitulo">—</b>
+    <div class="cal-nav">
+      <button id="calPrev">‹</button>
+      <button id="calNext">›</button>
+    </div>
+  </div>
+  <div class="grid" id="calDow"></div>
+  <div class="grid" id="calGrid"></div>
+  <div class="leyenda">
+    <span><i style="background:var(--papa-l)"></i>Papá</span>
+    <span><i style="background:var(--mama-l)"></i>Mamá</span>
+    <span><i style="background:#F7F8FA"></i>Sin patrón</span>
+  </div>
+  <div class="reparto">
+    <div><b id="nPapa">0</b><span>días papá</span></div>
+    <div><b id="nMama">0</b><span>días mamá</span></div>
+  </div>
+  <p style="margin-top:12px">Si el reparto de findes no coincide con la realidad, cambia
+  <code>ancla_usuario</code> en la pestaña <code>Custodia_Patron</code> y recarga.</p>
+</div>
+
+<button class="btn sec" id="btnReset" hidden style="margin-bottom:14px">Cambiar la URL del backend</button>
+
+<div class="pie">GINapp v<span id="ver">0.1.0</span></div>
+
+<script>
+/* ============================================================
+   GINapp — página de diagnóstico (paso 1)
+   Solo comprueba que el frontend habla con el backend y que el
+   patrón de custodia genera los días correctos. La app real
+   sustituirá este archivo entero.
+   ============================================================ */
+var APP_VERSION = '0.1.0';
+var LS_URL = 'ginapp_backend_url';
+
+/* Deja esto vacío y pega la URL desde la propia pantalla; o rellénalo
+   aquí para que quede fijo en el repo. */
+var BACKEND_URL = '';
+
+var DIAS_COL = ['dom','lun','mar','mie','jue','vie','sab'];
+var DOW_CORTO = ['L','M','X','J','V','S','D'];
+var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+             'septiembre','octubre','noviembre','diciembre'];
+
+var state = { data:null, mes:null };
+
+function $(s){ return document.querySelector(s); }
+
+/* ---------- utilidades de fecha (sin objetos Date con hora) ---------- */
+function pad(n){ return ('0'+n).slice(-2); }
+function fk(y,m,d){ return y+'-'+pad(m)+'-'+pad(d); }
+function fechaKey(v){
+  if(!v) return '';
+  var s = String(v).trim();
+  var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[1]+'-'+m[2]+'-'+m[3] : s;
+}
+function dow(f){ var p=f.split('-'); return new Date(+p[0], +p[1]-1, +p[2]).getDay(); }
+function addDays(f,n){
+  var p=f.split('-'); var d=new Date(+p[0], +p[1]-1, +p[2]);
+  d.setDate(d.getDate()+n);
+  return fk(d.getFullYear(), d.getMonth()+1, d.getDate());
+}
+function diffDias(a,b){
+  var pa=a.split('-'), pb=b.split('-');
+  return Math.round((Date.UTC(+pb[0],+pb[1]-1,+pb[2]) - Date.UTC(+pa[0],+pa[1]-1,+pa[2]))/86400000);
+}
+function num(v){ var n=parseFloat(String(v==null?0:v).replace(',','.')); return isNaN(n)?0:n; }
+function truthy(v){
+  if(v===true||v===1) return true;
+  var s=String(v).trim().toLowerCase();
+  return s==='true'||s==='1'||s==='si'||s==='sí'||s==='x';
+}
+
+/* ---------- blindaje: una tabla que falte no puede tumbar la app ---------- */
+var TABLAS = ['usuarios','patron','excepciones','eventos','tareas','tipos_evento',
+              'gastos','categorias_gasto','liquidaciones','alimentos','comidas',
+              'objetivos_semana','citas','medicacion','dosis','crecimiento',
+              'actividad','visitas'];
+function normalizar(d){
+  d = d || {};
+  TABLAS.forEach(function(k){ if(!Array.isArray(d[k])) d[k] = []; });
+  if(!d.config) d.config = {};
+  if(!d.hoy) d.hoy = fk(new Date().getFullYear(), new Date().getMonth()+1, new Date().getDate());
+  return d;
+}
+
+/* ---------- custodia: se calcula, no se guarda ---------- */
+function patronVigente(fecha, patrones){
+  var mejor = null, mejorScore = -1;
+  patrones.forEach(function(p){
+    var desde = fechaKey(p.desde), hasta = fechaKey(p.hasta);
+    if(desde && fecha < desde) return;
+    if(hasta && fecha > hasta) return;
+    var score = ((desde||hasta) ? 1000 : 0) + (num(p.prioridad) || 1);
+    if(score > mejorScore){ mejorScore = score; mejor = p; }
+  });
+  return mejor;
+}
+function viernesDe(f){
+  var d = dow(f);
+  var atras = d===5 ? 0 : d===6 ? 1 : d===0 ? 2 : (d+2);
+  return addDays(f, -atras);
+}
+function custodiaDe(fecha){
+  var d = state.data;
+  var f = fechaKey(fecha);
+  for(var i=0; i<d.excepciones.length; i++){
+    if(fechaKey(d.excepciones[i].fecha) === f) return String(d.excepciones[i].username||'');
+  }
+  var pat = patronVigente(f, d.patron);
+  if(!pat) return '';
+  var valor = String(pat[DIAS_COL[dow(f)]] || '').trim().toLowerCase();
+  if(valor !== 'alterno') return valor;
+
+  var anc = fechaKey(pat.ancla_fecha);
+  if(!anc || !pat.ancla_usuario) return '';
+  var semanas = Math.round(diffDias(viernesDe(anc), viernesDe(f)) / 7);
+  var base = String(pat.ancla_usuario).toLowerCase();
+  var otro = base === 'papa' ? 'mama' : 'papa';
+  return ((semanas % 2) + 2) % 2 === 0 ? base : otro;
+}
+
+/* ---------- red ---------- */
+function backend(){ return BACKEND_URL || localStorage.getItem(LS_URL) || ''; }
+
+function llamar(action, params){
+  var url = new URL(backend());
+  url.searchParams.set('action', action);
+  Object.keys(params||{}).forEach(function(k){ url.searchParams.set(k, params[k]); });
+  return fetch(url.toString(), { method:'GET' })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j || !j.ok) throw new Error((j && j.error) || 'Respuesta inesperada del backend');
+      return j.data;
+    });
+}
+
+function setEstado(clase, texto){
+  var e = $('#estado');
+  e.className = 'estado ' + clase;
+  e.innerHTML = '<i class="punto ' + clase + '"></i><span></span>';
+  e.querySelector('span').textContent = texto;
+}
+
+function conectar(){
+  var url = backend();
+  if(!url){ setEstado('ko', 'Falta la URL del backend'); return; }
+  if(url.indexOf('/exec') < 0){
+    setEstado('ko', 'La URL debe acabar en /exec, no en /dev');
+    return;
+  }
+  setEstado('wait', 'Conectando…');
+
+  llamar('ping', {})
+    .then(function(p){
+      setEstado('wait', 'Conectado a v' + p.version + ' · cargando datos…');
+      return llamar('getBootstrap', {});
+    })
+    .then(function(d){
+      state.data = normalizar(d);
+      setEstado('ok', 'Todo correcto · backend v' + (d.version||'?'));
+      $('#cardUrl').hidden = true;
+      $('#btnReset').hidden = false;
+      pintarDatos();
+      var h = state.data.hoy.split('-');
+      state.mes = { y:+h[0], m:+h[1] };
+      pintarCalendario();
+    })
+    .catch(function(err){
+      setEstado('ko', String(err.message || err));
+      $('#cardUrl').hidden = false;
+    });
+}
+
+/* ---------- render ---------- */
+var ETIQUETAS = [
+  ['usuarios','Usuarios'], ['patron','Patrones de custodia'],
+  ['excepciones','Excepciones de custodia'], ['tipos_evento','Tipos de evento'],
+  ['eventos','Eventos'], ['tareas','Tareas'],
+  ['categorias_gasto','Categorías de gasto'], ['gastos','Gastos'],
+  ['liquidaciones','Liquidaciones'], ['alimentos','Alimentos en biblioteca'],
+  ['objetivos_semana','Objetivos semanales'], ['comidas','Registros de comida'],
+  ['citas','Citas médicas'], ['medicacion','Medicaciones'], ['dosis','Dosis'],
+  ['crecimiento','Medidas de crecimiento'], ['actividad','Entradas de actividad']
+];
+
+function pintarDatos(){
+  var d = state.data;
+  var html = ETIQUETAS.map(function(e){
+    var n = d[e[0]].length;
+    return '<div class="fila"><span>' + e[1] + '</span>' +
+           '<b class="' + (n ? '' : 'cero') + '">' + n + '</b></div>';
+  }).join('');
+  var u = d.usuarios.map(function(x){ return x.nombre || x.username; }).join(' · ');
+  html += '<div class="fila"><span>Perfiles</span><b>' + (u || '—') + '</b></div>';
+  $('#filas').innerHTML = html;
+  $('#cardDatos').hidden = false;
+}
+
+function pintarCalendario(){
+  var y = state.mes.y, m = state.mes.m;
+  $('#calTitulo').textContent = MESES[m-1] + ' ' + y;
+  $('#calDow').innerHTML = DOW_CORTO.map(function(d){
+    return '<div class="dow">' + d + '</div>';
+  }).join('');
+
+  var primero = new Date(y, m-1, 1).getDay();
+  var offset = (primero + 6) % 7;               /* semana que empieza en lunes */
+  var dias = new Date(y, m, 0).getDate();
+  var hoy = state.data.hoy;
+  var celdas = [], nPapa = 0, nMama = 0;
+
+  for(var i=0; i<offset; i++) celdas.push('<div></div>');
+  for(var d=1; d<=dias; d++){
+    var f = fk(y, m, d);
+    var q = custodiaDe(f);
+    if(q === 'papa') nPapa++;
+    if(q === 'mama') nMama++;
+    var esExc = state.data.excepciones.some(function(e){ return fechaKey(e.fecha) === f; });
+    celdas.push('<div class="dia ' + (q||'') + (f===hoy ? ' hoy' : '') + '">' + d +
+                (esExc ? '<small>CAMBIO</small>' : '') + '</div>');
+  }
+  $('#calGrid').innerHTML = celdas.join('');
+  $('#nPapa').textContent = nPapa;
+  $('#nMama').textContent = nMama;
+  $('#cardCal').hidden = false;
+}
+
+function moverMes(n){
+  var d = new Date(state.mes.y, state.mes.m - 1 + n, 1);
+  state.mes = { y:d.getFullYear(), m:d.getMonth()+1 };
+  pintarCalendario();
+}
+
+/* ---------- arranque ---------- */
+$('#ver').textContent = APP_VERSION;
+
+$('#btnConectar').addEventListener('click', function(){
+  var v = $('#inpUrl').value.trim();
+  if(!v){ setEstado('ko','Pega la URL primero'); return; }
+  localStorage.setItem(LS_URL, v);
+  BACKEND_URL = '';
+  conectar();
+});
+$('#btnReset').addEventListener('click', function(){
+  localStorage.removeItem(LS_URL);
+  location.reload();
+});
+$('#calPrev').addEventListener('click', function(){ moverMes(-1); });
+$('#calNext').addEventListener('click', function(){ moverMes(1); });
+
+if(backend()){
+  $('#inpUrl').value = backend();
+  conectar();
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
