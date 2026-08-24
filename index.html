@@ -80,6 +80,8 @@ svg{display:block;flex-shrink:0}
 #splashTx{margin:0;font-size:13.5px;color:var(--t2);max-width:280px;text-align:center;
   line-height:1.55}
 #splashTx button{color:var(--papa);font-weight:600;text-decoration:underline}
+#splashTx code{background:var(--surface2);border-radius:5px;padding:1px 5px;font-size:12px}
+#splashTx b{color:var(--t1)}
 
 /* ---------- LOGO ---------- */
 .logo{display:flex;align-items:flex-end;gap:3px;line-height:1}
@@ -271,6 +273,134 @@ svg{display:block;flex-shrink:0}
 .opt .av img{width:100%;height:100%;object-fit:cover}
 .opt b{font-size:15px;font-weight:600;flex:1}
 
+/* ---------- ALIMENTACIÓN ---------- */
+.ali-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.ali-nav button.fl{width:38px;height:38px;border-radius:50%;background:var(--surface);
+  color:var(--t2);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
+.ali-nav .rango{background:var(--surface);border-radius:999px;padding:9px 18px;box-shadow:var(--sh);
+  display:flex;align-items:center;gap:9px;color:var(--ali-d)}
+.ali-nav .rango b{display:block;font-size:13.5px;font-weight:700;letter-spacing:-.2px}
+.ali-nav .rango span{display:block;font-size:11.5px;color:var(--t2);font-weight:500}
+
+.ich-c{background:var(--ali-c);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:14px}
+.ich-top{display:flex;gap:16px;align-items:center}
+.gauge{position:relative;width:104px;height:104px;flex-shrink:0}
+.gauge .tx{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:0}
+.gauge .lb{font-size:10.5px;font-weight:800;color:var(--ali-d);letter-spacing:.6px}
+.gauge .vl{font-size:32px;font-weight:700;letter-spacing:-1.6px;color:var(--ali-d);line-height:1}
+.gauge .mx{font-size:11px;color:var(--t2);font-weight:500}
+.ich-tx{flex:1;min-width:0}
+.ich-tx h3{margin:0;font-size:14.5px;font-weight:600;letter-spacing:-.2px;line-height:1.3;
+  color:var(--t1)}
+.ich-delta{margin-top:7px;font-size:12.5px;color:var(--t2);display:flex;align-items:center;gap:5px}
+.ich-delta b{font-weight:700}
+.ich-chip{display:inline-flex;align-items:center;gap:6px;background:var(--ali-s);
+  color:var(--ali-d);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;
+  margin-top:9px}
+.ich-comp{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:14px;
+  border-top:1px solid rgba(15,23,42,.07);padding-top:13px}
+.ich-comp div{text-align:center;padding:0 3px}
+.ich-comp .em{font-size:17px;line-height:1}
+.ich-comp .nm{font-size:10.5px;color:var(--t2);font-weight:600;margin-top:5px;line-height:1.25}
+.ich-comp .pc{font-size:17px;font-weight:700;letter-spacing:-.5px;margin-top:3px}
+.ich-comp .pe{font-size:9.5px;color:var(--t3);font-weight:600}
+
+.tabla{background:var(--surface);border-radius:var(--r-l);padding:16px 12px 12px;
+  box-shadow:var(--sh);margin-bottom:14px}
+.tabla h3{margin:0 0 12px;padding:0 4px;font-size:16px;font-weight:700;letter-spacing:-.3px}
+.tb{width:100%;border-collapse:collapse}
+.tb th{font-size:9.5px;font-weight:700;color:var(--t3);padding:0 0 8px;text-align:center;
+  letter-spacing:.2px}
+.tb th.g{text-align:left;padding-left:4px;font-size:9.5px}
+.tb th.o{text-align:right;padding-right:4px}
+.tb th b{display:block;font-size:11.5px;color:var(--t2);margin-top:1px}
+.tb th.hoy b, .tb th.hoy{color:var(--ali-d)}
+.tb th.hoy b{background:var(--ali-s);border-radius:999px;padding:1px 0}
+.tb td{padding:5px 0;text-align:center;border-top:1px solid var(--border)}
+.tb td.g{text-align:left;padding-left:4px;font-size:12.5px;font-weight:500;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:112px}
+.tb td.g em{font-style:normal;margin-right:6px}
+.tb td.o{text-align:right;padding-right:4px;font-size:12px;font-weight:600;color:var(--t2);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.tb td.o.cum{color:var(--ali-d)}
+.tb td.o.pas{color:var(--gas-d)}
+.pt-d{width:11px;height:11px;border-radius:50%;display:inline-block;background:var(--surface2)}
+.pt-d.on{background:var(--ali)}
+.pt-d.md{background:var(--ali);opacity:.42}
+.pt-d.lim{background:var(--gas)}
+.tabla .mas-g{margin-top:10px;padding:9px 4px 2px;font-size:12.5px;font-weight:600;
+  color:var(--ali-d);display:flex;align-items:center;gap:5px}
+
+.comidas{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:14px}
+.comidas h3{margin:0 0 4px;font-size:16px;font-weight:700;letter-spacing:-.3px}
+.cm{display:flex;gap:12px;padding:11px 0;align-items:flex-start;position:relative}
+.cm .pt{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:6px;z-index:1;
+  box-shadow:0 0 0 3px var(--surface)}
+.cm .ln{position:absolute;left:6.5px;top:24px;bottom:-11px;width:1.5px;background:var(--border)}
+.cm:last-of-type .ln{display:none}
+.cm .tx{flex:1;min-width:0}
+.cm .tx b{font-size:14.5px;font-weight:600;letter-spacing:-.2px}
+.cm .tx p{margin:2px 0 0;font-size:12.5px;color:var(--t2);line-height:1.4}
+.cm .hr{font-size:12.5px;color:var(--t3);font-weight:600;font-variant-numeric:tabular-nums}
+.cm .ed{width:32px;height:32px;border-radius:50%;background:var(--surface2);color:var(--ali-d);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.add-c{width:100%;margin-top:8px;border:1.5px dashed var(--border);border-radius:var(--r-btn);
+  padding:13px;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:13.5px;font-weight:600;color:var(--ali-d)}
+.msg{background:var(--ali-c);border-radius:var(--r-l);padding:15px;box-shadow:var(--sh);
+  display:flex;gap:13px;align-items:center;margin-bottom:14px}
+.msg .em{width:52px;height:52px;border-radius:18px;background:var(--ali-s);display:flex;
+  align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.msg div{flex:1;min-width:0}
+.msg b{display:block;font-size:14.5px;font-weight:700;color:var(--ali-d);letter-spacing:-.2px}
+.msg p{margin:3px 0 0;font-size:12.5px;color:var(--t2);line-height:1.45}
+
+/* ---------- HOJA DE REGISTRO ---------- */
+.f-lb{font-size:11.5px;font-weight:700;color:var(--t3);letter-spacing:.3px;text-transform:uppercase;
+  margin:16px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border-radius:999px;padding:8px 13px;font-size:13px;font-weight:600;background:var(--surface2);
+  color:var(--t2)}
+.chip.on{background:var(--ali);color:#fff}
+.chip.on.gas{background:var(--gas)}
+.fila2{display:flex;gap:9px;align-items:center}
+.inp{width:100%;padding:12px 13px;border:1.5px solid var(--border);border-radius:var(--r-in);
+  background:var(--surface);font-size:15px;color:var(--t1)}
+.inp:focus{outline:none;border-color:var(--ali)}
+.busca{position:relative}
+.busca .inp{padding-left:38px}
+.busca .lupa{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3)}
+.res{max-height:184px;overflow:auto;margin-top:8px;border-radius:var(--r-in);
+  border:1px solid var(--border)}
+.res button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;
+  border-bottom:1px solid var(--border);font-size:14px}
+.res button:last-child{border-bottom:none}
+.res .em{font-size:17px}
+.res .gr{margin-left:auto;font-size:11px;color:var(--t3);font-weight:600}
+.res .nuevo{color:var(--ali-d);font-weight:600}
+.sel{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.si{background:var(--surface2);border-radius:var(--r-in);padding:10px 11px}
+.si-top{display:flex;align-items:center;gap:9px}
+.si-top .em{font-size:18px}
+.si-top b{flex:1;font-size:14px;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.si-top .qt{width:28px;height:28px;border-radius:50%;background:var(--surface);color:var(--t3);
+  display:flex;align-items:center;justify-content:center}
+.est3{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:9px}
+.est3 button{padding:7px 4px;border-radius:9px;background:var(--surface);font-size:11.5px;
+  font-weight:600;color:var(--t2);text-align:center}
+.est3 button.on{color:#fff}
+.aviso{background:var(--cal-s);color:var(--cal-d);border-radius:var(--r-in);padding:11px 12px;
+  font-size:12px;line-height:1.45;margin-top:10px;font-weight:500}
+.btn{width:100%;padding:14px;border-radius:var(--r-btn);background:var(--ali);color:#fff;
+  font-size:15px;font-weight:600;text-align:center;margin-top:18px}
+.btn:disabled{background:var(--dis)}
+.btn.sec{background:var(--surface2);color:var(--t2);margin-top:9px}
+.btn.del{background:transparent;color:var(--err);font-size:13.5px;padding:10px}
+
 /* ---------- NAVEGACIÓN ---------- */
 .nav{position:fixed;bottom:0;left:0;right:0;max-width:440px;margin:0 auto;
   background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
@@ -346,7 +476,7 @@ svg{display:block;flex-shrink:0}
     <div class="nov" id="cardNov" hidden></div>
 
     <div class="pie">
-      GINapp v<span id="ver"></span> · <button id="btnReset">cambiar backend</button>
+      GINapp v<span id="ver"></span><span id="pieDbg"></span>
     </div>
   </section>
 
@@ -357,9 +487,13 @@ svg{display:block;flex-shrink:0}
   </section>
 
   <section id="s-alimentacion" hidden>
-    <div class="tt-s"><h2>Alimentación</h2><p>Variedad, biblioteca y hábitos.</p></div>
-    <div class="pend"><span class="i" id="pd-ali"></span><h3>Pendiente</h3>
-      <p>Registro por alimentos, biblioteca con estados, variedad semanal e ICH.</p></div>
+    <div class="tt-s"><h2>Alimentación</h2><p id="aliSub">Variedad y hábitos, semana a semana.</p></div>
+    <div class="ali-nav">
+      <button class="fl" id="aliPrev"></button>
+      <div class="rango" id="aliRango"></div>
+      <button class="fl" id="aliNext"></button>
+    </div>
+    <div id="aliCuerpo"></div>
   </section>
 
   <section id="s-gastos" hidden>
@@ -386,13 +520,21 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.3.0';
-var LS_URL  = 'ginapp_backend_url';
+var APP_VERSION = '0.3.1';
+
+/* ============================================================
+   ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
+   URL de la implementación de Apps Script. Acaba en /exec.
+   Se saca de: Implementar › Gestionar implementaciones.
+   ============================================================ */
+var BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyou9H8Zv_nw3zD5-F99eGN097wf8TfS78R78I8AOrbjT8-bg7aWFR-5dtlDWphaGfCrw/exec';
+
 var LS_USER = 'ginapp_user';
-var BACKEND_URL = '';
+var LS_URL  = 'ginapp_backend_url';   // solo respaldo si la constante no está puesta
 
 var DIAS_COL  = ['dom','lun','mar','mie','jue','vie','sab'];
 var DOW_CORTO = ['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
+var DOW_INI   = ['L','M','X','J','V','S','D'];   // X para miércoles: dos "M" no se distinguen
 var DOW_LARGO = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
              'septiembre','octubre','noviembre','diciembre'];
@@ -434,7 +576,10 @@ var IC = {
   t_actividad:'<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.1 0-.9.8-1.7 1.7-1.7h2a4.1 4.1 0 0 0 4.1-4.1c0-3.9-3.8-7.2-8.5-7.2Z"/><circle cx="7.8" cy="11.2" r="1"/><circle cx="10.5" cy="7.6" r="1"/><circle cx="14.6" cy="7.9" r="1"/>',
   t_cumple:'<path d="M4.5 13.5h15v6a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5z"/><path d="M6.5 13.5V10a1.5 1.5 0 0 1 1.5-1.5h8a1.5 1.5 0 0 1 1.5 1.5v3.5M12 8.5V6M12 6c.9 0 1.4-.6 1.4-1.3S12 2.5 12 2.5s-1.4 1.5-1.4 2.2S11.1 6 12 6Z"/>',
   t_viaje:'<path d="M3.5 13.5 5 11l4.5.8L14 5.2a2 2 0 0 1 3.4 2L14 13.5l1 5.4-1.9 1.4-2.3-4.9-3.5-.4-.8 2.2-1.6-.3.4-2.6z"/>',
-  t_otro:'<circle cx="12" cy="12" r="8.2"/><path d="M12 8.5v4M12 15.6v.1"/>'
+  t_otro:'<circle cx="12" cy="12" r="8.2"/><path d="M12 8.5v4M12 15.6v.1"/>',
+  lapiz:'<path d="M15.5 4.5 19.5 8.5 9 19H5v-4z"/><path d="m13.5 6.5 4 4"/>',
+  lupa:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+  cerrar:'<path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5"/>'
 };
 function svg(nombre, px, extra){
   var p = IC[nombre] || IC.t_otro;
@@ -729,7 +874,13 @@ var ACCIONES = {
 /* ============================================================
    RED
    ============================================================ */
-function backend(){ return BACKEND_URL || localStorage.getItem(LS_URL) || ''; }
+function backend(){
+  /* La constante manda. localStorage solo existe como rescate mientras la
+     constante esté sin rellenar: si la app dependiera del navegador, se
+     rompería al instalarla como PWA o al abrirla en otro móvil. */
+  if(BACKEND_URL && BACKEND_URL.indexOf('PEGA-AQUI') < 0) return BACKEND_URL;
+  return localStorage.getItem(LS_URL) || '';
+}
 function llamar(action, params){
   var url = new URL(backend());
   url.searchParams.set('action', action);
@@ -741,6 +892,32 @@ function llamar(action, params){
       return j.data;
     });
 }
+/**
+ * POST con text/plain: no dispara preflight CORS desde GitHub Pages y
+ * permite mandar payloads largos que no caben en una URL.
+ */
+function llamarPost(body){
+  return fetch(backend(), {
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify(body)
+  }).then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j || !j.ok) throw new Error((j && j.error) || 'El backend no pudo guardar');
+      return j.data;
+    });
+}
+
+/** Recarga los datos del Sheet y repinta. Nada se guarda en local. */
+function recargar(){
+  return llamar('getBootstrap', {}).then(function(d){
+    state.data = normalizar(d);
+    state._primeraVez = null;
+    pintarTodo();
+    if(state.seccion === 'alimentacion') pintarAlimentacion();
+  });
+}
+
 function toast(msg, ko){
   var t = $('#toast');
   t.textContent = msg;
@@ -1072,12 +1249,574 @@ function pintarTodo(){
 }
 
 /* ============================================================
+   ALIMENTACIÓN
+   Nada se guarda calculado: raciones, variedad, alimentos nuevos
+   e ÍCH salen de las filas de Comidas en cada render.
+   ============================================================ */
+
+/* Pesos del ICH (§19). Constantes a propósito: si vivieran en el Sheet,
+   dos semanas dejarían de ser comparables entre sí. */
+var ICH_PESOS = { variedad:40, grupos:25, nuevos:20, limites:15 };
+
+/* Una toma cuenta entera si se la comió y media si solo la probó:
+   para un niño, probar dos bocados de calabacín también es exposición. */
+var VALOR_TOMA = { comio:1, probo:0.5, rechazo:0 };
+
+var TIPOS_COMIDA = [
+  {id:'desayuno', nom:'Desayuno', em:'🥣'}, {id:'almuerzo', nom:'Almuerzo', em:'🍎'},
+  {id:'comida',   nom:'Comida',   em:'🍽️'}, {id:'merienda', nom:'Merienda', em:'🍪'},
+  {id:'cena',     nom:'Cena',     em:'🌙'}, {id:'otro',     nom:'Otra',     em:'🍴'}
+];
+var LUGARES_C = [
+  {id:'papa', nom:'Con papá'}, {id:'mama', nom:'Con mamá'},
+  {id:'cole', nom:'Cole'},     {id:'fuera', nom:'Fuera'}
+];
+var ESTADOS_T = [
+  {id:'comio',   nom:'Se lo comió', col:'var(--ali)'},
+  {id:'probo',   nom:'Lo probó',    col:'var(--cal)'},
+  {id:'rechazo', nom:'Lo rechazó',  col:'var(--t3)'}
+];
+
+function cfgNum(clave, defecto){
+  var v = num(state.data.config[clave]);
+  return v > 0 ? v : defecto;
+}
+function objetivosSemana(){ return state.data.objetivos_semana || []; }
+function objGrupo(g){
+  return objetivosSemana().filter(function(o){ return String(o.grupo)===g; })[0] || null;
+}
+function alimento(id){
+  return state.data.alimentos.filter(function(a){ return String(a.id)===String(id); })[0] || null;
+}
+
+/** Raciones de un grupo en un día. comió = 1 · probó = 0,5 · rechazó = 0 */
+function racionesDia(grupo, f){
+  var n = 0;
+  state.data.comidas.forEach(function(c){
+    if(fechaKey(c.fecha) !== f || String(c.grupo) !== grupo) return;
+    n += VALOR_TOMA[String(c.estado_toma||'comio')] || 0;
+  });
+  return n;
+}
+function racionesSemana(grupo, lunes){
+  var n = 0;
+  for(var i=0;i<7;i++) n += racionesDia(grupo, addDays(lunes,i));
+  return Math.round(n*10)/10;
+}
+function comidasDeSemana(lunes){
+  var dom = addDays(lunes,6);
+  return state.data.comidas.filter(function(c){
+    var f = fechaKey(c.fecha); return f>=lunes && f<=dom;
+  });
+}
+/** Alimentos concretos distintos que no fueron rechazados. */
+function variedadDe(lunes){
+  var s = {};
+  comidasDeSemana(lunes).forEach(function(c){
+    if(c.alimento_id && String(c.estado_toma)!=='rechazo') s[String(c.alimento_id)] = true;
+  });
+  return Object.keys(s);
+}
+/** Primera vez que aparece un alimento en TODO el histórico: eso es "nuevo". */
+function primeraVezDe(){
+  if(state._primeraVez) return state._primeraVez;
+  var m = {};
+  state.data.comidas.forEach(function(c){
+    if(!c.alimento_id) return;
+    var id = String(c.alimento_id), f = fechaKey(c.fecha);
+    if(!m[id] || f < m[id]) m[id] = f;
+  });
+  state._primeraVez = m;
+  return m;
+}
+function nuevosDe(lunes){
+  var pv = primeraVezDe(), dom = addDays(lunes,6), out = [];
+  Object.keys(pv).forEach(function(id){
+    if(pv[id] >= lunes && pv[id] <= dom) out.push(id);
+  });
+  return out;
+}
+function diasConRegistro(lunes){
+  var d = {};
+  comidasDeSemana(lunes).forEach(function(c){ d[fechaKey(c.fecha)] = true; });
+  return Object.keys(d).length;
+}
+
+/**
+ * Índice de Construcción de Hábitos. No es una nota: mide si el
+ * repertorio se amplía. Devuelve null si no hay datos suficientes,
+ * porque un número inventado destruye la confianza en el indicador.
+ */
+function ich(lunes){
+  var minDias = cfgNum('dias_min_ich', 3);
+  var nd = diasConRegistro(lunes);
+  if(nd < minDias) return null;
+
+  var objVar = cfgNum('objetivo_variedad', 25);
+  var sVar = Math.min(100, variedadDe(lunes).length / objVar * 100);
+
+  var sumP = 0, sumR = 0;
+  objetivosSemana().forEach(function(o){
+    if(String(o.tipo) !== 'min') return;
+    var obj = num(o.objetivo), p = num(o.peso) || 1;
+    if(obj <= 0) return;
+    sumP += p;
+    sumR += p * Math.min(1, racionesSemana(String(o.grupo), lunes) / obj);
+  });
+  var sGrp = sumP ? (sumR / sumP * 100) : 100;
+
+  var objNue = cfgNum('objetivo_nuevos', 2);
+  var sNue = Math.min(100, nuevosDe(lunes).length / objNue * 100);
+
+  var lp = 0, lr = 0;
+  objetivosSemana().forEach(function(o){
+    if(String(o.tipo) !== 'max') return;
+    var obj = num(o.objetivo), p = num(o.peso) || 1;
+    lp += p;
+    var exceso = Math.max(0, racionesSemana(String(o.grupo), lunes) - obj);
+    /* El margen de tolerancia es el propio objetivo: pasarse del doble
+       es lo que agota la puntuación, no un solo capricho de más. */
+    lr += p * (1 - Math.min(1, exceso / Math.max(1, obj)));
+  });
+  var sLim = lp ? (lr / lp * 100) : 100;
+
+  var total = (ICH_PESOS.variedad*sVar + ICH_PESOS.grupos*sGrp +
+               ICH_PESOS.nuevos*sNue + ICH_PESOS.limites*sLim) / 100;
+
+  return { total: Math.round(total), dias: nd,
+           comp: { variedad:Math.round(sVar), grupos:Math.round(sGrp),
+                   nuevos:Math.round(sNue), limites:Math.round(sLim) } };
+}
+
+/* Mensajes: siempre en positivo y orientados a la oportunidad (§25).
+   Se elige el primero que aplique, así el consejo es el más útil, no el más bonito. */
+function mensajeSemana(lunes){
+  var i = ich(lunes);
+  var nuevos = nuevosDe(lunes).length;
+  var v = variedadDe(lunes).length;
+  var vAnt = variedadDe(addDays(lunes,-7)).length;
+  var corto = state.data.config.nombre_corto || 'Gina';
+
+  if(!i){
+    return { em:'🌱', t:'Aún estamos empezando',
+      p:'Con tres días registrados esta semana ya se puede calcular el índice.' };
+  }
+  if(nuevos >= 2){
+    return { em:'🌟', t:'¡Gran trabajo!',
+      p:'Habéis introducido ' + nuevos + ' alimentos nuevos y la variedad sigue en aumento.' };
+  }
+  if(nuevos === 1){
+    return { em:'✨', t:'Un alimento nuevo esta semana',
+      p:'Lo importante ahora es repetir la experiencia dentro de unos días.' };
+  }
+  if(v > vAnt && vAnt > 0){
+    return { em:'📈', t:'Más variedad que la semana pasada',
+      p:corto+' ha conocido '+(v-vAnt)+' alimentos más que la anterior. Ese progreso vale muchísimo.' };
+  }
+  /* Grupo saludable más lejos de su objetivo → una sola prioridad, nunca dos */
+  var flojo = null, peor = 1;
+  objetivosSemana().forEach(function(o){
+    if(String(o.tipo)!=='min') return;
+    var obj = num(o.objetivo);
+    if(obj<=0) return;
+    var r = racionesSemana(String(o.grupo), lunes) / obj;
+    if(r < peor){ peor = r; flojo = o; }
+  });
+  if(flojo && peor < 0.5){
+    return { em: String(flojo.emoji||'🥦'), t:'Una oportunidad',
+      p:'Esta semana ha aparecido poco '+String(flojo.nombre||flojo.grupo).toLowerCase()+
+        '. Buscad una ocasión sencilla para introducirlo.' };
+  }
+  return { em:'💚', t:'Buena semana',
+    p:'Hay bastante variedad. Mantened el ritmo.' };
+}
+
+function arcoGauge(pct, px){
+  var r = 44, c = 2*Math.PI*r, ini = c*0.25;   /* hueco inferior de 90° */
+  var largo = (c - ini) * Math.max(0, Math.min(100, pct)) / 100;
+  return '<svg width="'+px+'" height="'+px+'" viewBox="0 0 104 104">' +
+    '<circle cx="52" cy="52" r="'+r+'" fill="none" stroke="var(--ali-s)" stroke-width="9" ' +
+      'stroke-linecap="round" stroke-dasharray="'+(c-ini)+' '+c+'" ' +
+      'transform="rotate(135 52 52)"/>' +
+    '<circle cx="52" cy="52" r="'+r+'" fill="none" stroke="var(--ali)" stroke-width="9" ' +
+      'stroke-linecap="round" stroke-dasharray="'+largo+' '+c+'" ' +
+      'transform="rotate(135 52 52)"/></svg>';
+}
+
+function pintarAlimentacion(){
+  var lun = state.aliLunes || lunesDe(state.data.hoy);
+  state.aliLunes = lun;
+  var dom = addDays(lun,6);
+  var esActual = lun === lunesDe(state.data.hoy);
+  var mismoMes = lun.slice(0,7)===dom.slice(0,7);
+
+  $('#aliPrev').innerHTML = svg('chevronI',17);
+  $('#aliNext').innerHTML = svg('chevron',17);
+  $('#aliNext').style.visibility = esActual ? 'hidden' : 'visible';
+  $('#aliRango').innerHTML = svg('calendario',18) +
+    '<div><b>'+(esActual?'Esta semana':'Semana del '+fechaCorta(lun))+'</b>' +
+    '<span>'+(+lun.split('-')[2])+(mismoMes?'':' '+MESES[+lun.split('-')[1]-1]) +
+    ' – '+(+dom.split('-')[2])+' '+MESES[+dom.split('-')[1]-1]+'</span></div>';
+
+  var out = '';
+
+  /* ---- ICH ---- */
+  var i = ich(lun), iAnt = ich(addDays(lun,-7));
+  if(i){
+    var d = iAnt ? i.total - iAnt.total : null;
+    var comps = [
+      {em:'🌿', nm:'Variedad',      v:i.comp.variedad, p:ICH_PESOS.variedad, c:'var(--ali-d)'},
+      {em:'💚', nm:'Grupos saludables', v:i.comp.grupos, p:ICH_PESOS.grupos, c:'var(--ali-d)'},
+      {em:'⭐', nm:'Nuevos alimentos', v:i.comp.nuevos, p:ICH_PESOS.nuevos, c:'var(--cal-d)'},
+      {em:'🛡️', nm:'Límites',       v:i.comp.limites,  p:ICH_PESOS.limites, c:'var(--sal-d)'}
+    ];
+    out += '<div class="ich-c"><div class="ich-top">' +
+      '<div class="gauge">'+arcoGauge(i.total,104) +
+        '<div class="tx"><span class="lb">ICH</span>' +
+        '<span class="vl">'+i.total+'</span><span class="mx">/100</span></div></div>' +
+      '<div class="ich-tx"><h3>Índice de Construcción de Hábitos</h3>' +
+        (d===null
+          ? '<div class="ich-delta">Primera semana con datos suficientes</div>'
+          : '<div class="ich-delta">'+(d>0?'↑':d<0?'↓':'→')+' <b style="color:' +
+            (d>0?'var(--ali-d)':d<0?'var(--t2)':'var(--t2)')+'">'+(d>0?'+':'')+d+
+            ' pts</b> vs semana pasada</div>') +
+        '<div class="ich-chip">'+(i.total>=80?'¡Buena evolución! ⭐':
+           i.total>=60?'Vais construyendo 🌱':'Semana tranquila 🍃')+'</div>' +
+      '</div></div>' +
+      '<div class="ich-comp">' + comps.map(function(c){
+        return '<div><div class="em">'+c.em+'</div><div class="nm">'+c.nm+'</div>' +
+          '<div class="pc" style="color:'+c.c+'">'+c.v+'</div>' +
+          '<div class="pe">peso '+c.p+'%</div></div>';
+      }).join('') + '</div></div>';
+  } else {
+    var nd = diasConRegistro(lun), md = cfgNum('dias_min_ich',3);
+    out += '<div class="ich-c"><div class="ich-top">' +
+      '<div class="gauge">'+arcoGauge(0,104) +
+        '<div class="tx"><span class="lb">ICH</span>' +
+        '<span class="vl" style="color:var(--t3)">—</span></div></div>' +
+      '<div class="ich-tx"><h3>Aún no hay datos suficientes</h3>' +
+      '<div class="ich-delta">'+nd+' de '+md+' días registrados esta semana. ' +
+      'Sin eso, el índice sería un número inventado.</div></div></div></div>';
+  }
+
+  /* ---- Tabla semanal ---- */
+  var objs = objetivosSemana();
+  if(objs.length){
+    var cab = '';
+    for(var k=0;k<7;k++){
+      var f = addDays(lun,k), es = f===state.data.hoy;
+      cab += '<th class="'+(es?'hoy':'')+'">'+DOW_INI[k] +
+             '<b>'+(+f.split('-')[2])+'</b></th>';
+    }
+    var filas = objs.slice(0,8).map(function(o){
+      var g = String(o.grupo), lim = String(o.tipo)==='max';
+      var tds = '';
+      for(var k2=0;k2<7;k2++){
+        var r = racionesDia(g, addDays(lun,k2));
+        var cls = r<=0 ? '' : (lim ? 'lim' : (r>=1 ? 'on' : 'md'));
+        tds += '<td><span class="pt-d '+cls+'"></span></td>';
+      }
+      var tot = racionesSemana(g, lun), obj = num(o.objetivo);
+      var clsO = lim ? (tot>obj ? 'pas' : '') : (tot>=obj ? 'cum' : '');
+      var totTx = String(Math.round(tot*10)/10).replace('.', ',');
+      return '<tr><td class="g"><em>'+esc(o.emoji||'•')+'</em>'+esc(o.nombre||g)+'</td>' +
+        tds + '<td class="o '+clsO+'">'+totTx+' / '+obj+'</td></tr>';
+    }).join('');
+    out += '<div class="tabla"><h3>Tu semana</h3><table class="tb">' +
+      '<tr><th class="g">Grupo</th>'+cab+'<th class="o">Objetivo</th></tr>' +
+      filas + '</table>' +
+      (objs.length>8 ? '<button class="mas-g" id="aliTodos">Ver todos los grupos ' +
+        svg('chevron',13)+'</button>' : '') + '</div>';
+  }
+
+  /* ---- Comidas del día ---- */
+  var dia = (state.aliDia && state.aliDia>=lun && state.aliDia<=dom)
+    ? state.aliDia : (esActual ? state.data.hoy : lun);
+  state.aliDia = dia;
+  out += '<div class="comidas"><h3>'+(dia===state.data.hoy?'Comidas de hoy'
+        : 'Comidas del '+fechaCorta(dia))+'</h3>' + listaComidas(dia) +
+    '<button class="add-c" id="addComida">'+svg('mas',17)+' Añadir comida</button></div>';
+
+  /* ---- Mensaje ---- */
+  var m = mensajeSemana(lun);
+  out += '<div class="msg"><div class="em">'+m.em+'</div>' +
+    '<div><b>'+esc(m.t)+'</b><p>'+esc(m.p)+'</p></div></div>';
+
+  $('#aliCuerpo').innerHTML = out;
+
+  var vv = variedadDe(lun).length;
+  $('#aliSub').textContent = vv
+    ? vv + ' alimentos distintos esta semana'
+    : 'Variedad y hábitos, semana a semana.';
+}
+
+/** Comidas de un día agrupadas por grupo_id, en orden de hora. */
+function comidasDelDia(f){
+  var g = {};
+  state.data.comidas.forEach(function(c){
+    if(fechaKey(c.fecha) !== f) return;
+    var k = String(c.grupo_id || c.id);
+    if(!g[k]) g[k] = { grupo_id:k, hora:String(c.hora||''), tipo:String(c.tipo_comida||'otro'),
+                       lugar:String(c.lugar||''), items:[] };
+    g[k].items.push(c);
+  });
+  return Object.keys(g).map(function(k){ return g[k]; })
+    .sort(function(a,b){ return (a.hora||'99:99').localeCompare(b.hora||'99:99'); });
+}
+/** Color del grupo predominante: informa de QUÉ comió, no de si estuvo bien. */
+function colorComida(items){
+  var cuenta = {};
+  items.forEach(function(it){
+    var g = String(it.grupo||'otros');
+    cuenta[g] = (cuenta[g]||0) + (VALOR_TOMA[String(it.estado_toma||'comio')]||0);
+  });
+  var mejor = null, max = 0;
+  Object.keys(cuenta).forEach(function(g){ if(cuenta[g]>max){ max=cuenta[g]; mejor=g; } });
+  return COLOR_GRUPO[mejor] || 'var(--t3)';
+}
+/* Tonos apagados a propósito: ninguno puede confundirse con el azul de papá,
+   el rojo de mamá, el lila de Gina ni el rojo de alerta. El color de una
+   comida dice QUÉ comió, nunca si estuvo bien. */
+var COLOR_GRUPO = {
+  verduras:'#4C9A5C', fruta:'#E08A3C', legumbres:'#A2704A', pescado:'#4FA3B0',
+  proteina_blanca:'#C99A5B', carnes_rojas:'#8C5A5A', huevos:'#DDB341',
+  lacteos:'#7C86C4', frutos_secos:'#8A6A4B', cereales:'#C9A44C',
+  ultraprocesado:'#9AA6B2', capricho:'#C58BB0', permitido:'#8894A6',
+  agua:'#6FA8D6', otros:'#9AA6B2'
+};
+function listaComidas(f){
+  var cs = comidasDelDia(f);
+  if(!cs.length) return '<div style="font-size:13px;color:var(--t3);padding:10px 0 4px">' +
+    'Nada registrado todavía este día.</div>';
+  return cs.map(function(c){
+    var t = TIPOS_COMIDA.filter(function(x){ return x.id===c.tipo; })[0] || TIPOS_COMIDA[5];
+    var nombres = c.items.map(function(it){
+      var e = String(it.estado_toma);
+      return esc(it.nombre || '') + (e==='probo' ? ' (lo probó)' : e==='rechazo' ? ' (lo rechazó)' : '');
+    }).filter(String).join(' · ');
+    return '<div class="cm" data-comida="'+esc(c.grupo_id)+'"><div class="ln"></div>' +
+      '<span class="pt" style="background:'+colorComida(c.items)+'"></span>' +
+      '<div class="tx"><b>'+esc(t.nom)+'</b><p>'+(nombres||'—')+'</p></div>' +
+      '<span class="hr">'+esc(c.hora||'')+'</span>' +
+      '<span class="ed">'+svg('lapiz',15)+'</span></div>';
+  }).join('');
+}
+
+/* ============================================================
+   HOJA DE REGISTRO DE COMIDA
+   ============================================================ */
+var borrador = null;
+
+function abrirComida(grupoId){
+  var base = { grupo_id:'', fecha:state.aliDia || state.data.hoy, hora:'',
+               tipo_comida:'', lugar:'', items:[] };
+  if(grupoId){
+    var c = comidasDelDia(state.aliDia).filter(function(x){ return x.grupo_id===grupoId; })[0];
+    if(c){
+      base = { grupo_id:c.grupo_id, fecha:state.aliDia, hora:c.hora, tipo_comida:c.tipo,
+        lugar:c.lugar, items:c.items.map(function(it){
+          return { alimento_id:String(it.alimento_id||''), nombre:String(it.nombre||''),
+                   grupo:String(it.grupo||'otros'), estado_toma:String(it.estado_toma||'comio'),
+                   emoji:(alimento(it.alimento_id)||{}).emoji || '' };
+        })};
+    }
+  }
+  if(!base.tipo_comida){
+    var h = new Date().getHours();
+    base.tipo_comida = h<11 ? 'desayuno' : h<13 ? 'almuerzo' : h<16 ? 'comida'
+                     : h<19 ? 'merienda' : 'cena';
+  }
+  if(!base.hora){
+    var n = new Date();
+    base.hora = pad(n.getHours())+':'+pad(n.getMinutes());
+  }
+  borrador = base;
+  pintarHojaComida();
+}
+
+function pintarHojaComida(){
+  var b = borrador;
+  var h = '<h3>'+(b.grupo_id?'Editar comida':'Nueva comida')+'</h3>';
+
+  h += '<div class="f-lb">Qué comida es</div><div class="chips" id="chTipo">' +
+    TIPOS_COMIDA.map(function(t){
+      return '<button class="chip'+(b.tipo_comida===t.id?' on':'')+'" data-tipo="'+t.id+'">' +
+        t.em+' '+t.nom+'</button>';
+    }).join('') + '</div>';
+
+  h += '<div class="f-lb">Hora y dónde</div><div class="fila2">' +
+    '<input class="inp" id="inHora" style="width:96px" type="text" inputmode="numeric" ' +
+      'value="'+esc(b.hora)+'" placeholder="13:30">' +
+    '<div class="chips" style="flex:1" id="chLugar">' + LUGARES_C.map(function(l){
+      return '<button class="chip'+(b.lugar===l.id?' on':'')+'" data-lugar="'+l.id+'">' +
+        esc(l.nom)+'</button>'; }).join('') + '</div></div>';
+
+  h += '<div class="f-lb">Qué ha comido</div>' +
+    '<div class="busca"><span class="lupa i">'+svg('lupa',17)+'</span>' +
+    '<input class="inp" id="inBusca" type="text" placeholder="Buscar alimento…" ' +
+    'autocomplete="off" autocorrect="off"></div><div id="resBusca"></div>';
+
+  if(b.items.length){
+    h += '<div class="sel" id="selItems">' + b.items.map(function(it,ix){
+      return '<div class="si"><div class="si-top"><span class="em">' +
+        esc(it.emoji||'🍽️')+'</span><b>'+esc(it.nombre)+'</b>' +
+        '<button class="qt" data-quitar="'+ix+'">'+svg('cerrar',14)+'</button></div>' +
+        '<div class="est3">' + ESTADOS_T.map(function(e){
+          var on = it.estado_toma===e.id;
+          return '<button data-est="'+e.id+'" data-ix="'+ix+'" class="'+(on?'on':'')+'" ' +
+            'style="'+(on?'background:'+e.col:'')+'">'+e.nom+'</button>';
+        }).join('') + '</div></div>';
+    }).join('') + '</div>';
+  }
+
+  var soloGrupos = b.items.length && b.items.every(function(it){ return !it.alimento_id; });
+  if(soloGrupos){
+    h += '<div class="aviso">Registrado por grupos. Cuenta para los objetivos semanales, ' +
+      'pero no para la variedad ni para la biblioteca: para eso hace falta el alimento concreto.</div>';
+  }
+
+  h += '<button class="btn" id="guardarComida"'+(b.items.length?'':' disabled')+'>' +
+       (b.grupo_id?'Guardar cambios':'Guardar comida')+'</button>';
+  h += '<button class="btn sec" id="modoGrupos">No sé los alimentos · marcar solo grupos</button>';
+  if(b.grupo_id) h += '<button class="btn del" id="borrarComida">Borrar esta comida</button>';
+
+  abrirHoja(h);
+  pintarBusqueda();
+}
+
+function buscarAlimentos(q){
+  q = String(q||'').trim().toLowerCase();
+  var lista = state.data.alimentos;
+  if(!q){
+    /* Sin texto: los que más veces se han registrado, que es lo que se repite a diario */
+    var uso = {};
+    state.data.comidas.forEach(function(c){
+      if(c.alimento_id) uso[String(c.alimento_id)] = (uso[String(c.alimento_id)]||0)+1;
+    });
+    return lista.slice().sort(function(a,b){
+      return (uso[String(b.id)]||0) - (uso[String(a.id)]||0);
+    }).slice(0,8);
+  }
+  return lista.filter(function(a){
+    return String(a.nombre||'').toLowerCase().indexOf(q) >= 0;
+  }).slice(0,12);
+}
+function pintarBusqueda(){
+  var q = ($('#inBusca')||{}).value || '';
+  var r = buscarAlimentos(q);
+  var yaHay = {};
+  borrador.items.forEach(function(it){ if(it.alimento_id) yaHay[it.alimento_id]=true; });
+  var h = r.filter(function(a){ return !yaHay[String(a.id)]; }).map(function(a){
+    var o = objGrupo(String(a.grupo));
+    return '<button data-add="'+esc(a.id)+'"><span class="em">'+esc(a.emoji||'🍽️')+'</span>' +
+      esc(a.nombre)+'<span class="gr">'+esc((o&&o.nombre)||a.grupo)+'</span></button>';
+  }).join('');
+  var qq = String(q).trim();
+  if(qq && !r.some(function(a){ return String(a.nombre).toLowerCase()===qq.toLowerCase(); })){
+    h += '<button data-crear="'+esc(qq)+'"><span class="em">'+svg('mas',15)+'</span>' +
+      '<span class="nuevo">Crear «'+esc(qq)+'»</span></button>';
+  }
+  $('#resBusca').innerHTML = h ? '<div class="res">'+h+'</div>' : '';
+}
+
+function hojaCrearAlimento(nombre){
+  var grupos = objetivosSemana();
+  abrirHoja('<h3>Nuevo alimento</h3>' +
+    '<div class="f-lb">Nombre</div>' +
+    '<input class="inp" id="nuNom" type="text" value="'+esc(nombre)+'">' +
+    '<div class="f-lb">A qué grupo pertenece</div>' +
+    '<div class="chips" id="nuGrupo">' + grupos.map(function(o){
+      return '<button class="chip'+(String(o.tipo)==='max'?' gas':'')+'" data-g="' +
+        esc(o.grupo)+'">'+esc(o.emoji||'')+' '+esc(o.nombre||o.grupo)+'</button>';
+    }).join('') + '</div>' +
+    '<div class="aviso">Los alimentos que crees quedan en la biblioteca compartida: ' +
+    'los verá también el otro progenitor.</div>' +
+    '<button class="btn" id="nuGuardar" disabled>Crear y añadir</button>' +
+    '<button class="btn sec" id="nuVolver">Volver</button>');
+  state._nuGrupo = '';
+}
+
+function modoGrupos(){
+  var grupos = objetivosSemana();
+  abrirHoja('<h3>Marcar solo grupos</h3>' +
+    '<div class="aviso">Es la vía rápida: tres segundos. A cambio, esta comida no suma ' +
+    'variedad ni entra en la biblioteca de alimentos, que es lo que mide el progreso a largo plazo.</div>' +
+    '<div class="f-lb">Qué ha habido</div><div class="chips" id="mgChips">' +
+    grupos.map(function(o){
+      var on = borrador.items.some(function(it){
+        return !it.alimento_id && it.grupo===String(o.grupo); });
+      return '<button class="chip'+(on?' on':'')+(String(o.tipo)==='max'?' gas':'')+'" ' +
+        'data-mg="'+esc(o.grupo)+'">'+esc(o.emoji||'')+' '+esc(o.nombre||o.grupo)+'</button>';
+    }).join('') + '</div>' +
+    '<button class="btn" id="mgOk">Hecho</button>');
+}
+
+function guardarComida(){
+  var b = borrador;
+  if(!b.items.length) return;
+  var btn = $('#guardarComida');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+
+  llamarPost({
+    action:'saveComida',
+    payload:{
+      grupo_id:b.grupo_id || '', fecha:b.fecha, hora:b.hora,
+      tipo_comida:b.tipo_comida, lugar:b.lugar, creado_por:state.user,
+      items: b.items.map(function(it){
+        return { alimento_id:it.alimento_id||'', nombre:it.nombre,
+                 grupo:it.grupo, estado_toma:it.estado_toma };
+      })
+    }
+  }).then(function(){
+    cerrarHoja();
+    toast('Comida guardada');
+    return recargar();
+  }).catch(function(err){
+    toast(String(err.message||err), true);
+    if(btn){ btn.disabled = false; btn.textContent = 'Guardar comida'; }
+  });
+}
+
+function crearAlimento(){
+  var nom = ($('#nuNom')||{}).value || '';
+  nom = String(nom).trim();
+  var g = state._nuGrupo;
+  if(!nom || !g) return;
+  var btn = $('#nuGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Creando…'; }
+
+  var o = objGrupo(g) || {};
+  llamarPost({ action:'saveAlimento',
+    payload:{ nombre:nom, grupo:g, emoji:String(o.emoji||''), estado:'aprendizaje',
+              creado_por:state.user } })
+    .then(function(a){
+      state.data.alimentos.push(a);
+      borrador.items.push({ alimento_id:String(a.id), nombre:String(a.nombre),
+        grupo:String(a.grupo), estado_toma:'comio', emoji:String(a.emoji||'') });
+      pintarHojaComida();
+      toast('«' + nom + '» añadido a la biblioteca');
+    })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Crear y añadir'; }
+    });
+}
+
+function borrarComida(){
+  if(!borrador.grupo_id) return;
+  llamarPost({ action:'deleteComida', grupo_id:borrador.grupo_id, creado_por:state.user })
+    .then(function(){ cerrarHoja(); toast('Comida borrada'); return recargar(); })
+    .catch(function(err){ toast(String(err.message||err), true); });
+}
+
+/* ============================================================
    NAVEGACIÓN
    ============================================================ */
 function ir(seccion){
   state.seccion = seccion;
   SECCIONES.forEach(function(s){ $('#s-'+s.id).hidden = (s.id !== seccion); });
   pintarNav();
+  if(seccion === 'alimentacion') pintarAlimentacion();
   window.scrollTo(0,0);
 }
 function abrirHoja(html){
@@ -1106,9 +1845,16 @@ function hojaPerfil(){
    ============================================================ */
 function arrancar(){
   $('#ver').textContent = APP_VERSION;
+  /* El enlace de rescate solo aparece si la constante sigue sin rellenar */
+  if(!BACKEND_URL || BACKEND_URL.indexOf('PEGA-AQUI') >= 0){
+    $('#pieDbg').innerHTML = ' · <button id="btnReset">cambiar backend</button>';
+  }
   if(!backend()){
-    $('#splashTx').innerHTML = 'Falta la URL del backend.<br>' +
-      '<button id="pedirUrl">Configurarla</button>';
+    $('#splashTx').innerHTML =
+      'Falta poner la URL del backend en <b>index.html</b>.<br>' +
+      'Busca <code>BACKEND_URL</code> al principio del <code>&lt;script&gt;</code> ' +
+      'y pega ahí tu URL <code>/exec</code>.<br>' +
+      '<button id="pedirUrl">Ponerla solo en este móvil</button>';
     $('#pedirUrl').addEventListener('click', pedirUrl);
     return;
   }
@@ -1165,10 +1911,84 @@ document.addEventListener('click', function(e){
     toast(n.length ? n.length + ' novedades desde tu última visita' : 'Nada nuevo por aquí');
     return;
   }
+  /* ---------- alimentación ---------- */
+  if(e.target.closest('#aliPrev')){ state.aliLunes = addDays(state.aliLunes,-7);
+    state.aliDia = null; pintarAlimentacion(); return; }
+  if(e.target.closest('#aliNext')){ state.aliLunes = addDays(state.aliLunes, 7);
+    state.aliDia = null; pintarAlimentacion(); return; }
+  if(e.target.closest('#addComida')){ abrirComida(''); return; }
+  var cm = e.target.closest('[data-comida]');
+  if(cm){ abrirComida(cm.dataset.comida); return; }
+
+  /* ---------- hoja de comida ---------- */
+  var chT = e.target.closest('[data-tipo]');
+  if(chT){ borrador.tipo_comida = chT.dataset.tipo; pintarHojaComida(); return; }
+  var chL = e.target.closest('[data-lugar]');
+  if(chL){ borrador.lugar = (borrador.lugar===chL.dataset.lugar) ? '' : chL.dataset.lugar;
+    pintarHojaComida(); return; }
+  var add = e.target.closest('[data-add]');
+  if(add){
+    var a = alimento(add.dataset.add);
+    if(a){
+      borrador.items.push({ alimento_id:String(a.id), nombre:String(a.nombre),
+        grupo:String(a.grupo||'otros'), estado_toma:'comio', emoji:String(a.emoji||'') });
+      pintarHojaComida();
+    }
+    return;
+  }
+  var quitar = e.target.closest('[data-quitar]');
+  if(quitar){ borrador.items.splice(+quitar.dataset.quitar,1); pintarHojaComida(); return; }
+  var est = e.target.closest('[data-est]');
+  if(est){ borrador.items[+est.dataset.ix].estado_toma = est.dataset.est;
+    pintarHojaComida(); return; }
+  var crear = e.target.closest('[data-crear]');
+  if(crear){ hojaCrearAlimento(crear.dataset.crear); return; }
+  if(e.target.closest('#modoGrupos')){ modoGrupos(); return; }
+  if(e.target.closest('#guardarComida')){ guardarComida(); return; }
+  if(e.target.closest('#borrarComida')){ borrarComida(); return; }
+
+  /* ---------- marcar solo grupos ---------- */
+  var mg = e.target.closest('[data-mg]');
+  if(mg){
+    var g = mg.dataset.mg;
+    var ix = -1;
+    borrador.items.forEach(function(it,i){ if(!it.alimento_id && it.grupo===g) ix=i; });
+    if(ix>=0) borrador.items.splice(ix,1);
+    else {
+      var o = objGrupo(g) || {};
+      borrador.items.push({ alimento_id:'', nombre:String(o.nombre||g), grupo:g,
+        estado_toma:'comio', emoji:String(o.emoji||'') });
+    }
+    mg.classList.toggle('on');
+    return;
+  }
+  if(e.target.closest('#mgOk')){ pintarHojaComida(); return; }
+
+  /* ---------- crear alimento ---------- */
+  var nug = e.target.closest('[data-g]');
+  if(nug){
+    state._nuGrupo = nug.dataset.g;
+    $$('#nuGrupo .chip').forEach(function(c){ c.classList.toggle('on', c===nug); });
+    $('#nuGuardar').disabled = false;
+    return;
+  }
+  if(e.target.closest('#nuVolver')){ pintarHojaComida(); return; }
+  if(e.target.closest('#nuGuardar')){ crearAlimento(); return; }
+
   if(e.target.closest('#semPrev')){ state.lunes = addDays(state.lunes,-7); pintarSemana(); return; }
   if(e.target.closest('#semNext')){ state.lunes = addDays(state.lunes, 7); pintarSemana(); return; }
   if(e.target.closest('#semHoy')){ state.lunes = lunesDe(state.data.hoy); pintarSemana(); return; }
   if(e.target.closest('#btnReset')){ pedirUrl(); return; }
+});
+
+document.addEventListener('input', function(e){
+  if(e.target.id === 'inBusca'){ pintarBusqueda(); return; }
+  if(e.target.id === 'inHora' && borrador){ borrador.hora = e.target.value; return; }
+  if(e.target.id === 'nuNom'){
+    var b = $('#nuGuardar');
+    if(b) b.disabled = !(String(e.target.value).trim() && state._nuGrupo);
+    return;
+  }
 });
 
 /* Respaldo de imágenes: nunca onerror inline, el escapado anidado no funciona. */
