@@ -358,6 +358,389 @@ svg{display:block;flex-shrink:0}
 .msg b{display:block;font-size:14.5px;font-weight:700;color:var(--ali-d);letter-spacing:-.2px}
 .msg p{margin:3px 0 0;font-size:12.5px;color:var(--t2);line-height:1.45}
 
+
+
+
+/* ---------- PERFIL ---------- */
+.pf-hd{display:flex;gap:16px;align-items:flex-start;padding:6px 0 18px}
+.pf-av{position:relative;flex-shrink:0}
+.pf-av .av{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:38px;font-weight:700;overflow:hidden;
+  box-shadow:0 0 0 4px var(--surface), 0 4px 16px rgba(15,23,42,.10)}
+.pf-av .ed{position:absolute;right:0;bottom:4px;width:30px;height:30px;border-radius:50%;
+  background:var(--surface);display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--sh)}
+.pf-tx{flex:1;min-width:0;padding-top:6px}
+.pf-tx h2{margin:0;font-size:27px;font-weight:700;letter-spacing:-.8px}
+.pf-chip{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px;
+  font-size:12.5px;font-weight:600;margin-top:8px}
+.pf-chip .pt{width:8px;height:8px;border-radius:50%}
+.pf-tx p{margin:10px 0 0;font-size:13px;color:var(--t2);line-height:1.45}
+.pf-cog{width:44px;height:44px;border-radius:14px;background:var(--surface);display:flex;
+  align-items:center;justify-content:center;color:var(--t2);box-shadow:var(--sh);flex-shrink:0}
+
+.pf-kpis{background:var(--surface);border-radius:var(--r-l);box-shadow:var(--sh);
+  display:grid;grid-template-columns:repeat(3,1fr);margin-bottom:12px;overflow:hidden}
+.pf-k{padding:15px 11px;text-align:left;border-left:1px solid var(--border)}
+.pf-k:first-child{border-left:none}
+.pf-k .i{width:34px;height:34px;border-radius:12px;margin-bottom:9px}
+.pf-k .lb{font-size:11.5px;color:var(--t2);line-height:1.3;min-height:30px}
+.pf-k .vl{font-size:20px;font-weight:700;letter-spacing:-.7px;margin-top:4px;line-height:1.1}
+.pf-k .sb{font-size:11.5px;color:var(--t3);margin-top:3px}
+.pf-k .ok{display:inline-flex;align-items:center;gap:5px;background:var(--ali-s);
+  color:var(--ali-d);border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;
+  margin-top:5px}
+.pf-k .ko{background:var(--cal-s);color:var(--cal-d)}
+.pf-mov{width:100%;background:var(--surface);border-radius:var(--r);padding:14px 16px;
+  box-shadow:var(--sh);display:flex;justify-content:space-between;align-items:center;
+  font-size:14px;font-weight:600;margin-bottom:16px}
+
+.pf-sec-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.pf-sec-h b{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.pf-res{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
+.pf-r{border-radius:var(--r);padding:14px 13px;box-shadow:var(--sh);display:flex;
+  flex-direction:column}
+.pf-r .top{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.pf-r .top .i{width:32px;height:32px;border-radius:11px}
+.pf-r .top b{font-size:14.5px;font-weight:700;letter-spacing:-.2px}
+.pf-r .duo{display:flex;gap:10px}
+.pf-r .duo > div{flex:1;min-width:0}
+.pf-r .lb{font-size:11px;color:var(--t2);line-height:1.3}
+.pf-r .vl{font-size:19px;font-weight:700;letter-spacing:-.6px;margin-top:3px;line-height:1.1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-r .sb{font-size:11px;color:var(--t2);margin-top:2px}
+.pf-r .pie{margin-top:auto;padding-top:11px}
+.pf-r .pie span{display:flex;justify-content:space-between;align-items:center;
+  border-radius:11px;padding:9px 11px;font-size:12px;font-weight:600}
+
+/* ---------- MENSAJES ---------- */
+.msgs{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:16px}
+.msg-i{display:flex;gap:11px;padding:11px 0;align-items:flex-start;width:100%;text-align:left;
+  border-top:1px solid var(--border)}
+.msg-i:first-of-type{border-top:none}
+.msg-i .av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;overflow:hidden}
+.msg-i .tx{flex:1;min-width:0}
+.msg-i .qn{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.msg-i .qn b{font-size:13.5px;font-weight:700}
+.msg-i .qn span{font-size:11.5px;color:var(--t3)}
+.msg-i .nuevo{width:7px;height:7px;border-radius:50%;background:var(--info)}
+.msg-i p{margin:3px 0 0;font-size:13px;color:var(--t2);line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.msg-i .acuse{margin-top:5px;font-size:11px;color:var(--t3);display:flex;align-items:center;
+  gap:5px}
+.msg-i .acuse.ok{color:var(--ali-d)}
+.msg-badge{background:var(--info);color:#fff;border-radius:999px;min-width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;
+  padding:0 6px;flex-shrink:0;margin-top:8px}
+.msg-nuevo{width:100%;margin-top:12px;border:1.5px solid var(--border);border-radius:var(--r-btn);
+  padding:13px;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:14px;font-weight:600;color:var(--yo)}
+.msg-vacio{font-size:13px;color:var(--t3);padding:4px 0 2px}
+.msg-aviso{background:var(--surface2);border-radius:12px;padding:11px 13px;font-size:12px;
+  color:var(--t2);line-height:1.45;margin-top:12px}
+
+.act-l{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:12px}
+.act-i{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--border);
+  width:100%;text-align:left}
+.act-i:first-of-type{border-top:none}
+.act-i .ic{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.act-i .tx{flex:1;min-width:0;font-size:13px;line-height:1.4}
+.act-i .tx b{font-weight:700}
+.act-i .fh{font-size:11.5px;color:var(--t3);flex-shrink:0;text-align:right}
+
+/* ---------- CALENDARIO ---------- */
+.cal-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cal-top .fl{width:36px;height:36px;border-radius:50%;background:var(--surface);color:var(--t2);
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--sh);flex-shrink:0}
+.cal-top .rango{flex:1;background:var(--surface);border-radius:999px;padding:9px 16px;
+  box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;gap:9px;
+  color:var(--cal-d);font-size:14.5px;font-weight:700}
+.cal-top .hoyb{padding:0 15px;height:36px;border-radius:999px;background:var(--cal-s);
+  color:var(--cal-d);font-size:12.5px;font-weight:700;flex-shrink:0;display:flex;
+  align-items:center}
+.seg{display:flex;background:var(--surface2);border-radius:999px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;padding:8px;border-radius:999px;font-size:13px;font-weight:600;
+  color:var(--t2);text-align:center}
+.seg button.on{background:var(--surface);color:var(--cal-d);box-shadow:var(--sh)}
+
+.rej{background:var(--surface);border-radius:var(--r-l);padding:14px 10px 12px;
+  box-shadow:var(--sh);margin-bottom:12px}
+.rej-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px}
+.rej-dow span{font-size:9.5px;font-weight:700;color:var(--t3);text-align:center;letter-spacing:.3px}
+.rej-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cd{border-radius:10px;padding:5px 1px 4px;display:flex;flex-direction:column;align-items:center;
+  gap:2px;min-height:62px;background:transparent}
+.cd.papa{background:var(--papa-s)} .cd.mama{background:var(--mama-s)}
+.cd.fuera{opacity:.34}
+.cd .csa{line-height:1}
+.cd .nu{font-size:13px;font-weight:600;line-height:1;height:22px;width:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+.cd.hoy .nu{background:var(--cal-d);color:#fff;font-weight:700}
+.cd.sel .nu{box-shadow:inset 0 0 0 2px var(--cal-d);color:var(--cal-d);font-weight:700}
+.cd.hoy.sel .nu{box-shadow:none}
+.cd .pts{display:flex;gap:2px;justify-content:center;min-height:5px}
+.cd .pts i{width:4.5px;height:4.5px;border-radius:50%}
+.cd .bnd{width:calc(100% + 2px);height:3px;border-radius:2px;margin-top:1px}
+.rej-leg{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px;
+  padding-top:11px;border-top:1px solid var(--border);font-size:11.5px;color:var(--t2)}
+.rej-leg span{display:inline-flex;align-items:center;gap:6px}
+
+.cats-h{display:flex;gap:7px;overflow-x:auto;margin-bottom:12px;padding:2px 0 4px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.cats-h::-webkit-scrollbar{display:none}
+.cats-h button{flex-shrink:0;display:flex;align-items:center;gap:6px;background:var(--surface);
+  border-radius:999px;padding:8px 13px;box-shadow:var(--sh);font-size:12.5px;font-weight:600;
+  color:var(--t2)}
+.cats-h button.on{color:#fff}
+.cats-h button .pt{width:8px;height:8px;border-radius:50%}
+
+.dia-d{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:12px}
+.dia-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.dia-hd b{font-size:15.5px;font-weight:700;letter-spacing:-.3px}
+.dia-hd .qn{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;
+  flex-shrink:0}
+.de{display:flex;gap:12px;align-items:flex-start;padding:11px 0;position:relative}
+.de .ln{position:absolute;left:52px;top:34px;bottom:-11px;width:1.5px;background:var(--border)}
+.de:last-of-type .ln{display:none}
+.de .hr{width:42px;flex-shrink:0;font-size:12.5px;font-weight:700;color:var(--t2);
+  font-variant-numeric:tabular-nums;padding-top:9px}
+.de .pt{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:12px;z-index:1;
+  box-shadow:0 0 0 3px var(--surface)}
+.de .ic{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.de .tx{flex:1;min-width:0}
+.de .tx b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.de .tx p{margin:1px 0 0;font-size:12.5px;color:var(--t2)}
+.dia-vacio{font-size:13px;color:var(--t3);padding:8px 0 2px}
+.cambio{margin-top:10px;background:var(--surface2);border-radius:12px;padding:10px 12px;
+  font-size:12.5px;color:var(--t2);display:flex;gap:8px;align-items:center;font-weight:500}
+.cambio b{font-weight:700;color:var(--t1)}
+
+.dest{margin-bottom:12px}
+.dest h3{margin:0 0 10px;font-size:16px;font-weight:700;letter-spacing:-.3px}
+.dest-g{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.dest-g::-webkit-scrollbar{display:none}
+.dest-c{flex-shrink:0;width:186px;background:var(--surface);border-radius:var(--r);padding:13px;
+  box-shadow:var(--sh);text-align:left}
+.dest-c .em{font-size:24px;line-height:1}
+.dest-c b{display:block;font-size:14px;font-weight:700;letter-spacing:-.2px;margin-top:8px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dest-c p{margin:2px 0 0;font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.dest-c .fh{font-size:12px;color:var(--t3);margin-top:3px}
+.dest-c .ch{display:inline-block;font-size:10.5px;font-weight:700;border-radius:999px;
+  padding:3px 9px;margin-top:9px}
+
+.ag{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:12px}
+.ag-d{padding:10px 0;border-top:1px solid var(--border)}
+.ag-d:first-child{border-top:none;padding-top:0}
+.ag-f{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ag-f b{font-size:13.5px;font-weight:700;letter-spacing:-.2px;text-transform:capitalize}
+.ag-f .qn{font-size:11px;font-weight:700}
+.ag-e{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px}
+.ag-e .pt{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ag-e .hr{font-size:12px;font-weight:700;color:var(--t2);width:40px;flex-shrink:0;
+  font-variant-numeric:tabular-nums}
+.ag-e .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- GASTOS ---------- */
+.mes-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.mes-nav button.fl{width:38px;height:38px;border-radius:50%;background:var(--surface);
+  color:var(--t2);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
+.mes-nav .rango{background:var(--surface);border-radius:999px;padding:9px 20px;box-shadow:var(--sh);
+  display:flex;align-items:center;gap:9px;color:var(--gas-d);font-size:14px;font-weight:700;
+  text-transform:capitalize}
+
+.cc{background:var(--gas-c);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:12px}
+.cc h3{margin:0 0 13px;font-size:16px;font-weight:700;letter-spacing:-.3px}
+.cc-top{display:flex;gap:15px;align-items:center}
+.cc-tx{flex:1;min-width:0}
+.cc-tx .lb{font-size:12px;color:var(--t2)}
+.cc-tx .vl{font-size:29px;font-weight:700;letter-spacing:-1.4px;line-height:1.1;margin-top:2px}
+.cc-tx .sb{font-size:12.5px;color:var(--t2);margin-top:2px}
+.cc-est{display:flex;flex-direction:column;gap:9px;flex-shrink:0;align-items:flex-end;
+  text-align:right}
+.est-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;
+  font-size:12px;font-weight:700}
+.cc-mov{font-size:12px;color:var(--t2)}
+.cc-mov b{display:block;font-size:13px;color:var(--t1);font-weight:600;margin-top:2px}
+.cc-pie{width:100%;margin-top:14px;background:var(--gas-s);color:var(--gas-d);border-radius:13px;
+  padding:12px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;
+  align-items:center}
+.cc-pend{margin-top:12px;background:var(--cal-s);color:var(--cal-d);border-radius:13px;
+  padding:11px 13px;font-size:12.5px;font-weight:500;line-height:1.45}
+.cc-pend b{font-weight:700}
+
+.ap{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:12px}
+.ap-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ap-hd b{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.ap-hd button{font-size:12.5px;font-weight:600;color:var(--gas-d);display:flex;align-items:center;gap:4px}
+.ap-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ap-c{border-radius:var(--r);padding:13px 12px;display:flex;flex-direction:column}
+.ap-c .who{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.ap-c .who .av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:700;overflow:hidden}
+.ap-c .who b{font-size:14.5px;font-weight:700;letter-spacing:-.2px}
+.ap-c .row{display:flex;gap:10px}
+.ap-c .row > div{flex:1;min-width:0}
+.ap-c .lb{font-size:10.5px;color:var(--t2);line-height:1.3}
+.ap-c .vl{font-size:14.5px;font-weight:700;letter-spacing:-.3px;margin-top:2px;white-space:nowrap}
+.ap-est{margin-top:11px;border-radius:11px;padding:8px;font-size:12px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:6px}
+.ap-nota{margin-top:11px;background:var(--surface2);border-radius:13px;padding:11px 13px;
+  display:flex;gap:10px;align-items:flex-start}
+.ap-nota .i{color:var(--t3);margin-top:1px}
+.ap-nota b{display:block;font-size:12.5px;font-weight:600}
+.ap-nota span{font-size:12px;color:var(--t2)}
+
+.gm{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:12px}
+.gm-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.gm-hd b{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.gm-hd button{font-size:12.5px;font-weight:600;color:var(--gas-d);display:flex;align-items:center;gap:4px}
+.gm-top{display:flex;gap:14px;align-items:center;justify-content:space-between}
+.gm-tot{background:var(--gas-c);border-radius:var(--r);padding:14px 16px;flex:1;min-width:0}
+.gm-tot .lb{font-size:11.5px;color:var(--t2)}
+.gm-tot .vl{font-size:23px;font-weight:700;letter-spacing:-1px;margin-top:3px;line-height:1.1}
+.gm-tot .n{font-size:11.5px;color:var(--t2);margin-top:3px}
+.donut{flex-shrink:0}
+.leg-g{display:flex;flex-direction:column;gap:8px;margin-top:14px;
+  border-top:1px solid var(--border);padding-top:13px}
+.leg-g .li{display:flex;align-items:center;gap:9px;font-size:13px}
+.leg-g .li i{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.leg-g .li .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:var(--t2)}
+.leg-g .li .im{font-weight:600;font-variant-numeric:tabular-nums}
+.leg-g .li .pc{color:var(--t3);font-size:12px;width:36px;text-align:right}
+
+.gl{margin-top:16px}
+.gl h4{margin:0 0 8px;font-size:14px;font-weight:700;letter-spacing:-.2px}
+.gi{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--border)}
+.gi:first-of-type{border-top:none}
+.gi .ic{width:40px;height:40px;border-radius:14px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;font-size:18px}
+.gi .tx{flex:1;min-width:0}
+.gi .tx b{display:block;font-size:14px;font-weight:600;letter-spacing:-.2px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.gi .tx p{margin:1px 0 0;font-size:12px;color:var(--t3)}
+.gi .tx .qn{font-size:12px;font-weight:600;margin-top:2px}
+.gi .im{font-size:15px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums;
+  flex-shrink:0}
+.gi .im small{display:block;font-size:10.5px;font-weight:600;color:var(--cal-d);margin-top:1px}
+.solo-mio{display:inline-block;font-size:10px;font-weight:700;background:var(--surface2);
+  color:var(--t2);border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+.add-g{width:100%;margin-top:12px;border:1.5px dashed var(--gas-b,var(--border));
+  border-radius:var(--r-btn);padding:14px;display:flex;align-items:center;justify-content:center;
+  gap:8px;font-size:14px;font-weight:600;color:var(--gas-d);background:var(--gas-c)}
+
+/* ---------- SALUD ---------- */
+.dosis-c{background:var(--sal-c);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:14px}
+.dosis-c.toca{background:var(--cal-s)}
+.dosis-hd{display:flex;gap:13px;align-items:center}
+.dosis-hd .i{width:52px;height:52px;border-radius:18px;background:var(--surface);
+  color:var(--sal-d);flex-shrink:0}
+.dosis-c.toca .dosis-hd .i{color:var(--cal-d)}
+.dosis-tx{flex:1;min-width:0}
+.dosis-tx .kick{font-size:10.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;
+  color:var(--sal-d)}
+.dosis-c.toca .dosis-tx .kick{color:var(--cal-d)}
+.dosis-tx b{display:block;font-size:17px;font-weight:700;letter-spacing:-.4px;margin-top:3px}
+.dosis-tx p{margin:3px 0 0;font-size:12.5px;color:var(--t2);line-height:1.4}
+.dosis-btn{width:100%;margin-top:13px;padding:14px;border-radius:var(--r-btn);background:var(--sal);
+  color:#fff;font-size:15px;font-weight:600;text-align:center;display:flex;
+  align-items:center;justify-content:center;gap:8px}
+.dosis-c.toca .dosis-btn{background:var(--cal-d)}
+.dosis-mas{margin-top:9px;font-size:12.5px;color:var(--t2);text-align:center;font-weight:500}
+
+.cita-c{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:12px}
+.cita-hd{display:flex;gap:14px;align-items:flex-start}
+.cita-hd .i{width:74px;height:74px;border-radius:22px;background:var(--sal-s);color:var(--sal-d);
+  flex-shrink:0}
+.cita-tx{flex:1;min-width:0}
+.cita-tx .kick{font-size:10.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;
+  color:var(--sal-d)}
+.cita-tx h3{margin:4px 0 0;font-size:19px;font-weight:700;letter-spacing:-.5px}
+.cita-tx .fh{font-size:13.5px;color:var(--t2);margin-top:3px}
+.cita-meta{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:12.5px;
+  color:var(--t2);align-items:center}
+.cita-meta span{display:inline-flex;align-items:center;gap:5px}
+.badge{background:var(--sal-s);color:var(--sal-d);border-radius:999px;padding:6px 12px;
+  font-size:12px;font-weight:700;flex-shrink:0;white-space:nowrap}
+.badge.pron{background:var(--cal-s);color:var(--cal-d)}
+.cita-pie{width:100%;margin-top:13px;background:var(--sal-s);color:var(--sal-d);border-radius:13px;
+  padding:12px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;
+  align-items:center}
+
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.mini button{border-radius:var(--r);padding:12px 11px;box-shadow:var(--sh);text-align:left;
+  display:flex;flex-direction:column;min-height:104px}
+.mini .top{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.mini .top .i{width:26px;height:26px;flex-shrink:0}
+.mini .top b{font-size:12.5px;font-weight:700;letter-spacing:-.2px;line-height:1.2}
+.mini .vl{font-size:22px;font-weight:700;letter-spacing:-.8px;line-height:1}
+.mini .lb{font-size:11.5px;color:var(--t2);margin-top:1px;line-height:1.3}
+.mini .fl{margin-top:auto;align-self:flex-end;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+
+.hist{background:var(--surface);border-radius:var(--r-l);padding:16px 16px 8px;
+  box-shadow:var(--sh);margin-bottom:14px}
+.hist-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hist-hd b{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.hist-hd button{font-size:12.5px;font-weight:600;color:var(--sal-d);display:flex;
+  align-items:center;gap:4px}
+.hr-i{display:flex;gap:12px;padding:12px 0;align-items:flex-start;position:relative}
+.hr-i .ln{position:absolute;left:21px;top:56px;bottom:-12px;width:1.5px;background:var(--border)}
+.hr-i:last-child .ln{display:none}
+.hr-i .ic{width:44px;height:44px;border-radius:16px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;z-index:1}
+.hr-i .tx{flex:1;min-width:0}
+.hr-i .t1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hr-i .t1 b{font-size:14.5px;font-weight:700;letter-spacing:-.2px}
+.hr-i .chip-f{font-size:11px;font-weight:600;border-radius:999px;padding:3px 9px}
+.hr-i p{margin:3px 0 0;font-size:12.5px;color:var(--t2);line-height:1.4}
+.hr-i .aut{text-align:right;flex-shrink:0}
+.hr-i .aut b{display:block;font-size:12.5px;font-weight:700}
+.hr-i .aut span{display:block;font-size:11px;color:var(--t3);margin-top:1px}
+.hist-vacio{font-size:13px;color:var(--t3);padding:6px 0 14px}
+
+.cats{background:var(--surface);border-radius:var(--r-l);padding:16px 12px 14px;
+  box-shadow:var(--sh);margin-bottom:14px}
+.cats h3{margin:0 0 12px;padding:0 4px;font-size:16px;font-weight:700;letter-spacing:-.3px}
+.cats-g{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.cats-g button{display:flex;flex-direction:column;align-items:center;gap:6px}
+.cats-g .i{width:100%;aspect-ratio:1;border-radius:15px;background:var(--surface2);
+  color:var(--sal-d)}
+.cats-g button.on .i{background:var(--sal-s);box-shadow:inset 0 0 0 1.5px var(--sal)}
+.cats-g span{font-size:9.5px;font-weight:600;color:var(--t2);text-align:center;line-height:1.15}
+.cats-g button.on span{color:var(--sal-d)}
+
+.doc-b{background:var(--sal-c);border-radius:var(--r-l);padding:15px;box-shadow:var(--sh);
+  display:flex;gap:13px;align-items:center;margin-bottom:14px}
+.doc-b .i{width:52px;height:52px;border-radius:18px;background:var(--sal-s);color:var(--sal-d);
+  flex-shrink:0}
+.doc-b div{flex:1;min-width:0}
+.doc-b b{display:block;font-size:14.5px;font-weight:700;color:var(--sal-d);letter-spacing:-.2px;
+  line-height:1.3}
+.doc-b p{margin:3px 0 0;font-size:12.5px;color:var(--t2)}
+
+#s-salud,#s-calendario{padding-bottom:64px}
+.fab{position:fixed;right:16px;bottom:calc(84px + var(--safe-b));z-index:650;
+  background:var(--sal);color:#fff;border-radius:999px;padding:14px 20px;display:flex;
+  align-items:center;gap:8px;font-size:14.5px;font-weight:600;box-shadow:0 6px 20px rgba(36,121,133,.34)}
+.fab:active{transform:scale(.96)}
+@media(max-width:460px){ .fab{right:calc(50% - 220px + 16px)} }
+
 /* ---------- HOJA DE REGISTRO ---------- */
 .f-lb{font-size:11.5px;font-weight:700;color:var(--t3);letter-spacing:.3px;text-transform:uppercase;
   margin:16px 0 8px}
@@ -404,11 +787,12 @@ svg{display:block;flex-shrink:0}
 /* ---------- NAVEGACIÓN ---------- */
 .nav{position:fixed;bottom:0;left:0;right:0;max-width:440px;margin:0 auto;
   background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
-  border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);
-  padding:9px 6px calc(9px + var(--safe-b));z-index:700}
+  border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(6,1fr);
+  padding:9px 3px calc(9px + var(--safe-b));z-index:700}
 .nav button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:2px 0;
   color:var(--t3)}
-.nav button span{font-size:10.5px;font-weight:600;letter-spacing:-.1px}
+.nav button span{font-size:9.5px;font-weight:600;letter-spacing:-.2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .nav button.on{color:var(--act)}
 .nav button.on span{font-weight:700}
 .nav button .bar{position:absolute;bottom:-9px;width:22px;height:3px;border-radius:99px;
@@ -481,10 +865,21 @@ svg{display:block;flex-shrink:0}
   </section>
 
   <section id="s-calendario" hidden>
-    <div class="tt-s"><h2>Calendario</h2><p>Custodia, eventos y cambios.</p></div>
-    <div class="pend"><span class="i" id="pd-cal"></span><h3>Siguiente entrega</h3>
-      <p>Vista mensual y semanal, alta de eventos con repetición y cambios de custodia.</p></div>
+    <div class="tt-s"><h2>Calendario</h2><p id="calSub">Custodia y eventos.</p></div>
+    <div class="cal-top">
+      <button class="fl" id="calPrev"></button>
+      <div class="rango" id="calRango"></div>
+      <button class="fl" id="calNext"></button>
+      <button class="hoyb" id="calHoy">Hoy</button>
+    </div>
+    <div class="seg" id="calSeg">
+      <button data-vista="mes" class="on">Mes</button>
+      <button data-vista="agenda">Agenda</button>
+    </div>
+    <div id="calCuerpo"></div>
   </section>
+  <button class="fab" id="fabCal" hidden style="background:var(--cal-d);
+    box-shadow:0 6px 20px rgba(185,120,18,.34)"></button>
 
   <section id="s-alimentacion" hidden>
     <div class="tt-s"><h2>Alimentación</h2><p id="aliSub">Variedad y hábitos, semana a semana.</p></div>
@@ -497,16 +892,24 @@ svg{display:block;flex-shrink:0}
   </section>
 
   <section id="s-gastos" hidden>
-    <div class="tt-s"><h2>Gastos</h2><p>Quién ha pagado y cómo va el saldo.</p></div>
-    <div class="pend"><span class="i" id="pd-gas"></span><h3>Pendiente</h3>
-      <p>Alta de gastos, reparto entre participantes, saldo y liquidaciones.</p></div>
+    <div class="tt-s"><h2>Gastos</h2><p id="gasSub">La cuenta común y en qué se va el dinero.</p></div>
+    <div class="mes-nav">
+      <button class="fl" id="gasPrev"></button>
+      <div class="rango" id="gasRango"></div>
+      <button class="fl" id="gasNext"></button>
+    </div>
+    <div id="gasCuerpo"></div>
+  </section>
+
+  <section id="s-perfil" hidden>
+    <div id="pfCuerpo"></div>
   </section>
 
   <section id="s-salud" hidden>
-    <div class="tt-s"><h2>Salud</h2><p>Qué ha pasado y qué viene después.</p></div>
-    <div class="pend"><span class="i" id="pd-sal"></span><h3>Pendiente</h3>
-      <p>Citas, medicación con registro de dosis, episodios, vacunas y crecimiento.</p></div>
+    <div class="tt-s"><h2>Salud</h2><p id="salSub">Qué ha pasado y qué viene después.</p></div>
+    <div id="salCuerpo"></div>
   </section>
+  <button class="fab" id="fabSalud" hidden></button>
 </div>
 
 <div class="velo" id="velo"></div>
@@ -520,7 +923,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.3.1';
+var APP_VERSION = '0.7.0';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -579,7 +982,26 @@ var IC = {
   t_otro:'<circle cx="12" cy="12" r="8.2"/><path d="M12 8.5v4M12 15.6v.1"/>',
   lapiz:'<path d="M15.5 4.5 19.5 8.5 9 19H5v-4z"/><path d="m13.5 6.5 4 4"/>',
   lupa:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
-  cerrar:'<path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5"/>'
+  cerrar:'<path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5"/>',
+  pediatra:'<path d="M6 3.5v5a4.5 4.5 0 0 0 9 0v-5"/><path d="M4.2 3.5h3.6M13.2 3.5h3.6"/><path d="M10.5 13v2.5a4 4 0 0 0 8 0V14"/><circle cx="18.5" cy="12.2" r="1.9"/>',
+  diente:'<path d="M6.4 4.2c1.6-1 3-.6 4.1-.2.9.3 2.1.3 3 0 1.1-.4 2.5-.8 4.1.2 2 1.2 2.2 4 1.3 7.3-.7 2.6-1.2 5-1.7 6.7-.4 1.4-.9 2.3-1.7 2.3-1 0-1.3-1.2-1.6-3-.2-1.4-.5-2.6-1.8-2.6s-1.6 1.2-1.8 2.6c-.3 1.8-.6 3-1.6 3-.8 0-1.3-.9-1.7-2.3-.5-1.7-1-4.1-1.7-6.7-.9-3.3-.7-6.1 1.1-7.3Z"/>',
+  pastilla:'<rect x="2.8" y="9.2" width="18.4" height="9" rx="4.5" transform="rotate(-40 12 13.7)"/><path d="m9.4 7.6 5.2 5.2"/>',
+  termometro:'<path d="M10 13.6V5.4a2 2 0 0 1 4 0v8.2a4.2 4.2 0 1 1-4 0Z"/><circle cx="12" cy="17.4" r="1.7" fill="currentColor" stroke="none"/>',
+  tirita:'<rect x="2.6" y="8.6" width="18.8" height="6.8" rx="3.4" transform="rotate(-38 12 12)"/><path d="m9.3 8 6.7 6.7"/><path d="M10.6 11.2v.1M13.2 12.7v.1M12 10v.1M11.8 13.9v.1"/>',
+  vacuna:'<path d="m14.2 3.6 6.2 6.2M18 5.8 20.6 3.2M16.6 8.4 8.9 16.1l-3.4.9.9-3.4 7.7-7.7z"/><path d="m11.4 8.6 1.8 1.8M9.2 10.8l1.8 1.8"/>',
+  carpeta:'<path d="M3.5 6.6A1.6 1.6 0 0 1 5.1 5h3.6l1.8 2.2h8.4A1.6 1.6 0 0 1 20.5 8.8v8.6A1.6 1.6 0 0 1 18.9 19H5.1a1.6 1.6 0 0 1-1.6-1.6z"/>',
+  escudo:'<path d="M12 3.3 19 6v5.4c0 4-3 7.2-7 9.3-4-2.1-7-5.3-7-9.3V6z"/><path d="m9 11.8 2.2 2.2 4-4.2"/>',
+  reloj:'<circle cx="12" cy="12" r="8.2"/><path d="M12 7.4V12l3 1.8"/>',
+  puntos:'<circle cx="6" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
+  lugar:'<path d="M12 20.5s6.2-5.4 6.2-9.8a6.2 6.2 0 1 0-12.4 0c0 4.4 6.2 9.8 6.2 9.8Z"/><circle cx="12" cy="10.6" r="2.3"/>',
+  regla:'<rect x="2.8" y="8.5" width="18.4" height="7" rx="2"/><path d="M7 8.5v3M11 8.5v4.4M15 8.5v3M19 8.5v4.4"/>',
+  sombrilla:'<path d="M12 3.2c4.6 0 8.4 3.6 8.8 8.2H3.2C3.6 6.8 7.4 3.2 12 3.2Z"/><path d="M12 11.4v7.2a2.2 2.2 0 0 0 4.4 0"/>',
+  check:'<path d="m4.5 12.5 5 5 10-11"/>',
+  montana:'<path d="m2.5 19.5 6.2-11 3.6 6.2M9.4 19.5l5.4-9.4 6.7 9.4z"/>',
+  escuela:'<path d="M3.5 9.8 12 5.2l8.5 4.6L12 14.4z"/><path d="M6.8 11.6v4.8c0 1.5 2.3 2.8 5.2 2.8s5.2-1.3 5.2-2.8v-4.8M20.5 9.8v5"/>',
+  tarta:'<path d="M4.5 13.5h15v6a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5z"/><path d="M6.5 13.5V10a1.5 1.5 0 0 1 1.5-1.5h8a1.5 1.5 0 0 1 1.5 1.5v3.5M12 8.5V6"/>',
+  perfil:'<circle cx="12" cy="8.4" r="4.1"/><path d="M4.6 20.4a7.4 7.4 0 0 1 14.8 0"/>',
+  ajustes:'<circle cx="12" cy="12" r="3.1"/><path d="M19.4 14.5a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a1.9 1.9 0 1 1-3.8 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0-1.1-2.7h-.3a1.9 1.9 0 1 1 0-3.8h.2a1.6 1.6 0 0 0 1.1-2.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5v-.3a1.9 1.9 0 1 1 3.8 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.3a1.9 1.9 0 1 1 0 3.8h-.2a1.6 1.6 0 0 0-1.5 1Z"/>'
 };
 function svg(nombre, px, extra){
   var p = IC[nombre] || IC.t_otro;
@@ -587,9 +1009,19 @@ function svg(nombre, px, extra){
     'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"'+
     (extra||'')+'>'+p+'</svg>';
 }
+var ICO_CAT = {
+  vacaciones:'sombrilla', tareas:'check', excursiones:'montana', dentista:'diente',
+  medico:'t_salud', sin_clases:'escuela', actividad_cole:'t_actividad',
+  cumples:'tarta', viajes:'t_viaje', otros:'t_otro',
+  /* compatibilidad con los tipos que había antes */
+  actividad:'t_actividad', salud:'t_salud', estudio:'t_estudio', deporte:'t_deporte',
+  cumple:'tarta', viaje:'t_viaje', otro:'t_otro'
+};
 function icoEvento(tipoId){
-  var k = 't_' + String(tipoId||'otro');
-  return IC[k] ? k : 't_otro';
+  var k = ICO_CAT[String(tipoId||'otros')];
+  if(k && IC[k]) return k;
+  var alt = 't_' + String(tipoId||'otro');
+  return IC[alt] ? alt : 't_otro';
 }
 
 /* ---------- fechas: siempre strings YYYY-MM-DD ---------- */
@@ -625,9 +1057,9 @@ function eur(n){
 
 /* ---------- blindaje de la carga ---------- */
 var TABLAS = ['usuarios','patron','custodia','eventos','eventos_excepciones','tareas',
-  'tipos_evento','comentarios','gastos','categorias_gasto','liquidaciones','alimentos',
+  'tipos_evento','comentarios','gastos','categorias_gasto','liquidaciones','cuenta','alimentos',
   'comidas','objetivos_semana','citas','medicacion','dosis','episodios','vacunas',
-  'crecimiento','documentos','actividad','visitas'];
+  'crecimiento','documentos','mensajes','actividad','visitas'];
 function normalizar(d){
   d = d || {};
   TABLAS.forEach(function(k){ if(!Array.isArray(d[k])) d[k]=[]; });
@@ -777,26 +1209,6 @@ function cuando(f){
 /* ============================================================
    GASTOS — saldo derivado
    ============================================================ */
-function saldo(){
-  var yo = state.user, s = 0, pendientes = 0;
-  state.data.gastos.forEach(function(g){
-    if(g.liquidacion_id) return;
-    var imp = num(g.importe);
-    if(imp<=0) return;
-    var part = String(g.participantes||'papa,mama').split(',').filter(String);
-    if(!part.length) return;
-    var cuota = imp / part.length, pago = String(g.pagado_por||'').trim();
-    pendientes++;
-    if(pago === yo) s += imp - (part.indexOf(yo)>=0 ? cuota : 0);
-    else if(part.indexOf(yo)>=0) s -= cuota;
-  });
-  state.data.liquidaciones.forEach(function(l){
-    var imp = num(l.importe);
-    if(String(l.de_usuario)===yo) s += imp;
-    else if(String(l.a_usuario)===yo) s -= imp;
-  });
-  return { saldo: Math.round(s*100)/100, pendientes: pendientes };
-}
 function ultimoGasto(){
   return state.data.gastos.slice().sort(function(a,b){
     return String(b.timestamp||b.fecha).localeCompare(String(a.timestamp||a.fecha));
@@ -915,6 +1327,10 @@ function recargar(){
     state._primeraVez = null;
     pintarTodo();
     if(state.seccion === 'alimentacion') pintarAlimentacion();
+    if(state.seccion === 'salud') pintarSalud();
+    if(state.seccion === 'gastos') pintarGastos();
+    if(state.seccion === 'calendario') pintarCalendario();
+    if(state.seccion === 'perfil') pintarPerfil();
   });
 }
 
@@ -932,9 +1348,10 @@ function toast(msg, ko){
 var SECCIONES = [
   { id:'inicio',       nom:'Inicio',       ico:'inicio',       c:'ini' },
   { id:'calendario',   nom:'Calendario',   ico:'calendario',   c:'cal' },
-  { id:'alimentacion', nom:'Alimentación', ico:'alimentacion', c:'ali' },
+  { id:'alimentacion', nom:'Comida',       ico:'alimentacion', c:'ali' },
   { id:'gastos',       nom:'Gastos',       ico:'gastos',       c:'gas' },
-  { id:'salud',        nom:'Salud',        ico:'salud',        c:'sal' }
+  { id:'salud',        nom:'Salud',        ico:'salud',        c:'sal' },
+  { id:'perfil',       nom:'',             ico:'perfil',       c:'yo'  }
 ];
 
 function aplicarPerfil(){
@@ -1102,22 +1519,22 @@ function pintarSecciones(){
     rs.diasConRegistro ? 'Ver resumen semanal' : 'Registrar comida','alimentacion'));
 
   /* --- Gastos --- */
-  var s = saldo(), ug = ultimoGasto(), gas;
-  if(!state.data.gastos.length){
-    gas = '<div class="vac"><b>Sin gastos</b>Cuando apuntéis alguno verás aquí el saldo.</div>';
+  var ug = ultimoGasto(), gas;
+  if(!state.data.gastos.length && !state.data.cuenta.length){
+    gas = '<div class="vac"><b>Sin gastos</b>Cuando apuntéis alguno verás aquí la cuenta.</div>';
   } else {
-    var deudor, txt;
-    if(Math.abs(s.saldo) < 0.01){ deudor=null; txt='Estáis en paz'; }
-    else if(s.saldo > 0){ deudor = otro(state.user); txt = nombreDe(deudor)+' te debe'; }
-    else { deudor = state.user; txt = 'Le debes a ' + nombreDe(otro(state.user)).toLowerCase(); }
-    gas = '<div class="sec-l">Saldo pendiente</div>' +
-      '<div class="kpi"><b style="color:'+(deudor?'var(--gas-d)':'var(--t1)')+'">' +
-        eur(Math.abs(s.saldo))+'</b></div>' +
-      '<div class="chip-d">' +
-        (deudor ? '<span class="pt" style="background:'+colorDe(deudor)+'"></span>' : '') +
-        '<span style="color:var(--t2)">'+esc(txt)+'</span></div>' +
-      (ug ? '<div class="sec-s">Último: '+esc(ug.descripcion||ug.categoria)+' · ' +
-            eur(num(ug.importe))+'</div>' : '');
+    var sc = saldoComun(), pr = pendientesReembolso();
+    gas = '<div class="sec-l">Cuenta común</div>' +
+      '<div class="kpi"><b style="color:'+(sc<0?'var(--err)':'var(--gas-d)')+'">' +
+        eur(sc)+'</b></div>';
+    if(pr.n){
+      var aQuien = pr.papa >= pr.mama ? 'papa' : 'mama';
+      gas += '<div class="chip-d"><span class="pt" style="background:'+colorDe(aQuien)+'"></span>' +
+        '<span style="color:var(--t2)">'+eur(pr.papa+pr.mama)+' por devolver</span></div>';
+    } else if(ug){
+      gas += '<div class="sec-s">Último: '+esc(ug.descripcion||ug.categoria)+' · ' +
+             eur(num(ug.importe))+'</div>';
+    }
   }
   out.push(tarjeta('gas','gastos','Gastos', gas, 'Ver cuentas','gastos'));
 
@@ -1222,9 +1639,13 @@ function pintarNovedades(){
 function pintarNav(){
   $('#nav').innerHTML = SECCIONES.map(function(s){
     var on = s.id===state.seccion;
-    var col = s.c==='ini' ? 'var(--yo)' : 'var(--'+s.c+')';
+    var col = (s.c==='ini' || s.c==='yo') ? 'var(--yo)' : 'var(--'+s.c+')';
+    var nom = s.id==='perfil' ? (usuario(state.user).nombre || 'Perfil') : s.nom;
+    var badge = (s.id==='perfil' && mensajesSinLeer().length)
+      ? '<i class="bar" style="opacity:1;background:var(--info);width:6px;height:6px;' +
+        'border-radius:50%;bottom:auto;top:-2px;right:14px;left:auto;position:absolute"></i>' : '';
     return '<button data-s="'+s.id+'" class="'+(on?'on':'')+'" style="--act:'+col+'">' +
-      svg(s.ico, 23) + '<span>'+s.nom+'</span><i class="bar"></i></button>';
+      svg(s.ico, 23) + '<span>'+esc(nom)+'</span><i class="bar"></i>'+badge+'</button>';
   }).join('');
   $$('#pd-cal,#pd-ali,#pd-gas,#pd-sal').forEach(function(el){
     var c = el.id.split('-')[1];
@@ -1810,13 +2231,1487 @@ function borrarComida(){
 }
 
 /* ============================================================
+   PERFIL Y MENSAJES
+   El tablón NO es un chat: un mensaje enviado no se edita ni se
+   borra, y guarda quién lo leyó y cuándo. Eso es lo único que lo
+   hace mejor que WhatsApp para lo que va a servir.
+   ============================================================ */
+
+function mensajesOrdenados(){
+  return state.data.mensajes.slice().sort(function(a,b){
+    return String(b.timestamp||'').localeCompare(String(a.timestamp||''));
+  });
+}
+/** Mensajes del otro que aún no has leído. */
+function mensajesSinLeer(){
+  return state.data.mensajes.filter(function(m){
+    return String(m.autor) !== state.user && !String(m.leido_por||'').trim();
+  });
+}
+function cuandoTs(ts){
+  var f = String(ts||'').slice(0,10), hh = String(ts||'').slice(11,16);
+  if(!f) return '';
+  var etiqueta = f===state.data.hoy ? 'Hoy'
+    : f===addDays(state.data.hoy,-1) ? 'Ayer' : fechaCorta(f);
+  return etiqueta + (hh ? ' · ' + hh : '');
+}
+
+/* ---------- números del mes para el perfil ---------- */
+function diasConmigoEnMes(username, ym){
+  var y = +ym.split('-')[0], m = +ym.split('-')[1];
+  var dias = new Date(y, m, 0).getDate(), n = 0;
+  for(var d = 1; d <= dias; d++){
+    if(custodiaDe(fk(y,m,d)).quien === username) n++;
+  }
+  return { n: n, total: dias };
+}
+function eventosDelMes(ym){
+  var y = +ym.split('-')[0], m = +ym.split('-')[1];
+  var dias = new Date(y, m, 0).getDate(), pasados = 0, proximos = 0;
+  for(var d = 1; d <= dias; d++){
+    var f = fk(y,m,d), n = agendaDe(f).length;
+    if(f < state.data.hoy) pasados += n;
+    else proximos += n;
+  }
+  return { pasados: pasados, proximos: proximos };
+}
+function eventosEstaSemana(){
+  var lun = lunesDe(state.data.hoy), n = 0;
+  for(var i = 0; i < 7; i++){
+    var f = addDays(lun,i);
+    if(f >= state.data.hoy) n += agendaDe(f).length;
+  }
+  return n;
+}
+/** ICH medio de las semanas del mes que tengan datos suficientes. */
+function ichMedioMes(ym){
+  var y = +ym.split('-')[0], m = +ym.split('-')[1];
+  var f = lunesDe(fk(y,m,1)), suma = 0, n = 0;
+  for(var i = 0; i < 6; i++){
+    if(mesDe(addDays(f,3)) === ym){
+      var v = ich(f);
+      if(v){ suma += v.total; n++; }
+    }
+    f = addDays(f, 7);
+  }
+  return n ? { valor: Math.round(suma/n), semanas: n } : null;
+}
+function nuevosDelMes(ym){
+  var pv = primeraVezDe(), n = 0;
+  Object.keys(pv).forEach(function(id){ if(mesDe(pv[id]) === ym) n++; });
+  return n;
+}
+function registrosSaludMes(ym){
+  return historialSalud('').filter(function(r){ return mesDe(r.fecha) === ym; }).length;
+}
+
+var ICO_ACT = {
+  calendario:{ico:'calendario', c:'cal'}, gastos:{ico:'gastos', c:'gas'},
+  alimentacion:{ico:'alimentacion', c:'ali'}, salud:{ico:'salud', c:'sal'},
+  mensajes:{ico:'t_estudio', c:'ini'}
+};
+
+function pintarPerfil(){
+  var u = usuario(state.user), k = claveColor(state.user);
+  var ym = mesDe(state.data.hoy);
+  var mesNom = MESES[+ym.split('-')[1]-1];
+  var corto = state.data.config.nombre_hija || 'Georgina';
+
+  /* ---- cabecera ---- */
+  var out = '<div class="pf-hd"><div class="pf-av">' + avatarHTML(state.user, 96) +
+    '<span class="ed">'+svg('lapiz',15,' style="color:var(--'+k+')"')+'</span></div>' +
+    '<div class="pf-tx"><h2>'+esc(u.nombre)+'</h2>' +
+    '<span class="pf-chip" style="background:var(--'+k+'-s);color:var(--'+k+'-d)">' +
+      '<span class="pt" style="background:var(--'+k+')"></span>Perfil activo</span>' +
+    '<p>Estás viendo la información desde el punto de vista de ' +
+      esc(u.nombre.toLowerCase())+'.</p></div>' +
+    '<button class="pf-cog" id="pfAjustes">'+svg('ajustes',20)+'</button></div>';
+
+  /* ---- tres cifras ---- */
+  var dc = diasConmigoEnMes(state.user, ym);
+  var cuota = cfgNum('cuota_mensual', 0);
+  var puesto = aportadoEnMes(state.user, ym);
+  var alDia = cuota <= 0 || puesto >= cuota;
+  var pend = pendientesReembolso();
+  var mio = pend[state.user] || 0;
+
+  out += '<div class="pf-kpis">' +
+    '<div class="pf-k"><span class="i" style="background:var(--cal-s);color:var(--cal-d)">' +
+      svg('calendario',18)+'</span>' +
+      '<div class="lb">Días este mes con '+esc(corto)+'</div>' +
+      '<div class="vl" style="color:var(--'+k+'-d)">'+dc.n+' días</div>' +
+      '<div class="sb">de '+dc.total+'</div></div>' +
+    '<div class="pf-k"><span class="i" style="background:var(--gas-s);color:var(--gas-d)">' +
+      svg('gastos',18)+'</span>' +
+      '<div class="lb">Aportación este mes</div>' +
+      '<div class="vl" style="color:var(--'+k+'-d)">'+eur(puesto)+'</div>' +
+      (cuota > 0
+        ? '<span class="ok'+(alDia?'':' ko')+'">'+svg(alDia?'check':'reloj',12) +
+          (alDia ? 'Al día' : 'Faltan '+eur(cuota-puesto))+'</span>'
+        : '<div class="sb">Sin cuota fijada</div>') + '</div>' +
+    '<div class="pf-k"><span class="i" style="background:var(--ali-s);color:var(--ali-d)">' +
+      svg('escudo',18)+'</span>' +
+      '<div class="lb">'+(mio > 0 ? 'Te deben' : 'Pendiente de devolverte')+'</div>' +
+      '<div class="vl" style="color:'+(mio>0?'var(--ali-d)':'var(--t1)')+'">'+eur(mio)+'</div>' +
+      '<div class="sb">'+(mio > 0 ? 'de la cuenta común' : 'nada pendiente')+'</div></div></div>';
+
+  out += '<button class="pf-mov" id="pfMovs" style="color:var(--'+k+'-d)">' +
+    'Ver movimientos de la cuenta común '+svg('chevron',15)+'</button>';
+
+  /* ---- resumen del mes ---- */
+  var ev = eventosDelMes(ym), im = ichMedioMes(ym);
+  var gs = gastosDeMes(ym);
+  var totalG = gs.reduce(function(a,g){ return a + num(g.importe); }, 0);
+  var porCat = {};
+  gs.forEach(function(g){
+    var kk = String(g.categoria||'otro');
+    porCat[kk] = (porCat[kk]||0) + num(g.importe);
+  });
+  var top = Object.keys(porCat).sort(function(a,b){ return porCat[b]-porCat[a]; })[0];
+  var cita = proximaCita();
+
+  out += '<div class="pf-sec-h"><b>Resumen de '+mesNom+'</b></div><div class="pf-res">';
+
+  out += tarjetaPerfil('cal','calendario','Calendario','calendario',
+    duo('Próximos eventos', eventosEstaSemana(), 'esta semana',
+        'Eventos del mes', ev.pasados, 'ya pasados'), 'Ir al calendario');
+
+  out += tarjetaPerfil('ali','alimentacion','Alimentación','alimentacion',
+    im ? duo('ICH medio', im.valor, im.semanas+(im.semanas===1?' semana':' semanas'),
+             'Alimentos nuevos', nuevosDelMes(ym), 'este mes')
+       : '<div class="vac"><b>Sin datos aún</b>Hacen falta semanas con al menos ' +
+         cfgNum('dias_min_ich',3)+' días registrados.</div>',
+    'Ver resumen de alimentación');
+
+  out += tarjetaPerfil('gas','gastos','Gastos','gastos',
+    gs.length
+      ? duo('Total gastado', eur(totalG), gs.length+(gs.length===1?' gasto':' gastos'),
+            'Categoría principal', top ? categoriaGasto(top).nombre : '—',
+            top ? Math.round(porCat[top]/totalG*100)+'% del total' : '')
+      : '<div class="vac"><b>Sin gastos</b>Nada apuntado este mes.</div>',
+    'Ver resumen de gastos');
+
+  out += tarjetaPerfil('sal','salud','Salud','salud',
+    duo('Próxima cita', cita ? (cita.motivo || cita.tipo || 'Cita') : '—',
+        cita ? fechaCorta(fechaKey(cita.fecha))+(cita.hora?' · '+esc(cita.hora):'') : 'nada pendiente',
+        'Registros del mes', registrosSaludMes(ym), 'entradas'),
+    'Ver historial de salud');
+
+  out += '</div>';
+
+  /* ---- mensajes ---- */
+  out += pintarMensajes();
+
+  /* ---- mi actividad ---- */
+  var mias = state.data.actividad.filter(function(a){
+    return String(a.username) === state.user;
+  }).sort(function(a,b){
+    return String(b.timestamp||'').localeCompare(String(a.timestamp||''));
+  }).slice(0, state.pfTodaAct ? 40 : 5);
+
+  out += '<div class="act-l"><div class="pf-sec-h" style="margin-bottom:4px">' +
+    '<b>Mi actividad reciente</b>' +
+    (state.data.actividad.length > 5
+      ? '<button id="pfMasAct" style="font-size:12.5px;font-weight:600;color:var(--'+k+'-d)">' +
+        (state.pfTodaAct?'Ver menos':'Ver toda')+'</button>' : '') + '</div>';
+  if(!mias.length){
+    out += '<div class="msg-vacio">Todavía no has registrado nada.</div>';
+  } else {
+    out += mias.map(function(a){
+      var meta = ICO_ACT[String(a.seccion)] || { ico:'t_otro', c:'ini' };
+      var txt = ACCIONES_YO[String(a.accion)] || 'Has hecho algo';
+      var col = meta.c==='ini' ? 'var(--t2)' : 'var(--'+meta.c+'-d)';
+      var bg  = meta.c==='ini' ? 'var(--surface2)' : 'var(--'+meta.c+'-s)';
+      return '<div class="act-i"><span class="ic" style="background:'+bg+';color:'+col+'">' +
+        svg(meta.ico,17)+'</span>' +
+        '<span class="tx">'+esc(txt)+(a.detalle?': <b>'+esc(a.detalle)+'</b>':'')+'</span>' +
+        '<span class="fh">'+esc(cuandoTs(a.timestamp))+'</span></div>';
+    }).join('');
+  }
+  out += '</div>';
+
+  $('#pfCuerpo').innerHTML = out;
+}
+
+function duo(l1, v1, s1, l2, v2, s2){
+  return '<div class="duo"><div><div class="lb">'+l1+'</div>' +
+    '<div class="vl">'+esc(String(v1))+'</div><div class="sb">'+esc(s1)+'</div></div>' +
+    '<div><div class="lb">'+l2+'</div>' +
+    '<div class="vl">'+esc(String(v2))+'</div><div class="sb">'+esc(s2)+'</div></div></div>';
+}
+function tarjetaPerfil(c, ico, titulo, ir, cuerpo, pie){
+  return '<button class="pf-r" data-ir="'+ir+'" style="background:var(--'+c+'-c)">' +
+    '<div class="top"><span class="i" style="background:var(--'+c+'-s);color:var(--'+c+'-d)">' +
+      svg(ico,18)+'</span><b style="color:var(--'+c+'-d)">'+titulo+'</b></div>' +
+    cuerpo +
+    '<div class="pie"><span style="background:var(--'+c+'-s);color:var(--'+c+'-d)">' +
+      pie+' '+svg('chevron',13)+'</span></div></button>';
+}
+
+var ACCIONES_YO = {
+  crea_evento:'Has añadido un evento', edita_evento:'Has editado un evento',
+  borra_evento:'Has borrado un evento', cambia_custodia:'Has cambiado un día de custodia',
+  crea_gasto:'Has añadido un gasto', edita_gasto:'Has editado un gasto',
+  borra_gasto:'Has borrado un gasto', crea_movimiento:'Has movido dinero de la cuenta',
+  registra_comida:'Has registrado una comida', edita_comida:'Has editado una comida',
+  crea_alimento:'Has añadido un alimento', cambia_estado:'Has actualizado un alimento',
+  crea_cita:'Has añadido una cita', edita_cita:'Has editado una cita',
+  da_dosis:'Has dado una dosis', crea_episodio:'Has añadido un registro de salud',
+  actualiza_episodio:'Has actualizado un episodio', crea_vacuna:'Has apuntado una vacuna',
+  sube_documento:'Has subido un documento', mide:'Has apuntado peso y talla',
+  envia_mensaje:'Has enviado un mensaje', comenta:'Has comentado'
+};
+
+function pintarMensajes(){
+  var ms = mensajesOrdenados();
+  var sinLeer = mensajesSinLeer().length;
+  var k = claveColor(state.user);
+
+  var h = '<div class="msgs"><div class="pf-sec-h"><b>Mensajes</b>' +
+    (ms.length > 3
+      ? '<button id="msgTodos" style="font-size:12.5px;font-weight:600;color:var(--'+k+'-d)">' +
+        (state.msgTodos?'Ver menos':'Ver todos')+'</button>' : '') + '</div>';
+
+  if(!ms.length){
+    h += '<div class="msg-vacio">Aún no hay mensajes.</div>';
+  } else {
+    h += ms.slice(0, state.msgTodos ? 40 : 2).map(function(m){
+      var mio = String(m.autor) === state.user;
+      var mk = claveColor(m.autor);
+      var nuevo = !mio && !String(m.leido_por||'').trim();
+      var acuse = mio
+        ? (String(m.leido_por||'').trim()
+            ? '<span class="acuse ok">'+svg('check',12)+'Leído por ' +
+              esc(nombreDe(m.leido_por).toLowerCase()) +
+              (m.leido_ts ? ' · '+esc(cuandoTs(m.leido_ts)) : '')+'</span>'
+            : '<span class="acuse">'+svg('reloj',12)+'Sin leer</span>')
+        : '';
+      return '<button class="msg-i" data-msg="'+esc(m.id)+'">' +
+        avatarHTML(m.autor, 38) +
+        '<span class="tx"><span class="qn">' +
+          '<b style="color:var(--'+mk+'-d)">'+esc(nombreDe(m.autor))+'</b>' +
+          (nuevo ? '<span class="nuevo"></span>' : '') +
+          '<span>'+esc(cuandoTs(m.timestamp))+'</span></span>' +
+        '<p>'+esc(m.texto)+'</p>'+acuse+'</span>' +
+        (nuevo ? '<span class="msg-badge">1</span>' : '') + '</button>';
+    }).join('');
+  }
+
+  h += '<button class="msg-nuevo" id="msgNuevo">'+svg('lapiz',16)+' Nuevo mensaje</button>' +
+    '<div class="msg-aviso">Lo que se manda aquí queda: no se edita ni se borra, ' +
+    'y se ve quién lo leyó y cuándo. Para hablar rápido, WhatsApp.</div></div>';
+  return h;
+}
+
+function hojaAjustes(){
+  abrirHoja('<h3>Ajustes</h3>' +
+    '<button class="opt" id="ajPerfil">' + avatarHTML(state.user, 38) +
+      '<div style="flex:1"><b style="display:block">Cambiar de perfil</b>' +
+      '<span style="font-size:12px;color:var(--t2)">Ahora eres ' +
+      esc(nombreDe(state.user).toLowerCase())+'</span></div></button>' +
+    '<div class="msg-aviso">Lo demás se ajusta en el Sheet: la cuota mensual, los objetivos ' +
+    'de alimentación, los colores y las categorías. Cambiar una fila cambia la app, ' +
+    'sin tocar código.</div>' +
+    '<button class="btn sec" id="msgCerrar">Cerrar</button>');
+}
+
+function hojaMensaje(){
+  abrirHoja('<h3>Nuevo mensaje</h3>' +
+    '<div class="f-lb">Para ' + esc(nombreDe(otro(state.user)).toLowerCase()) + '</div>' +
+    '<textarea class="inp" id="msgTexto" rows="5" style="resize:none;line-height:1.5" ' +
+    'placeholder="He añadido el informe del dentista. Todo correcto, revisión en 6 meses."></textarea>' +
+    '<div class="msg-aviso">Una vez enviado no se puede editar ni borrar. Si hay que ' +
+    'corregir algo, se manda otro mensaje: así el registro no se puede reescribir.</div>' +
+    '<button class="btn" style="background:var(--'+claveColor(state.user)+')" id="msgEnviar">' +
+    'Enviar</button>');
+}
+
+function enviarMensaje(){
+  var t = $('#msgTexto');
+  var texto = t ? String(t.value||'').trim() : '';
+  if(!texto){ toast('El mensaje está vacío', true); return; }
+  var btn = $('#msgEnviar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Enviando…'; }
+  llamarPost({ action:'saveMensaje', payload:{ texto:texto, autor:state.user } })
+    .then(function(){ cerrarHoja(); toast('Mensaje enviado'); return recargar(); })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Enviar'; }
+    });
+}
+
+/** Abrir un mensaje del otro lo marca leído. El propio no se marca nunca. */
+function abrirMensaje(id){
+  var m = state.data.mensajes.filter(function(x){ return String(x.id)===String(id); })[0];
+  if(!m) return;
+  var mio = String(m.autor) === state.user;
+  var leido = String(m.leido_por||'').trim();
+
+  abrirHoja('<h3>'+esc(nombreDe(m.autor))+'</h3>' +
+    '<div style="font-size:12px;color:var(--t3);margin-top:-8px">' +
+      esc(cuandoTs(m.timestamp))+'</div>' +
+    '<p style="font-size:15px;line-height:1.55;margin:16px 0 0;white-space:pre-line">' +
+      esc(m.texto)+'</p>' +
+    '<div class="msg-aviso" style="margin-top:18px">' +
+      (mio
+        ? (leido ? 'Leído por '+esc(nombreDe(leido).toLowerCase()) +
+                   (m.leido_ts ? ' el '+esc(cuandoTs(m.leido_ts)) : '') + '.'
+                 : 'Todavía sin leer.')
+        : 'Marcado como leído al abrirlo.') + '</div>' +
+    '<button class="btn sec" id="msgCerrar">Cerrar</button>');
+
+  if(!mio && !leido){
+    llamarPost({ action:'marcarLeido', id:id, username:state.user })
+      .then(function(){ return recargar(); }).catch(function(){});
+  }
+}
+
+/* ============================================================
+   CALENDARIO
+   Mezcla eventos y citas médicas: §35 dice que las citas aparecen
+   también aquí, y apuntarlas dos veces sería tener dos fuentes de
+   verdad para el mismo día.
+   ============================================================ */
+
+/** Una cita de Salud vista como evento del calendario. */
+function citaComoEvento(c){
+  var tipo = String(c.tipo||'') === 'dentista' ? 'dentista' : 'medico';
+  return { ev: { id:'cita:'+c.id, titulo:String(c.motivo || c.tipo || 'Cita médica'),
+                 tipo:tipo, lugar:String(c.centro||''), responsable:String(c.acompana||''),
+                 notas:String(c.notas||''), accion:'', _cita:true },
+           fecha: fechaKey(c.fecha), hora:String(c.hora||''), movido:false };
+}
+/** Todo lo que ocurre un día: eventos propios + citas médicas. */
+function agendaDe(f){
+  var out = eventosDe(f);
+  state.data.citas.forEach(function(c){
+    if(fechaKey(c.fecha) === f) out.push(citaComoEvento(c));
+  });
+  if(state.calCat) out = out.filter(function(o){ return String(o.ev.tipo)===state.calCat; });
+  return out.sort(function(a,b){ return (a.hora||'99:99').localeCompare(b.hora||'99:99'); });
+}
+/** ¿El evento dura más de un día? Entonces se pinta como banda, no como punto. */
+function esLargo(ev){
+  var fin = fechaKey(ev.fecha_fin);
+  return !!fin && fin > fechaKey(ev.fecha);
+}
+
+function pintarCalendario(){
+  var ym = state.calMes || mesDe(state.data.hoy);
+  state.calMes = ym;
+  var y = +ym.split('-')[0], m = +ym.split('-')[1];
+
+  $('#calPrev').innerHTML = svg('chevronI',17);
+  $('#calNext').innerHTML = svg('chevron',17);
+  $('#calRango').innerHTML = svg('calendario',17) +
+    '<span>'+MESES[m-1].charAt(0).toUpperCase()+MESES[m-1].slice(1)+' '+y+'</span>';
+  $$('#calSeg button').forEach(function(b){
+    b.classList.toggle('on', b.dataset.vista === (state.calVista||'mes'));
+  });
+
+  var out = '';
+  out += (state.calVista === 'agenda') ? vistaAgenda() : vistaMes(y, m);
+
+  /* ---- filtro por categoría ---- */
+  var tipos = state.data.tipos_evento;
+  out += '<div class="cats-h"><button data-calcat="" class="'+(state.calCat?'':'on') +
+    '" style="'+(state.calCat?'':'background:var(--cal-d)')+'">' +
+    (state.calCat ? '' : '<span class="pt" style="background:#fff"></span>') + 'Todos</button>' +
+    tipos.map(function(t){
+      var on = state.calCat===String(t.id);
+      return '<button data-calcat="'+esc(t.id)+'" class="'+(on?'on':'')+'" style="'+
+        (on?'background:'+t.color:'')+'"><span class="pt" style="background:'+
+        (on?'#fff':t.color)+'"></span>'+esc(t.nombre)+'</button>';
+    }).join('') + '</div>';
+
+  if(state.calVista !== 'agenda') out += detalleDia();
+  out += destacados();
+
+  $('#calCuerpo').innerHTML = out;
+  var n = agendaDe(state.data.hoy).length;
+  $('#calSub').textContent = n ? (n===1 ? '1 cosa hoy' : n+' cosas hoy')
+    : 'Custodia y eventos.';
+  $('#fabCal').innerHTML = svg('mas',19) + 'Evento';
+}
+
+function vistaMes(y, m){
+  var primero = fk(y, m, 1);
+  var offset = (dow(primero) + 6) % 7;             /* la semana empieza en lunes */
+  var dias = new Date(y, m, 0).getDate();
+  var hoy = state.data.hoy, sel = state.calDia;
+
+  var celdas = '';
+  for(var i = -offset; i < dias + (7 - ((offset + dias) % 7)) % 7; i++){
+    var f = addDays(primero, i);
+    var fuera = mesDe(f) !== fk(y,m,1).slice(0,7);
+    var c = custodiaDe(f);
+    var evs = agendaDe(f);
+    var largos = evs.filter(function(o){ return esLargo(o.ev); });
+    var puntos = evs.filter(function(o){ return !esLargo(o.ev); });
+    var cls = ['cd', c.quien?claveColor(c.quien):'', fuera?'fuera':'',
+               f===hoy?'hoy':'', f===sel?'sel':''].filter(String).join(' ');
+    celdas += '<button class="'+cls+'" data-caldia="'+f+'">' +
+      '<span class="csa" style="color:'+(c.quien?'var(--'+claveColor(c.quien)+')':'var(--t3)')+'">' +
+        svg('casa',14)+'</span>' +
+      '<span class="nu">'+(+f.split('-')[2])+'</span>' +
+      '<span class="pts">' + puntos.slice(0,4).map(function(o){
+        return '<i style="background:'+tipoEvento(o.ev.tipo).color+'"></i>'; }).join('') + '</span>' +
+      largos.slice(0,2).map(function(o){
+        return '<span class="bnd" style="background:'+tipoEvento(o.ev.tipo).color+'"></span>';
+      }).join('') + '</button>';
+  }
+
+  return '<div class="rej"><div class="rej-dow">' +
+    DOW_CORTO.map(function(d){ return '<span>'+d+'</span>'; }).join('') + '</div>' +
+    '<div class="rej-g">'+celdas+'</div>' +
+    '<div class="rej-leg">' +
+      '<span><span style="color:var(--papa)">'+svg('casa',15)+'</span>Con papá</span>' +
+      '<span><span style="color:var(--mama)">'+svg('casa',15)+'</span>Con mamá</span>' +
+    '</div></div>';
+}
+
+function detalleDia(){
+  var f = state.calDia || state.data.hoy;
+  state.calDia = f;
+  var c = custodiaDe(f), evs = agendaDe(f);
+  var k = c.quien ? claveColor(c.quien) : '';
+
+  var h = '<div class="dia-d"><div class="dia-hd">' +
+    '<b>'+DOW_LARGO[dow(f)].charAt(0).toUpperCase()+DOW_LARGO[dow(f)].slice(1)+', ' +
+      (+f.split('-')[2])+' de '+MESES[+f.split('-')[1]-1]+'</b>' +
+    (c.quien ? '<span class="qn" style="color:var(--'+k+'-d)">Con '+
+      esc(nombreDe(c.quien).toLowerCase())+' <span style="color:var(--'+k+')">' +
+      svg('casa',15)+'</span></span>' : '') + '</div>';
+
+  if(!evs.length){
+    h += '<div class="dia-vacio">' +
+      (state.calCat ? 'Nada de esta categoría este día.' : 'Nada apuntado este día.') + '</div>';
+  } else {
+    h += evs.map(function(o){
+      var t = tipoEvento(o.ev.tipo);
+      var sub = [o.ev.lugar, o.ev.responsable ? 'lleva '+nombreDe(o.ev.responsable).toLowerCase() : '']
+        .filter(String).join(' · ');
+      return '<div class="de" data-calev="'+esc(o.ev.id)+'"><div class="ln"></div>' +
+        '<span class="hr">'+esc(o.hora||'')+'</span>' +
+        '<span class="pt" style="background:'+t.color+'"></span>' +
+        '<span class="ic" style="background:'+t.color+'1F;color:'+t.color+'">' +
+          svg(icoEvento(t.id),18)+'</span>' +
+        '<span class="tx"><b>'+esc(o.ev.titulo)+'</b>' +
+          (sub?'<p>'+esc(sub)+'</p>':'')+'</span>' +
+        svg('chevron',15,' style="color:var(--t3);margin-top:11px"')+'</div>';
+    }).join('');
+  }
+
+  /* Si mañana cambia de casa, decirlo: es la pregunta práctica del día */
+  var sig = custodiaDe(addDays(f,1));
+  if(c.quien && sig.quien && sig.quien !== c.quien){
+    var hh = horaCambio(f);
+    h += '<div class="cambio">'+svg('reloj',16)+'<span>Cambio de casa' +
+      (hh ? ' a las <b>'+esc(hh)+'</b>' : '') + ': pasa con <b>' +
+      esc(nombreDe(sig.quien).toLowerCase())+'</b></span></div>';
+  }
+  return h + '</div>';
+}
+
+function vistaAgenda(){
+  var h = '<div class="ag">', hay = false;
+  for(var i = 0; i < 45; i++){
+    var f = addDays(state.data.hoy, i);
+    var evs = agendaDe(f);
+    if(!evs.length) continue;
+    hay = true;
+    var c = custodiaDe(f), k = c.quien ? claveColor(c.quien) : '';
+    h += '<div class="ag-d"><div class="ag-f"><b>' +
+      (f===state.data.hoy ? 'Hoy' : f===addDays(state.data.hoy,1) ? 'Mañana'
+        : DOW_LARGO[dow(f)]+' '+(+f.split('-')[2])+' '+MESES_C[+f.split('-')[1]-1]) + '</b>' +
+      (c.quien ? '<span class="qn" style="color:var(--'+k+'-d)">con ' +
+        esc(nombreDe(c.quien).toLowerCase())+'</span>' : '') + '</div>' +
+      evs.map(function(o){
+        var t = tipoEvento(o.ev.tipo);
+        return '<button class="ag-e" data-calev="'+esc(o.ev.id)+'">' +
+          '<span class="pt" style="background:'+t.color+'"></span>' +
+          '<span class="hr">'+esc(o.hora||'—')+'</span>' +
+          '<span class="nm">'+esc(o.ev.titulo)+'</span>' +
+          svg('chevron',14,' style="color:var(--t3)"')+'</button>';
+      }).join('') + '</div>';
+  }
+  if(!hay) h += '<div class="dia-vacio">No hay nada apuntado en los próximos 45 días.</div>';
+  return h + '</div>';
+}
+
+/** Lo que merece una tarjeta: lo largo y lo señalado, no la logopedia del martes. */
+var CAT_DESTACADA = { vacaciones:1, viajes:1, cumples:1, excursiones:1, sin_clases:1 };
+function destacados(){
+  var vistos = {}, out = [];
+  for(var i = 0; i < 240 && out.length < 6; i++){
+    var f = addDays(state.data.hoy, i);
+    eventosDe(f).forEach(function(o){
+      if(vistos[o.ev.id]) return;
+      if(!CAT_DESTACADA[String(o.ev.tipo)] && !esLargo(o.ev)) return;
+      vistos[o.ev.id] = true;
+      out.push(o);
+    });
+  }
+  if(!out.length) return '';
+  return '<div class="dest"><h3>Próximos eventos destacados</h3><div class="dest-g">' +
+    out.map(function(o){
+      var t = tipoEvento(o.ev.tipo);
+      var fin = fechaKey(o.ev.fecha_fin);
+      var rango = fin && fin > o.fecha
+        ? fechaCorta(o.fecha)+' – '+fechaCorta(fin) : fechaCorta(o.fecha);
+      var r = String(o.ev.responsable||'');
+      var chip = r
+        ? { t:'Con '+nombreDe(r).toLowerCase(), bg:'var(--'+claveColor(r)+'-s)',
+            fg:'var(--'+claveColor(r)+'-d)' }
+        : { t:'Sin asignar', bg:'var(--surface2)', fg:'var(--t2)' };
+      return '<button class="dest-c" data-calev="'+esc(o.ev.id)+'">' +
+        '<span class="em">'+esc(t.emoji||'📌')+'</span>' +
+        '<b>'+esc(o.ev.titulo)+'</b>' +
+        '<p>'+esc(o.ev.lugar || t.nombre)+'</p>' +
+        '<div class="fh">'+rango+'</div>' +
+        '<span class="ch" style="background:'+chip.bg+';color:'+chip.fg+'">'+esc(chip.t)+'</span>' +
+        '</button>';
+    }).join('') + '</div></div>';
+}
+
+/* ---------- formulario de evento ---------- */
+var borradorEvento = null;
+var DIAS_SEM = [{id:'lun',n:'L'},{id:'mar',n:'M'},{id:'mie',n:'X'},{id:'jue',n:'J'},
+                {id:'vie',n:'V'},{id:'sab',n:'S'},{id:'dom',n:'D'}];
+
+function formEvento(id){
+  var ev = id ? state.data.eventos.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  borradorEvento = ev
+    ? { id:ev.id, titulo:String(ev.titulo||''), tipo:String(ev.tipo||'otros'),
+        fecha:fechaKey(ev.fecha), fecha_fin:fechaKey(ev.fecha_fin), hora:String(ev.hora||''),
+        lugar:String(ev.lugar||''), responsable:String(ev.responsable||''),
+        accion:String(ev.accion||''), repite:String(ev.repite||'no'),
+        repite_dias:String(ev.repite_dias||''), repite_hasta:fechaKey(ev.repite_hasta) }
+    : { id:'', titulo:'', tipo:'', fecha:state.calDia || state.data.hoy, fecha_fin:'',
+        hora:'', lugar:'', responsable:'', accion:'', repite:'no', repite_dias:'',
+        repite_hasta:'' };
+  pintarFormEvento();
+}
+
+function pintarFormEvento(){
+  var b = borradorEvento;
+  var h = '<h3>'+(b.id?'Editar evento':'Nuevo evento')+'</h3>' +
+    '<div class="f-lb">Qué es</div>' +
+    '<input class="inp" id="eTit" type="text" value="'+esc(b.titulo)+'" placeholder="Natación">' +
+    '<div class="f-lb">Categoría</div><div class="chips">' +
+      state.data.tipos_evento.map(function(t){
+        var on = b.tipo===String(t.id);
+        return '<button class="chip'+(on?' on':'')+'" style="'+(on?'background:'+t.color:'')+'" ' +
+          'data-ecampo="tipo" data-val="'+esc(t.id)+'">'+esc(t.emoji||'')+' ' +
+          esc(t.nombre)+'</button>';
+      }).join('') + '</div>' +
+    '<div class="f-lb">Cuándo</div><div class="fila2">' +
+      '<input class="inp" id="eFecha" type="date" value="'+esc(b.fecha)+'">' +
+      '<input class="inp" id="eHora" type="text" inputmode="numeric" style="width:100px" ' +
+        'value="'+esc(b.hora)+'" placeholder="17:30"></div>' +
+    '<div class="f-lb">Último día (si dura varios)</div>' +
+    '<input class="inp" id="eFin" type="date" value="'+esc(b.fecha_fin)+'">' +
+    '<div class="f-lb">Dónde</div>' +
+    '<input class="inp" id="eLugar" type="text" value="'+esc(b.lugar)+'" ' +
+      'placeholder="Piscina Municipal">' +
+    '<div class="f-lb">Quién se encarga</div><div class="chips">' +
+      state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; }).map(function(u){
+        var on = b.responsable===String(u.username);
+        return '<button class="chip'+(on?' on':'')+'" style="'+
+          (on?'background:'+colorDe(u.username):'')+'" data-ecampo="responsable" ' +
+          'data-val="'+esc(u.username)+'">'+esc(u.nombre)+'</button>';
+      }).join('') +
+      '<button class="chip'+(b.responsable?'':' on')+'" style="'+
+        (b.responsable?'':'background:var(--t2)')+'" data-ecampo="responsable" data-val="">' +
+        'Sin asignar</button></div>' +
+    '<div class="f-lb">¿Se repite?</div><div class="chips">' +
+      [{id:'no',n:'No'},{id:'semanal',n:'Cada semana'},{id:'mensual',n:'Cada mes'}]
+      .map(function(r){
+        var on = b.repite===r.id;
+        return '<button class="chip'+(on?' on':'')+'" style="'+
+          (on?'background:var(--cal-d)':'')+'" data-ecampo="repite" data-val="'+r.id+'">' +
+          r.n+'</button>';
+      }).join('') + '</div>';
+
+  if(b.repite === 'semanal'){
+    var sel = String(b.repite_dias||'').split(',').filter(String);
+    h += '<div class="f-lb">Qué días</div><div class="chips">' + DIAS_SEM.map(function(d){
+      var on = sel.indexOf(d.id) >= 0;
+      return '<button class="chip'+(on?' on':'')+'" style="width:42px;text-align:center;' +
+        (on?'background:var(--cal-d)':'')+'" data-edia="'+d.id+'">'+d.n+'</button>';
+    }).join('') + '</div>';
+  }
+  if(b.repite !== 'no'){
+    h += '<div class="f-lb">Hasta cuándo</div>' +
+      '<input class="inp" id="eHasta" type="date" value="'+esc(b.repite_hasta)+'">' +
+      '<div class="aviso">Las repeticiones no se guardan como filas: se generan al pintar. ' +
+      'Así cambiar la hora de la natación la cambia en todas, no en una.</div>';
+  }
+  h += '<div class="f-lb">Recordatorio (opcional)</div>' +
+    '<input class="inp" id="eAccion" type="text" value="'+esc(b.accion)+'" ' +
+      'placeholder="Llevar la tarjeta sanitaria">' +
+    '<div class="aviso" style="background:var(--surface2);color:var(--t2)">' +
+    'Si escribes algo aquí, aparecerá como recordatorio en el inicio. Si lo dejas vacío, ' +
+    'el evento no genera ningún aviso.</div>';
+
+  h += '<button class="btn" style="background:var(--cal-d)" id="evGuardar">' +
+       (b.id?'Guardar cambios':'Guardar evento')+'</button>';
+  if(b.id) h += '<button class="btn del" id="evBorrar">Borrar este evento</button>';
+  abrirHoja(h);
+}
+
+function leerFormEvento(){
+  var b = borradorEvento;
+  function v(id){ var e = $('#'+id); return e ? String(e.value||'').trim() : null; }
+  if(v('eTit')!==null)    b.titulo = v('eTit');
+  if(v('eFecha'))         b.fecha = v('eFecha');
+  if(v('eHora')!==null)   b.hora = v('eHora');
+  if(v('eFin')!==null)    b.fecha_fin = v('eFin');
+  if(v('eLugar')!==null)  b.lugar = v('eLugar');
+  if(v('eAccion')!==null) b.accion = v('eAccion');
+  if(v('eHasta')!==null)  b.repite_hasta = v('eHasta');
+}
+
+function guardarEvento(){
+  leerFormEvento();
+  var b = borradorEvento;
+  if(!b.titulo){ toast('Ponle un nombre al evento', true); return; }
+  if(b.fecha_fin && b.fecha_fin < b.fecha){
+    toast('El último día no puede ser anterior al primero', true); return;
+  }
+  var btn = $('#evGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  llamarPost({ action:'saveEvento', payload:{
+      id:b.id, titulo:b.titulo, tipo:b.tipo || 'otros', fecha:b.fecha, fecha_fin:b.fecha_fin,
+      hora:b.hora, lugar:b.lugar, responsable:b.responsable, accion:b.accion,
+      repite:b.repite, repite_dias:b.repite_dias, repite_hasta:b.repite_hasta,
+      creado_por:state.user } })
+    .then(function(){ cerrarHoja(); toast('Evento guardado'); return recargar(); })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar evento'; }
+    });
+}
+function borrarEvento(){
+  llamarPost({ action:'deleteEvento', id:borradorEvento.id, creado_por:state.user })
+    .then(function(){ cerrarHoja(); toast('Evento borrado'); return recargar(); })
+    .catch(function(err){ toast(String(err.message||err), true); });
+}
+
+/* ============================================================
+   GASTOS
+   Modelo real: hay una cuenta común de verdad. Lo normal es pagar
+   desde ella; a veces adelanta uno y luego se le reembolsa; y a veces
+   uno compra algo suyo que no se reparte.
+   El saldo NUNCA se guarda: sale de sumar movimientos y gastos.
+   ============================================================ */
+
+var ORIGENES = [
+  {id:'comun', nom:'Cuenta común'},
+  {id:'papa',  nom:'Lo pagó papá'},
+  {id:'mama',  nom:'Lo pagó mamá'}
+];
+
+function categoriaGasto(id){
+  var c = state.data.categorias_gasto.filter(function(x){ return String(x.id)===String(id); })[0];
+  return c || { id:'otro', nombre:'Otros', emoji:'🧾', color:'#94A3B8' };
+}
+function mesDe(f){ return String(f||'').slice(0,7); }
+function gastosDeMes(ym){
+  return state.data.gastos.filter(function(g){ return mesDe(fechaKey(g.fecha))===ym; })
+    .sort(function(a,b){ return fechaKey(b.fecha).localeCompare(fechaKey(a.fecha)); });
+}
+
+/**
+ * Saldo de la cuenta común: entra lo aportado y lo ajustado, sale lo
+ * reembolsado, lo retirado y todo gasto pagado directamente desde ella.
+ */
+function saldoComun(){
+  var s = 0;
+  state.data.cuenta.forEach(function(m){
+    var i = num(m.importe), t = String(m.tipo||'aporte');
+    if(t==='aporte' || t==='ajuste') s += i; else s -= i;
+  });
+  state.data.gastos.forEach(function(g){
+    if(String(g.origen||'comun')==='comun') s -= num(g.importe);
+  });
+  return Math.round(s*100)/100;
+}
+/** Gastos adelantados por una persona que aún no se le han devuelto. */
+function pendientesReembolso(){
+  var out = { papa:0, mama:0, n:0 };
+  state.data.gastos.forEach(function(g){
+    var o = String(g.origen||'comun');
+    if(o==='comun') return;
+    if(!truthy(g.compartido)) return;      /* lo suyo: ni se reparte ni se devuelve */
+    if(g.reembolso_id) return;             /* ya devuelto */
+    out[o] = (out[o]||0) + num(g.importe);
+    out.n++;
+  });
+  out.papa = Math.round(out.papa*100)/100;
+  out.mama = Math.round(out.mama*100)/100;
+  return out;
+}
+function aportadoEnMes(username, ym){
+  var s = 0;
+  state.data.cuenta.forEach(function(m){
+    if(String(m.tipo)!=='aporte' || String(m.username)!==username) return;
+    if(mesDe(fechaKey(m.fecha))!==ym) return;
+    s += num(m.importe);
+  });
+  return Math.round(s*100)/100;
+}
+function ultimoMovimiento(){
+  return state.data.cuenta.slice().sort(function(a,b){
+    return String(b.timestamp||b.fecha).localeCompare(String(a.timestamp||a.fecha));
+  })[0] || null;
+}
+/** Mueve un mes hacia delante o hacia atrás sin salirse del calendario. */
+function mesAnterior(ym, n){
+  var p = String(ym||mesDe(state.data.hoy)).split('-');
+  var d = new Date(+p[0], +p[1]-1+n, 1);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1);
+}
+/** Repinta la hoja de aporte conservando lo escrito. */
+function formAporteRepintar(){
+  var b = borradorAporte;
+  if($('#aImp')) b.importe = String($('#aImp').value||'').trim();
+  if($('#aFecha')) b.fecha = String($('#aFecha').value||'').trim() || b.fecha;
+  var guardado = b;
+  formAporte();
+  borradorAporte = guardado;
+  if($('#aImp')) $('#aImp').value = b.importe;
+  if($('#aFecha')) $('#aFecha').value = b.fecha;
+  $$('[data-acampo]').forEach(function(x){
+    var on = x.dataset.val === b.username;
+    x.classList.toggle('on', on);
+    x.style.background = on ? colorDe(b.username) : '';
+  });
+}
+
+function textoMovimiento(m){
+  var t = String(m.tipo||'aporte'), q = m.username ? nombreDe(m.username).toLowerCase() : '';
+  var n = t==='aporte' ? 'aporte de '+q : t==='reembolso' ? 'reembolso a '+q
+        : t==='retirada' ? 'retirada' : 'ajuste';
+  return n + ' · ' + eur(num(m.importe)) + ' · ' + fechaCorta(fechaKey(m.fecha));
+}
+/**
+ * Estado de la cuenta con criterio explícito y sin adjetivos que suenen a
+ * reproche: describe hechos. «Sana» y «enferma» invitan a buscar culpable.
+ */
+function estadoCuenta(ym){
+  if(saldoComun() < 0) return { t:'En descubierto', c:'cal', ico:'reloj' };
+  var cuota = cfgNum('cuota_mensual', 0);
+  var falta = state.data.usuarios.filter(function(u){
+    return String(u.rol)!=='hija' && aportadoEnMes(String(u.username), ym) < cuota;
+  });
+  if(cuota > 0 && falta.length) return { t:'Falta un aporte', c:'cal', ico:'reloj' };
+  return { t:'Al día', c:'ali', ico:'escudo' };
+}
+
+/** Donut hecho a mano: cero librerías, cero peso, y testable con jsdom. */
+function donut(partes, px){
+  var total = partes.reduce(function(a,p){ return a + p.v; }, 0);
+  var r = 42, c = 2*Math.PI*r, off = 0;
+  if(total <= 0){
+    return '<svg class="donut" width="'+px+'" height="'+px+'" viewBox="0 0 100 100">' +
+      '<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="var(--surface2)" ' +
+      'stroke-width="13"/></svg>';
+  }
+  var segs = partes.map(function(p){
+    var largo = c * p.v / total;
+    var sg = '<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+p.col+'" ' +
+      'stroke-width="13" stroke-dasharray="'+Math.max(0,largo-1.2)+' '+c+'" ' +
+      'stroke-dashoffset="'+(-off)+'" transform="rotate(-90 50 50)"/>';
+    off += largo;
+    return sg;
+  }).join('');
+  return '<svg class="donut" width="'+px+'" height="'+px+'" viewBox="0 0 100 100">'+segs+'</svg>';
+}
+
+function pintarGastos(){
+  var ym = state.gasMes || mesDe(state.data.hoy);
+  state.gasMes = ym;
+  var esActual = ym === mesDe(state.data.hoy);
+  var mesNom = MESES[+ym.split('-')[1]-1];
+
+  $('#gasPrev').innerHTML = svg('chevronI',17);
+  $('#gasNext').innerHTML = svg('chevron',17);
+  $('#gasNext').style.visibility = esActual ? 'hidden' : 'visible';
+  $('#gasRango').innerHTML = svg('calendario',17)+'<span>'+mesNom+' '+ym.split('-')[0]+'</span>';
+
+  var out = '';
+  var saldo = saldoComun(), est = estadoCuenta(ym), um = ultimoMovimiento();
+  var pend = pendientesReembolso();
+
+  out += '<div class="cc"><h3>Cuenta común</h3><div class="cc-top">' +
+    donut([{ v:Math.max(0,saldo), col:'var(--gas)' },
+           { v:Math.max(0,pend.papa+pend.mama), col:'var(--cal)' }], 96) +
+    '<div class="cc-tx"><div class="lb">Saldo disponible</div>' +
+      '<div class="vl" style="color:'+(saldo<0?'var(--err)':'var(--gas-d)')+'">'+eur(saldo)+'</div>' +
+      (um ? '<div class="sb">Último: '+esc(textoMovimiento(um))+'</div>' : '') +
+    '</div><div class="cc-est"><span class="est-chip" style="background:var(--'+est.c+'-s);' +
+      'color:var(--'+est.c+'-d)">'+svg(est.ico,13)+esc(est.t)+'</span></div></div>';
+  if(pend.n){
+    var frases = [];
+    if(pend.papa>0) frases.push('<b>'+eur(pend.papa)+'</b> a papá');
+    if(pend.mama>0) frases.push('<b>'+eur(pend.mama)+'</b> a mamá');
+    out += '<div class="cc-pend">Pendiente de devolver desde la cuenta común: ' +
+      frases.join(' y ')+' · '+pend.n+(pend.n===1?' gasto adelantado':' gastos adelantados')+'</div>';
+  }
+  out += '<button class="cc-pie" id="gasMovs">Ver movimientos de la cuenta ' +
+    svg('chevron',14)+'</button></div>';
+
+  var cuota = cfgNum('cuota_mensual', 0);
+  var adultos = state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; });
+  if(cuota > 0 && adultos.length){
+    out += '<div class="ap"><div class="ap-hd"><b>Aportes de '+mesNom+'</b>' +
+      '<button id="gasAporte">Añadir aporte '+svg('mas',13)+'</button></div><div class="ap-g">' +
+      adultos.map(function(u){
+        var un = String(u.username), k = claveColor(un);
+        var puesto = aportadoEnMes(un, ym), falta = Math.round((cuota-puesto)*100)/100;
+        var ok = falta <= 0;
+        return '<div class="ap-c" style="background:var(--'+k+'-s)">' +
+          '<div class="who">'+avatarHTML(un,30)+'<b style="color:var(--'+k+'-d)">' +
+            esc(u.nombre)+'</b></div>' +
+          '<div class="row"><div><div class="lb">Acordado</div>' +
+            '<div class="vl">'+eur(cuota)+'</div></div>' +
+            '<div><div class="lb">Aportado</div><div class="vl" style="color:' +
+            (ok?'var(--ali-d)':'var(--cal-d)')+'">'+eur(puesto)+'</div></div></div>' +
+          '<div class="ap-est" style="background:var(--'+(ok?'ali':'cal')+'-s);color:var(--' +
+            (ok?'ali':'cal')+'-d)">'+svg(ok?'escudo':'reloj',14) +
+            (ok ? 'Al día' : 'Faltan '+eur(falta))+'</div></div>';
+      }).join('') + '</div>' +
+      '<div class="ap-nota"><span class="i">'+svg('escudo',16)+'</span>' +
+      '<div><b>Aportes acordados: '+eur(cuota)+' cada uno</b>' +
+      '<span>Es la cifra que pactasteis vosotros, no un cálculo de la app.</span></div></div></div>';
+  }
+
+  var gs = gastosDeMes(ym);
+  var total = gs.reduce(function(a,g){ return a + num(g.importe); }, 0);
+  var porCat = {};
+  gs.forEach(function(g){
+    var k = String(g.categoria||'otro');
+    porCat[k] = (porCat[k]||0) + num(g.importe);
+  });
+  var cats = Object.keys(porCat).map(function(k){
+    var c = categoriaGasto(k);
+    return { id:k, nom:c.nombre, col:c.color, v:porCat[k] };
+  }).sort(function(a,b){ return b.v - a.v; });
+
+  out += '<div class="gm"><div class="gm-hd"><b>Gastos de '+mesNom+'</b>' +
+    (gs.length>5 ? '<button id="gasTodos">'+(state.gasTodos?'Ver menos':'Ver todos') +
+      ' '+svg('chevron',13)+'</button>' : '') + '</div>';
+  if(!gs.length){
+    out += '<div style="font-size:13px;color:var(--t3);padding:4px 0 8px">' +
+      'Ningún gasto apuntado este mes.</div>';
+  } else {
+    out += '<div class="gm-top"><div class="gm-tot"><div class="lb">Total gastado</div>' +
+      '<div class="vl" style="color:var(--gas-d)">'+eur(total)+'</div>' +
+      '<div class="n">'+gs.length+(gs.length===1?' gasto':' gastos')+'</div></div>' +
+      donut(cats, 104) + '</div>' +
+      '<div class="leg-g">' + cats.slice(0,6).map(function(c){
+        return '<div class="li"><i style="background:'+c.col+'"></i>' +
+          '<span class="nm">'+esc(c.nom)+'</span><span class="im">'+eur(c.v)+'</span>' +
+          '<span class="pc">'+Math.round(c.v/total*100)+'%</span></div>';
+      }).join('') + '</div>';
+    out += '<div class="gl"><h4>Últimos gastos</h4>' +
+      gs.slice(0, state.gasTodos ? 60 : 5).map(function(g){
+        var c = categoriaGasto(g.categoria), o = String(g.origen||'comun');
+        var quien = o==='comun' ? 'Desde la cuenta común' : 'Lo pagó '+nombreDe(o).toLowerCase();
+        var col = o==='comun' ? 'var(--gas-d)' : colorDe(o);
+        var pendiente = o!=='comun' && truthy(g.compartido) && !g.reembolso_id;
+        return '<button class="gi" data-gasto="'+esc(g.id)+'">' +
+          '<span class="ic" style="background:'+c.color+'1F">'+esc(c.emoji||'🧾')+'</span>' +
+          '<span class="tx"><b>'+esc(g.descripcion || c.nombre) +
+            (truthy(g.compartido)?'':'<span class="solo-mio">solo suyo</span>')+'</b>' +
+            '<span class="qn" style="color:'+col+'">'+esc(quien)+'</span>' +
+            '<p>'+fechaCorta(fechaKey(g.fecha))+'</p></span>' +
+          '<span class="im">'+eur(num(g.importe)) +
+            (pendiente?'<small>por devolver</small>':'')+'</span>' +
+          svg('chevron',15,' style="color:var(--t3)"')+'</button>';
+      }).join('') + '</div>';
+  }
+  out += '<button class="add-g" id="gasNuevo">'+svg('mas',17)+' Añadir gasto</button></div>';
+
+  $('#gasCuerpo').innerHTML = out;
+  $('#gasSub').textContent = gs.length ? eur(total)+' en '+mesNom
+    : 'La cuenta común y en qué se va el dinero.';
+}
+
+/* ---------- formularios ---------- */
+var borradorGasto = null;
+
+function formGasto(id){
+  var g = id ? state.data.gastos.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  borradorGasto = g
+    ? { id:g.id, descripcion:String(g.descripcion||''), importe:String(g.importe||''),
+        fecha:fechaKey(g.fecha), categoria:String(g.categoria||'otro'),
+        origen:String(g.origen||'comun'), compartido:truthy(g.compartido) }
+    : { id:'', descripcion:'', importe:'', fecha:state.data.hoy, categoria:'',
+        origen:'comun', compartido:true };
+  pintarFormGasto();
+}
+
+function pintarFormGasto(){
+  var b = borradorGasto;
+  var h = '<h3>'+(b.id?'Editar gasto':'Nuevo gasto')+'</h3>' +
+    '<div class="f-lb">Concepto</div>' +
+    '<input class="inp" id="gDesc" type="text" value="'+esc(b.descripcion)+'" ' +
+      'placeholder="Clases de inglés">' +
+    '<div class="f-lb">Importe y fecha</div><div class="fila2">' +
+      /* type="text" + inputmode a propósito: un input numérico se come la coma
+         decimal en español y se guardaría 0 sin decir nada. */
+      '<input class="inp" id="gImp" type="text" inputmode="decimal" style="width:118px" ' +
+        'value="'+esc(b.importe)+'" placeholder="24,50">' +
+      '<input class="inp" id="gFecha" type="date" value="'+esc(b.fecha)+'"></div>' +
+    '<div class="f-lb">Categoría</div><div class="chips">' +
+      state.data.categorias_gasto.map(function(c){
+        var on = b.categoria===String(c.id);
+        return '<button class="chip'+(on?' on':'')+'" style="'+(on?'background:'+c.color:'')+'" ' +
+          'data-gcampo="categoria" data-val="'+esc(c.id)+'">'+esc(c.emoji||'')+' ' +
+          esc(c.nombre)+'</button>';
+      }).join('') + '</div>' +
+    '<div class="f-lb">De dónde salió el dinero</div><div class="chips">' +
+      ORIGENES.map(function(o){
+        var on = b.origen===o.id;
+        var col = o.id==='comun' ? 'var(--gas)' : colorDe(o.id);
+        return '<button class="chip'+(on?' on':'')+'" style="'+(on?'background:'+col:'')+'" ' +
+          'data-gcampo="origen" data-val="'+o.id+'">'+esc(o.nom)+'</button>';
+      }).join('') + '</div>';
+  if(b.origen !== 'comun'){
+    h += '<div class="f-lb">¿Se reparte?</div><div class="chips">' +
+      '<button class="chip'+(b.compartido?' on':'')+'" data-gcampo="compartido" data-val="1">' +
+        'Sí, es de los dos</button>' +
+      '<button class="chip'+(b.compartido?'':' on')+'" style="'+
+        (b.compartido?'':'background:var(--t2)')+'" data-gcampo="compartido" data-val="0">' +
+        'No, es cosa suya</button></div>' +
+      '<div class="aviso">' + (b.compartido
+        ? 'Quedará pendiente de devolver desde la cuenta común.'
+        : 'Ni se reparte ni se reembolsa: solo queda apuntado en el historial.') + '</div>';
+  }
+  h += '<button class="btn" style="background:var(--gas)" id="gasGuardar">' +
+       (b.id?'Guardar cambios':'Guardar gasto')+'</button>';
+  if(b.id) h += '<button class="btn del" id="gasBorrar">Borrar este gasto</button>';
+  abrirHoja(h);
+}
+
+function leerFormGasto(){
+  var b = borradorGasto;
+  function v(id){ var e = $('#'+id); return e ? String(e.value||'').trim() : ''; }
+  if($('#gDesc'))  b.descripcion = v('gDesc');
+  if($('#gImp'))   b.importe = v('gImp');
+  if($('#gFecha')) b.fecha = v('gFecha') || b.fecha;
+}
+
+function guardarGasto(){
+  leerFormGasto();
+  var b = borradorGasto;
+  if(num(b.importe) <= 0){ toast('Pon un importe mayor que 0', true); return; }
+  var btn = $('#gasGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  llamarPost({ action:'saveGasto', payload:{
+      id:b.id, fecha:b.fecha, categoria:b.categoria || 'otro', descripcion:b.descripcion,
+      importe:num(b.importe), origen:b.origen, compartido:b.compartido ? 'TRUE' : 'FALSE',
+      pagado_por: b.origen==='comun' ? 'comun' : b.origen, creado_por:state.user } })
+    .then(function(){ cerrarHoja(); toast('Gasto guardado'); return recargar(); })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar gasto'; }
+    });
+}
+function borrarGasto(){
+  llamarPost({ action:'deleteGasto', id:borradorGasto.id, creado_por:state.user })
+    .then(function(){ cerrarHoja(); toast('Gasto borrado'); return recargar(); })
+    .catch(function(err){ toast(String(err.message||err), true); });
+}
+
+var borradorAporte = null;
+function formAporte(){
+  borradorAporte = { username:state.user, importe:String(cfgNum('cuota_mensual',0)||''),
+                     fecha:state.data.hoy };
+  var b = borradorAporte;
+  abrirHoja('<h3>Nuevo aporte</h3>' +
+    '<div class="f-lb">Quién lo ingresa</div><div class="chips">' +
+      state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; }).map(function(u){
+        var on = b.username===String(u.username);
+        return '<button class="chip'+(on?' on':'')+'" style="'+
+          (on?'background:'+colorDe(u.username):'')+'" data-acampo="username" ' +
+          'data-val="'+esc(u.username)+'">'+esc(u.nombre)+'</button>';
+      }).join('') + '</div>' +
+    '<div class="f-lb">Importe y fecha</div><div class="fila2">' +
+      '<input class="inp" id="aImp" type="text" inputmode="decimal" style="width:118px" ' +
+        'value="'+esc(b.importe)+'" placeholder="250">' +
+      '<input class="inp" id="aFecha" type="date" value="'+esc(b.fecha)+'"></div>' +
+    '<div class="aviso">Apunta aquí el dinero que entra en la cuenta común. ' +
+    'Reembolsos y retiradas llegan en la siguiente entrega.</div>' +
+    '<button class="btn" style="background:var(--gas)" id="apGuardar">Guardar aporte</button>');
+}
+function guardarAporte(){
+  var b = borradorAporte;
+  if($('#aImp')) b.importe = String($('#aImp').value||'').trim();
+  if($('#aFecha')) b.fecha = String($('#aFecha').value||'').trim() || b.fecha;
+  if(num(b.importe) <= 0){ toast('Pon un importe mayor que 0', true); return; }
+  var btn = $('#apGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  llamarPost({ action:'saveMovimiento', payload:{ tipo:'aporte', username:b.username,
+      importe:num(b.importe), fecha:b.fecha, creado_por:state.user } })
+    .then(function(){ cerrarHoja(); toast('Aporte registrado'); return recargar(); })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar aporte'; }
+    });
+}
+
+/* ============================================================
+   SALUD
+   Historial y seguimiento. Sin navegador semanal: la salud no va
+   por semanas — la próxima cita puede ser mañana y la anterior
+   revisión de hace ocho meses.
+   ============================================================ */
+
+var TIPOS_CITA = [
+  {id:'pediatra', nom:'Pediatra',    ico:'pediatra'},
+  {id:'dentista', nom:'Dentista',    ico:'diente'},
+  {id:'revision', nom:'Revisión',    ico:'escudo'},
+  {id:'urgencias',nom:'Urgencias',   ico:'termometro'},
+  {id:'otro',     nom:'Otra',        ico:'pediatra'}
+];
+var TIPOS_EPISODIO = [
+  {id:'fiebre',     nom:'Fiebre',     ico:'termometro'},
+  {id:'sintoma',    nom:'Síntoma',    ico:'termometro'},
+  {id:'lesion',     nom:'Lesión',     ico:'tirita'},
+  {id:'enfermedad', nom:'Enfermedad', ico:'pastilla'}
+];
+var CATS_SALUD = [
+  {id:'',           nom:'Todo',        ico:'salud'},
+  {id:'pediatra',   nom:'Pediatra',    ico:'pediatra'},
+  {id:'dentista',   nom:'Dentista',    ico:'diente'},
+  {id:'medicacion', nom:'Medicación',  ico:'pastilla'},
+  {id:'enfermedad', nom:'Enfermedades',ico:'termometro'},
+  {id:'lesion',     nom:'Lesiones',    ico:'tirita'}
+];
+
+function icoCita(t){
+  var x = TIPOS_CITA.filter(function(c){ return c.id===String(t); })[0];
+  return x ? x.ico : 'pediatra';
+}
+function icoEpisodio(t){
+  var x = TIPOS_EPISODIO.filter(function(c){ return c.id===String(t); })[0];
+  return x ? x.ico : 'termometro';
+}
+
+/**
+ * Próxima toma de una medicación: última dosis + cada_horas.
+ * Sin pauta horaria o sin dosis previa devuelve null; no se inventa una hora.
+ */
+function proximaDosis(m){
+  var h = num(m.cada_horas);
+  if(h <= 0) return null;
+  var u = ultimaDosis(m.id);
+  if(!u) return null;
+  var f = fechaKey(u.fecha), hh = String(u.hora||'00:00');
+  var p = hh.split(':');
+  var d = new Date(+f.split('-')[0], +f.split('-')[1]-1, +f.split('-')[2],
+                   +p[0]||0, +p[1]||0);
+  d.setHours(d.getHours() + h);
+  return { fecha: fk(d.getFullYear(), d.getMonth()+1, d.getDate()),
+           hora: pad(d.getHours())+':'+pad(d.getMinutes()), ts: d.getTime() };
+}
+function dosisDeHoy(medId){
+  return state.data.dosis.filter(function(d){
+    return String(d.medicacion_id)===String(medId) && fechaKey(d.fecha)===state.data.hoy;
+  }).length;
+}
+
+/** Todo lo registrable en un único orden cronológico (§31). */
+function historialSalud(filtro){
+  var out = [];
+  state.data.episodios.forEach(function(e){
+    out.push({ k:'episodio', id:e.id, fecha:fechaKey(e.fecha), hora:String(e.hora||''),
+      tipo:String(e.tipo||'sintoma'), ico:icoEpisodio(e.tipo),
+      titulo:String(e.descripcion || e.tipo || 'Episodio'),
+      lineas:[ (num(e.temperatura)>0 ? String(e.temperatura).replace('.',',')+' °C' : '') +
+               (e.hora ? (num(e.temperatura)>0?' · ':'')+e.hora : ''),
+               String(e.notas||'') ].filter(String),
+      autor:String(e.creado_por||''), ts:String(e.timestamp||'') });
+  });
+  state.data.citas.forEach(function(c){
+    var f = fechaKey(c.fecha);
+    if(f > state.data.hoy) return;                 /* las futuras van arriba, no en el historial */
+    out.push({ k:'cita', id:c.id, fecha:f, hora:String(c.hora||''),
+      tipo:String(c.tipo||'pediatra'), ico:icoCita(c.tipo),
+      titulo:String(c.motivo || c.tipo || 'Cita'),
+      lineas:[ String(c.resultado||''), String(c.centro||c.profesional||'') ].filter(String),
+      autor:String(c.creado_por||''), ts:String(c.timestamp||'') });
+  });
+  state.data.vacunas.forEach(function(v){
+    out.push({ k:'vacuna', id:v.id, fecha:fechaKey(v.fecha), hora:'', tipo:'vacuna', ico:'vacuna',
+      titulo:'Vacuna · '+String(v.nombre||''),
+      lineas:[ String(v.centro||''), v.proxima ? 'Siguiente: '+fechaCorta(fechaKey(v.proxima)) : '' ]
+        .filter(String),
+      autor:String(v.creado_por||''), ts:String(v.timestamp||'') });
+  });
+  state.data.crecimiento.forEach(function(m){
+    out.push({ k:'medida', id:m.id, fecha:fechaKey(m.fecha), hora:'', tipo:'medida', ico:'regla',
+      titulo:'Peso y talla',
+      lineas:[ [ num(m.peso_kg)>0 ? String(m.peso_kg).replace('.',',')+' kg' : '',
+                 num(m.talla_cm)>0 ? String(m.talla_cm).replace('.',',')+' cm' : ''
+               ].filter(String).join(' · '), String(m.nota||'') ].filter(String),
+      autor:String(m.creado_por||''), ts:String(m.timestamp||'') });
+  });
+
+  if(filtro){
+    out = out.filter(function(r){
+      if(filtro==='medicacion') return r.k==='vacuna' || r.tipo==='enfermedad';
+      if(filtro==='enfermedad') return r.tipo==='fiebre' || r.tipo==='enfermedad' || r.tipo==='sintoma';
+      if(filtro==='lesion')     return r.tipo==='lesion';
+      return r.tipo === filtro;
+    });
+  }
+  return out.sort(function(a,b){
+    return (b.fecha+' '+(b.hora||'00:00')).localeCompare(a.fecha+' '+(a.hora||'00:00'));
+  });
+}
+
+function colorSalud(k){
+  return k==='lesion' ? '#8B62D9' : k==='vacuna' ? '#4C9A5C'
+       : k==='medida' ? '#C9A44C' : 'var(--sal)';
+}
+
+function pintarSalud(){
+  var out = '';
+  var meds = medicacionActiva();
+  var ahora = new Date().getTime();
+
+  /* ---- Medicación activa: lo primero, porque es lo único urgente ---- */
+  meds.forEach(function(m){
+    var u = ultimaDosis(m.id), p = proximaDosis(m);
+    var toca = p && p.ts <= ahora;
+    var linea;
+    if(!u){
+      linea = 'Sin dosis registradas todavía.';
+    } else {
+      linea = 'Última: ' + esc(u.hora||'') +
+        (fechaKey(u.fecha)!==state.data.hoy ? ' del '+fechaCorta(fechaKey(u.fecha)) : '') +
+        (u.dado_por ? ', ' + esc(nombreDe(u.dado_por).toLowerCase()) : '');
+      if(p) linea += ' · Próxima a las ' + esc(p.hora) +
+        (p.fecha!==state.data.hoy ? ' de mañana' : '');
+    }
+    out += '<div class="dosis-c'+(toca?' toca':'')+'">' +
+      '<div class="dosis-hd"><span class="i">'+svg('pastilla',24)+'</span>' +
+      '<div class="dosis-tx"><div class="kick">' +
+        (toca ? 'Toca ahora' : 'Medicación activa') + '</div>' +
+      '<b>'+esc(m.nombre)+(m.dosis?' · '+esc(m.dosis):'')+'</b>' +
+      '<p>'+linea+'</p></div></div>' +
+      '<button class="dosis-btn" data-dosis="'+esc(m.id)+'">' +
+        svg('mas',18)+' Marcar dosis dada</button>' +
+      '<div class="dosis-mas">'+dosisDeHoy(m.id)+' dosis hoy' +
+        (m.fin ? ' · hasta el '+fechaCorta(fechaKey(m.fin)) : '')+'</div></div>';
+  });
+
+  /* ---- Próxima cita ---- */
+  var cita = proximaCita();
+  if(cita){
+    var f = fechaKey(cita.fecha), d = diffDias(state.data.hoy, f);
+    var badge = d===0 ? 'Hoy' : d===1 ? 'Mañana' : 'En '+d+' días';
+    var t = TIPOS_CITA.filter(function(x){ return x.id===String(cita.tipo); })[0];
+    out += '<div class="cita-c"><div class="cita-hd">' +
+      '<span class="i">'+svg(icoCita(cita.tipo),34)+'</span>' +
+      '<div class="cita-tx"><div class="kick">Próxima cita</div>' +
+      '<h3>'+esc(cita.motivo || (t&&t.nom) || 'Cita')+'</h3>' +
+      '<div class="fh">'+DOW_LARGO[dow(f)].charAt(0).toUpperCase()+DOW_LARGO[dow(f)].slice(1) +
+        ', '+(+f.split('-')[2])+' '+MESES[+f.split('-')[1]-1] +
+        (cita.hora?' · '+esc(cita.hora):'')+'</div>' +
+      '<div class="cita-meta">' +
+        (cita.centro?'<span>'+svg('lugar',14)+esc(cita.centro)+'</span>':'') +
+        (cita.acompana?'<span>'+svg('inicio',14)+'La lleva ' +
+          esc(nombreDe(cita.acompana).toLowerCase())+'</span>':'') +
+      '</div></div>' +
+      '<span class="badge'+(d<=2?' pron':'')+'">'+badge+'</span></div>' +
+      '<button class="cita-pie" data-cita="'+esc(cita.id)+'">Ver esta cita ' +
+        svg('chevron',14)+'</button></div>';
+  }
+
+  /* ---- Tres tarjetas ---- */
+  var futuras = state.data.citas.filter(function(c){
+    return fechaKey(c.fecha) >= state.data.hoy; }).length;
+  /* Si hay medicación activa ya ocupa la tarjeta grande de arriba: repetirla
+     aquí sería decir lo mismo dos veces en la misma pantalla. */
+  var pendiente = meds.length
+    ? { t:'Citas', v:futuras, l:futuras===1?'próxima':'próximas', c:'sal' }
+    : { t:'Todo al día', v:'', l:'No hay pendientes de salud', c:'ali' };
+  out += '<div class="mini">' +
+    '<button style="background:var(--'+pendiente.c+'-c)">' +
+      '<div class="top"><span class="i" style="color:var(--'+pendiente.c+'-d)">' +
+        svg('escudo',22)+'</span><b style="color:var(--'+pendiente.c+'-d)">' +
+        esc(pendiente.t)+'</b></div>' +
+      (pendiente.v!=='' ? '<div class="vl" style="color:var(--'+pendiente.c+'-d)">' +
+        pendiente.v+'</div>' : '') +
+      '<div class="lb">'+esc(pendiente.l)+'</div></button>' +
+    '<button style="background:var(--gina-s)" data-salcat="medicacion">' +
+      '<div class="top"><span class="i" style="color:var(--gina-d)">'+svg('pastilla',22)+'</span>' +
+      '<b style="color:var(--gina-d)">Vacunas</b></div>' +
+      '<div class="vl" style="color:var(--gina-d)">'+state.data.vacunas.length+'</div>' +
+      '<div class="lb">registradas</div></button>' +
+    '<button style="background:var(--cal-c)" id="salDocs">' +
+      '<div class="top"><span class="i" style="color:var(--cal-d)">'+svg('carpeta',22)+'</span>' +
+      '<b style="color:var(--cal-d)">Documentos</b></div>' +
+      '<div class="vl" style="color:var(--cal-d)">'+state.data.documentos.length+'</div>' +
+      '<div class="lb">archivos</div></button></div>';
+
+  /* ---- Historial ---- */
+  var filtro = state.salCat || '';
+  var hist = historialSalud(filtro);
+  out += '<div class="hist"><div class="hist-hd"><b>Últimos registros</b>' +
+    (hist.length>4 ? '<button id="salTodo">Ver historial completo '+svg('chevron',13)+'</button>' : '') +
+    '</div>';
+  if(!hist.length){
+    out += '<div class="hist-vacio">' +
+      (filtro ? 'Nada registrado en esta categoría.' : 'Todavía no hay nada registrado.') +
+      '</div>';
+  } else {
+    out += hist.slice(0, state.salTodo ? 40 : 4).map(function(r){
+      var col = colorSalud(r.tipo);
+      return '<div class="hr-i" data-reg="'+r.k+':'+esc(r.id)+'"><div class="ln"></div>' +
+        '<span class="ic" style="background:'+col+'1F;color:'+col+'">'+svg(r.ico,21)+'</span>' +
+        '<div class="tx"><div class="t1"><b>'+esc(r.titulo)+'</b>' +
+          '<span class="chip-f" style="background:'+col+'1A;color:'+col+'">' +
+          fechaCorta(r.fecha)+'</span></div>' +
+          r.lineas.slice(0,2).map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('') +
+        '</div>' +
+        '<div class="aut"><b style="color:'+colorDe(r.autor)+'">' +
+          esc(nombreDe(r.autor))+'</b><span>'+esc(r.ts?r.ts.slice(11,16):'')+'</span></div></div>';
+    }).join('');
+  }
+  out += '</div>';
+
+  /* ---- Categorías ---- */
+  out += '<div class="cats"><h3>Categorías rápidas</h3><div class="cats-g">' +
+    CATS_SALUD.map(function(c){
+      return '<button data-salcat="'+c.id+'" class="'+(filtro===c.id?'on':'')+'">' +
+        '<span class="i">'+svg(c.ico,20)+'</span><span>'+esc(c.nom)+'</span></button>';
+    }).join('') + '</div></div>';
+
+  /* ---- Documentos ---- */
+  out += '<div class="doc-b"><span class="i">'+svg('carpeta',24)+'</span>' +
+    '<div><b>Toda la información de salud, siempre organizada</b>' +
+    '<p>Informes, recetas, informes escolares…</p></div>' +
+    svg('chevron',16,' style="color:var(--sal-d)"')+'</div>';
+
+  $('#salCuerpo').innerHTML = out;
+  $('#fabSalud').innerHTML = svg('mas',19) + 'Añadir';
+  var prox = proximaCita();
+  $('#salSub').textContent = meds.length
+    ? (meds.length===1 ? '1 tratamiento activo' : meds.length+' tratamientos activos')
+    : prox ? 'Próxima cita: '+fechaCorta(fechaKey(prox.fecha))
+    : 'Qué ha pasado y qué viene después.';
+}
+
+/* ---------- registro ---------- */
+function marcarDosis(medId){
+  var m = state.data.medicacion.filter(function(x){ return String(x.id)===String(medId); })[0];
+  var n = new Date();
+  llamarPost({ action:'saveDosis', payload:{ medicacion_id:medId, fecha:state.data.hoy,
+      hora: pad(n.getHours())+':'+pad(n.getMinutes()), dado_por:state.user } })
+    .then(function(){
+      toast('Dosis de ' + ((m&&m.nombre)||'la medicación') + ' registrada');
+      return recargar();
+    })
+    .catch(function(err){ toast(String(err.message||err), true); });
+}
+
+function menuSalud(){
+  var opciones = [
+    {k:'cita',      nom:'Cita médica',   ico:'pediatra',   sub:'Pediatra, dentista, revisión…'},
+    {k:'episodio',  nom:'Episodio',      ico:'termometro', sub:'Fiebre, síntoma, golpe'},
+    {k:'medicacion',nom:'Medicación',    ico:'pastilla',   sub:'Empezar un tratamiento'}
+  ];
+  abrirHoja('<h3>¿Qué quieres apuntar?</h3>' + opciones.map(function(o){
+    return '<button class="opt" data-salnuevo="'+o.k+'">' +
+      '<span class="av" style="background:var(--sal-s);color:var(--sal-d)">' +
+      svg(o.ico,19)+'</span><div style="flex:1"><b style="display:block">'+o.nom+'</b>' +
+      '<span style="font-size:12px;color:var(--t2)">'+o.sub+'</span></div></button>';
+  }).join(''));
+}
+
+var borradorSalud = null;
+
+function formCita(id){
+  var c = id ? state.data.citas.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  var n = new Date();
+  borradorSalud = c
+    ? { k:'cita', id:c.id, fecha:fechaKey(c.fecha), hora:String(c.hora||''),
+        tipo:String(c.tipo||'pediatra'), profesional:String(c.profesional||''),
+        centro:String(c.centro||''), motivo:String(c.motivo||''),
+        acompana:String(c.acompana||''), resultado:String(c.resultado||''),
+        notas:String(c.notas||'') }
+    : { k:'cita', id:'', fecha:state.data.hoy, hora:'', tipo:'pediatra', profesional:'',
+        centro:'', motivo:'', acompana:'', resultado:'', notas:'' };
+  pintarFormSalud();
+}
+function formEpisodio(id){
+  var e = id ? state.data.episodios.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  var n = new Date();
+  borradorSalud = e
+    ? { k:'episodio', id:e.id, fecha:fechaKey(e.fecha), hora:String(e.hora||''),
+        tipo:String(e.tipo||'sintoma'), descripcion:String(e.descripcion||''),
+        temperatura:String(e.temperatura||''), notas:String(e.notas||''),
+        evolucion:String(e.evolucion||''), nueva_nota:'' }
+    : { k:'episodio', id:'', fecha:state.data.hoy,
+        hora: pad(n.getHours())+':'+pad(n.getMinutes()), tipo:'fiebre', descripcion:'',
+        temperatura:'', notas:'', evolucion:'', nueva_nota:'' };
+  pintarFormSalud();
+}
+function formMedicacion(id){
+  var m = id ? state.data.medicacion.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  borradorSalud = m
+    ? { k:'medicacion', id:m.id, nombre:String(m.nombre||''), dosis:String(m.dosis||''),
+        cada_horas:String(m.cada_horas||''), inicio:fechaKey(m.inicio), fin:fechaKey(m.fin),
+        motivo:String(m.motivo||''), notas:String(m.notas||''), activo:truthy(m.activo) }
+    : { k:'medicacion', id:'', nombre:'', dosis:'', cada_horas:'8', inicio:state.data.hoy,
+        fin:'', motivo:'', notas:'', activo:true };
+  pintarFormSalud();
+}
+
+function campo(lb, id, valor, ph, tipo){
+  return '<div class="f-lb">'+lb+'</div>' +
+    '<input class="inp" id="'+id+'" type="'+(tipo||'text')+'" ' +
+    (tipo==='text'||!tipo ? '' : 'inputmode="'+(tipo==='date'?'':'decimal')+'" ') +
+    'value="'+esc(valor||'')+'" placeholder="'+esc(ph||'')+'">';
+}
+
+function pintarFormSalud(){
+  var b = borradorSalud, h = '';
+
+  if(b.k === 'cita'){
+    h += '<h3>'+(b.id?'Editar cita':'Nueva cita')+'</h3>' +
+      '<div class="f-lb">Tipo</div><div class="chips">' + TIPOS_CITA.map(function(t){
+        return '<button class="chip'+(b.tipo===t.id?' on':'')+'" style="'+
+          (b.tipo===t.id?'background:var(--sal)':'')+'" data-salcampo="tipo" data-val="'+t.id+'">' +
+          esc(t.nom)+'</button>'; }).join('') + '</div>' +
+      campo('Motivo','fMotivo',b.motivo,'Revisión rutinaria') +
+      '<div class="f-lb">Cuándo</div><div class="fila2">' +
+        '<input class="inp" id="fFecha" type="date" value="'+esc(b.fecha)+'">' +
+        '<input class="inp" id="fHora" type="text" inputmode="numeric" style="width:104px" ' +
+          'value="'+esc(b.hora)+'" placeholder="17:30"></div>' +
+      campo('Centro','fCentro',b.centro,'Clínica Sonríe') +
+      campo('Profesional','fProf',b.profesional,'Opcional') +
+      '<div class="f-lb">Quién la lleva</div><div class="chips">' +
+        state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; }).map(function(u){
+          return '<button class="chip'+(b.acompana===u.username?' on':'')+'" style="'+
+            (b.acompana===u.username?'background:'+colorDe(u.username):'')+'" ' +
+            'data-salcampo="acompana" data-val="'+esc(u.username)+'">'+esc(u.nombre)+'</button>';
+        }).join('') + '</div>';
+    if(fechaKey(b.fecha) <= state.data.hoy){
+      h += campo('Resultado','fResultado',b.resultado,'Todo correcto');
+    }
+    h += campo('Notas','fNotas',b.notas,'Opcional');
+  }
+
+  if(b.k === 'episodio'){
+    h += '<h3>'+(b.id?'Actualizar episodio':'Nuevo episodio')+'</h3>' +
+      '<div class="f-lb">Qué ha pasado</div><div class="chips">' + TIPOS_EPISODIO.map(function(t){
+        return '<button class="chip'+(b.tipo===t.id?' on':'')+'" style="'+
+          (b.tipo===t.id?'background:var(--sal)':'')+'" data-salcampo="tipo" data-val="'+t.id+'">' +
+          esc(t.nom)+'</button>'; }).join('') + '</div>' +
+      campo('Descripción','fDesc',b.descripcion,'Pequeña caída en el parque');
+    if(b.tipo === 'fiebre'){
+      h += campo('Temperatura (°C)','fTemp',b.temperatura,'38,2','decimal');
+    }
+    h += '<div class="f-lb">Cuándo</div><div class="fila2">' +
+      '<input class="inp" id="fFecha" type="date" value="'+esc(b.fecha)+'">' +
+      '<input class="inp" id="fHora" type="text" inputmode="numeric" style="width:104px" ' +
+        'value="'+esc(b.hora)+'" placeholder="18:45"></div>';
+    if(b.evolucion){
+      h += '<div class="f-lb">Evolución</div><div class="aviso" style="background:var(--surface2);' +
+        'color:var(--t2);white-space:pre-line">'+esc(b.evolucion)+'</div>';
+    }
+    h += campo(b.id?'Añadir a la evolución':'Notas', 'fNueva', b.nueva_nota,
+      b.id ? 'Sigue con 37,5 por la mañana' : 'Opcional');
+  }
+
+  if(b.k === 'medicacion'){
+    h += '<h3>'+(b.id?'Editar medicación':'Nueva medicación')+'</h3>' +
+      campo('Medicamento','fNombre',b.nombre,'Dalsy') +
+      '<div class="fila2"><div style="flex:1">' +
+        campo('Dosis','fDosis',b.dosis,'5 ml') + '</div>' +
+        '<div style="width:118px">'+campo('Cada (horas)','fHoras',b.cada_horas,'8','decimal') +
+      '</div></div>' +
+      '<div class="f-lb">Desde / hasta</div><div class="fila2">' +
+        '<input class="inp" id="fInicio" type="date" value="'+esc(b.inicio)+'">' +
+        '<input class="inp" id="fFin" type="date" value="'+esc(b.fin)+'"></div>' +
+      campo('Motivo','fMotivo',b.motivo,'Otitis') +
+      '<div class="aviso">GINapp no recomienda tratamientos ni dosis: solo guarda lo que ' +
+      'os haya indicado el pediatra y quién ha dado cada toma.</div>';
+  }
+
+  h += '<button class="btn" style="background:var(--sal)" id="salGuardar">' +
+       (b.id?'Guardar cambios':'Guardar')+'</button>';
+  if(b.id) h += '<button class="btn del" id="salBorrar">Borrar este registro</button>';
+  abrirHoja(h);
+}
+
+function leerFormSalud(){
+  var b = borradorSalud;
+  function v(id){ var e = $('#'+id); return e ? String(e.value||'').trim() : ''; }
+  if(b.k === 'cita'){
+    b.motivo = v('fMotivo'); b.fecha = v('fFecha') || b.fecha; b.hora = v('fHora');
+    b.centro = v('fCentro'); b.profesional = v('fProf');
+    b.resultado = v('fResultado'); b.notas = v('fNotas');
+  }
+  if(b.k === 'episodio'){
+    b.descripcion = v('fDesc'); b.temperatura = v('fTemp');
+    b.fecha = v('fFecha') || b.fecha; b.hora = v('fHora'); b.nueva_nota = v('fNueva');
+  }
+  if(b.k === 'medicacion'){
+    b.nombre = v('fNombre'); b.dosis = v('fDosis'); b.cada_horas = v('fHoras');
+    b.inicio = v('fInicio') || b.inicio; b.fin = v('fFin'); b.motivo = v('fMotivo');
+  }
+}
+
+function guardarSalud(){
+  leerFormSalud();
+  var b = borradorSalud;
+  var acciones = { cita:'saveCita', episodio:'saveEpisodio', medicacion:'saveMedicacion' };
+  var p = { creado_por: state.user };
+  Object.keys(b).forEach(function(k){ if(k!=='k') p[k] = b[k]; });
+  if(b.k === 'episodio' && !b.id && b.nueva_nota) p.notas = b.nueva_nota;
+
+  var btn = $('#salGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  llamarPost({ action: acciones[b.k], payload: p })
+    .then(function(){ cerrarHoja(); toast('Guardado'); return recargar(); })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
+    });
+}
+function borrarSalud(){
+  var b = borradorSalud;
+  var acciones = { cita:'deleteCita', episodio:'deleteEpisodio', medicacion:'deleteMedicacion' };
+  llamarPost({ action: acciones[b.k], id:b.id, creado_por:state.user })
+    .then(function(){ cerrarHoja(); toast('Borrado'); return recargar(); })
+    .catch(function(err){ toast(String(err.message||err), true); });
+}
+
+/* ============================================================
    NAVEGACIÓN
    ============================================================ */
 function ir(seccion){
   state.seccion = seccion;
+  var enPerfil = (seccion === 'perfil');
+  $('.hd-top').hidden = enPerfil;
+  $('.hd').hidden = enPerfil;
   SECCIONES.forEach(function(s){ $('#s-'+s.id).hidden = (s.id !== seccion); });
   pintarNav();
   if(seccion === 'alimentacion') pintarAlimentacion();
+  if(seccion === 'salud') pintarSalud();
+  if(seccion === 'gastos') pintarGastos();
+  if(seccion === 'calendario') pintarCalendario();
+  if(seccion === 'perfil') pintarPerfil();
+  $('#fabCal').hidden = (seccion !== 'calendario');
+  $('#fabSalud').hidden = (seccion !== 'salud');
   window.scrollTo(0,0);
 }
 function abrirHoja(html){
@@ -1974,6 +3869,129 @@ document.addEventListener('click', function(e){
   }
   if(e.target.closest('#nuVolver')){ pintarHojaComida(); return; }
   if(e.target.closest('#nuGuardar')){ crearAlimento(); return; }
+
+  /* ---------- perfil y mensajes ---------- */
+  if(e.target.closest('#pfAjustes')){ hojaAjustes(); return; }
+  if(e.target.closest('#ajPerfil')){ hojaPerfil(); return; }
+  if(e.target.closest('#pfMovs')){ toast('Los movimientos llegan en la siguiente entrega'); return; }
+  if(e.target.closest('#pfMasAct')){ state.pfTodaAct = !state.pfTodaAct; pintarPerfil(); return; }
+  if(e.target.closest('#msgTodos')){ state.msgTodos = !state.msgTodos; pintarPerfil(); return; }
+  if(e.target.closest('#msgNuevo')){ hojaMensaje(); return; }
+  if(e.target.closest('#msgEnviar')){ enviarMensaje(); return; }
+  if(e.target.closest('#msgCerrar')){ cerrarHoja(); return; }
+  var mz = e.target.closest('[data-msg]');
+  if(mz){ abrirMensaje(mz.dataset.msg); return; }
+
+  /* ---------- calendario ---------- */
+  if(e.target.closest('#calPrev')){
+    state.calMes = mesAnterior(state.calMes,-1); state.calDia = null; pintarCalendario(); return; }
+  if(e.target.closest('#calNext')){
+    state.calMes = mesAnterior(state.calMes, 1); state.calDia = null; pintarCalendario(); return; }
+  if(e.target.closest('#calHoy')){
+    state.calMes = mesDe(state.data.hoy); state.calDia = state.data.hoy;
+    pintarCalendario(); return; }
+  var cv = e.target.closest('[data-vista]');
+  if(cv){ state.calVista = cv.dataset.vista; pintarCalendario(); return; }
+  var cdia = e.target.closest('[data-caldia]');
+  if(cdia){
+    state.calDia = cdia.dataset.caldia;
+    if(mesDe(state.calDia) !== state.calMes) state.calMes = mesDe(state.calDia);
+    pintarCalendario(); return;
+  }
+  var ccat = e.target.closest('[data-calcat]');
+  if(ccat){ state.calCat = ccat.dataset.calcat; pintarCalendario(); return; }
+  if(e.target.closest('#fabCal')){ formEvento(''); return; }
+  var cev = e.target.closest('[data-calev]');
+  if(cev){
+    var evid = cev.dataset.calev;
+    if(evid.indexOf('cita:') === 0){ formCita(evid.slice(5)); }
+    else formEvento(evid);
+    return;
+  }
+  var ec = e.target.closest('[data-ecampo]');
+  if(ec){
+    leerFormEvento();
+    var en = ec.dataset.ecampo;
+    borradorEvento[en] = (borradorEvento[en]===ec.dataset.val && en!=='repite')
+      ? '' : ec.dataset.val;
+    pintarFormEvento(); return;
+  }
+  var ed = e.target.closest('[data-edia]');
+  if(ed){
+    leerFormEvento();
+    var ds = String(borradorEvento.repite_dias||'').split(',').filter(String);
+    var ix = ds.indexOf(ed.dataset.edia);
+    if(ix >= 0) ds.splice(ix,1); else ds.push(ed.dataset.edia);
+    var orden = ['lun','mar','mie','jue','vie','sab','dom'];
+    borradorEvento.repite_dias = orden.filter(function(x){ return ds.indexOf(x)>=0; }).join(',');
+    pintarFormEvento(); return;
+  }
+  if(e.target.closest('#evGuardar')){ guardarEvento(); return; }
+  if(e.target.closest('#evBorrar')){ borrarEvento(); return; }
+
+  /* ---------- gastos ---------- */
+  if(e.target.closest('#gasPrev')){
+    state.gasMes = mesAnterior(state.gasMes,-1); state.gasTodos = false; pintarGastos(); return; }
+  if(e.target.closest('#gasNext')){
+    state.gasMes = mesAnterior(state.gasMes, 1); state.gasTodos = false; pintarGastos(); return; }
+  if(e.target.closest('#gasTodos')){ state.gasTodos = !state.gasTodos; pintarGastos(); return; }
+  if(e.target.closest('#gasNuevo')){ formGasto(''); return; }
+  if(e.target.closest('#gasAporte')){ formAporte(); return; }
+  if(e.target.closest('#gasMovs')){ toast('Los movimientos llegan en la siguiente entrega'); return; }
+  var gz = e.target.closest('[data-gasto]');
+  if(gz){ formGasto(gz.dataset.gasto); return; }
+  var gc = e.target.closest('[data-gcampo]');
+  if(gc){
+    leerFormGasto();
+    var cn = gc.dataset.gcampo, vl = gc.dataset.val;
+    borradorGasto[cn] = (cn==='compartido') ? (vl==='1')
+      : (borradorGasto[cn]===vl && cn==='categoria') ? '' : vl;
+    pintarFormGasto(); return;
+  }
+  var ac = e.target.closest('[data-acampo]');
+  if(ac){ borradorAporte[ac.dataset.acampo] = ac.dataset.val; formAporteRepintar(); return; }
+  if(e.target.closest('#gasGuardar')){ guardarGasto(); return; }
+  if(e.target.closest('#gasBorrar')){ borrarGasto(); return; }
+  if(e.target.closest('#apGuardar')){ guardarAporte(); return; }
+
+  /* ---------- salud ---------- */
+  if(e.target.closest('#fabSalud')){ menuSalud(); return; }
+  var dz = e.target.closest('[data-dosis]');
+  if(dz){ marcarDosis(dz.dataset.dosis); return; }
+  var sc = e.target.closest('[data-salcat]');
+  if(sc){
+    state.salCat = (state.salCat===sc.dataset.salcat) ? '' : sc.dataset.salcat;
+    state.salTodo = false; pintarSalud(); return;
+  }
+  if(e.target.closest('#salTodo')){ state.salTodo = !state.salTodo; pintarSalud(); return; }
+  var sn = e.target.closest('[data-salnuevo]');
+  if(sn){
+    var k = sn.dataset.salnuevo;
+    if(k==='cita') formCita('');
+    else if(k==='episodio') formEpisodio('');
+    else formMedicacion('');
+    return;
+  }
+  var sf = e.target.closest('[data-salcampo]');
+  if(sf){
+    leerFormSalud();
+    var campoN = sf.dataset.salcampo;
+    borradorSalud[campoN] = (borradorSalud[campoN]===sf.dataset.val) ? '' : sf.dataset.val;
+    pintarFormSalud(); return;
+  }
+  var reg = e.target.closest('[data-reg]');
+  if(reg){
+    var pr = reg.dataset.reg.split(':'), tipo = pr[0], rid = pr.slice(1).join(':');
+    if(tipo==='cita') formCita(rid);
+    else if(tipo==='episodio') formEpisodio(rid);
+    else toast('Esta ficha llega en la siguiente entrega');
+    return;
+  }
+  var ct = e.target.closest('[data-cita]');
+  if(ct){ formCita(ct.dataset.cita); return; }
+  if(e.target.closest('#salGuardar')){ guardarSalud(); return; }
+  if(e.target.closest('#salBorrar')){ borrarSalud(); return; }
+  if(e.target.closest('#salDocs')){ toast('Los documentos llegan en la siguiente entrega'); return; }
 
   if(e.target.closest('#semPrev')){ state.lunes = addDays(state.lunes,-7); pintarSemana(); return; }
   if(e.target.closest('#semNext')){ state.lunes = addDays(state.lunes, 7); pintarSemana(); return; }
