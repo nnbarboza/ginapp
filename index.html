@@ -214,8 +214,8 @@ svg{display:block;flex-shrink:0}
 .sem-nav .hoyb{width:auto;padding:0 13px;border-radius:999px;font-size:12.5px;font-weight:600;
   color:var(--yo);background:var(--yo-s)}
 .dias{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.d{border-radius:14px;padding:8px 1px 7px;display:flex;flex-direction:column;align-items:center;
-  gap:5px;background:var(--surface2);min-height:132px;position:relative;overflow:hidden}
+.d{border-radius:14px;padding:9px 1px 8px;display:flex;flex-direction:column;align-items:center;
+  gap:5px;background:var(--surface2);min-height:92px;position:relative;overflow:hidden}
 .d.papa{background:var(--papa-s)} .d.mama{background:var(--mama-s)}
 .d.est::after{content:'';position:absolute;inset:0;border-radius:14px;
   border:1.5px dashed rgba(15,23,42,.14);pointer-events:none}
@@ -225,11 +225,57 @@ svg{display:block;flex-shrink:0}
 .d.hoy .nu{background:var(--yo);color:#fff;font-size:13px}
 .d .qn{font-size:9px;font-weight:700;letter-spacing:-.1px;margin-top:-1px}
 .d.papa .qn{color:var(--papa-d)} .d.mama .qn{color:var(--mama-d)}
-.d .evs{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:2px;width:100%}
-.d .eh{font-size:9px;font-weight:700;color:var(--t2);font-variant-numeric:tabular-nums}
-.d .en{font-size:8.5px;font-weight:600;color:var(--t2);max-width:100%;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;padding:0 2px;line-height:1.2}
-.d .mas{font-size:9px;font-weight:700;color:var(--t3)}
+.d .pts{display:flex;align-items:center;justify-content:center;gap:3px;height:9px;margin-top:1px}
+.d .pts i{width:6px;height:6px;border-radius:50%;display:block}
+.d .mas{font-size:8.5px;font-weight:700;color:var(--t3);line-height:1}
+
+/* Bandas: lo que dura varios días, sobre la misma rejilla de 7 columnas. */
+.bandas{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:5px}
+.bnd-s{display:flex;align-items:center;gap:4px;min-width:0;height:26px;padding:0 7px;
+  border-radius:9px;border:1px solid;font-size:11px;font-weight:600;overflow:hidden;
+  cursor:pointer}
+.bnd-s .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bnd-s .pt-a{font-weight:700;opacity:.75;flex-shrink:0}
+.bnd-s svg{flex-shrink:0}
+.bnd-mas{grid-column:1 / 8;font-size:11px;color:var(--t3);padding:2px 2px 0}
+
+/* Cambiar de quién es un día */
+.dia-cust{display:flex;align-items:center;gap:9px;width:100%;margin-top:12px;padding:11px 13px;
+  background:var(--surface2);border-radius:var(--r-in);font-size:13px;font-weight:600;
+  color:var(--t2);cursor:pointer}
+.dia-cust span{flex:1;text-align:left}
+.dia-mot{font-size:12px;color:var(--t3);padding:6px 13px 0}
+.cust-g{display:flex;gap:10px;margin-bottom:4px}
+.cust-o{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;padding:15px 8px;
+  border-radius:var(--r);border:1.5px solid var(--border);background:var(--surface);
+  position:relative;cursor:pointer}
+.cust-o.on{border-color:var(--c);background:var(--cs)}
+.cust-o b{font-size:13.5px;font-weight:600}
+.cust-o.on b{color:var(--cd)}
+.cust-o .tk{position:absolute;top:8px;right:8px;color:var(--c)}
+
+/* El plato por su nombre */
+.plato-f{display:flex;gap:8px;align-items:stretch}
+.plato-f .inp{flex:1;min-width:0}
+.plato-b{width:48px;flex-shrink:0;border-radius:var(--r-in);background:var(--ali-s);
+  color:var(--ali-d);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.plato-b:active{transform:scale(.96)}
+.plato-e{font-size:12px;color:var(--t2);padding:7px 3px 0;line-height:1.35}
+.plato-e.ko{color:var(--cal-d)}
+
+/* Qué conviene para la siguiente comida */
+.cons{background:var(--ali-c);border:1px solid var(--ali-s);border-radius:var(--r-l);
+  padding:15px 16px;margin-bottom:14px}
+.cons-hd{display:flex;align-items:center;gap:8px;color:var(--ali-d);margin-bottom:10px}
+.cons-hd b{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+.cons-l{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-wrap:wrap;gap:7px}
+.cons-l li{display:flex;align-items:center;gap:7px;background:var(--surface);
+  border-radius:999px;padding:7px 13px 7px 9px;font-size:13.5px;font-weight:600;
+  box-shadow:var(--sh)}
+.cons-l .em{font-size:15px;line-height:1}
+.cons-p{margin:0 0 5px;font-size:13px;color:var(--t2);line-height:1.4}
+.cons-p:last-child{margin-bottom:0}
+.cons-vacio{margin:0;font-size:13px;color:var(--t2);line-height:1.4}
 .leg{display:flex;flex-wrap:wrap;gap:9px 14px;margin-top:14px;padding:0 2px;font-size:11.5px;
   color:var(--t2)}
 .leg i{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
@@ -944,6 +990,7 @@ svg{display:block;flex-shrink:0}
         </div>
       </div>
       <div class="dias" id="semDias"></div>
+      <div class="bandas" id="semBandas"></div>
       <div class="leg" id="semLeg"></div>
     </div>
 
@@ -1018,7 +1065,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.8.2';
+var APP_VERSION = '0.9.0';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1093,6 +1140,8 @@ var IC = {
   regla:'<rect x="2.8" y="8.5" width="18.4" height="7" rx="2"/><path d="M7 8.5v3M11 8.5v4.4M15 8.5v3M19 8.5v4.4"/>',
   sombrilla:'<path d="M12 3.2c4.6 0 8.4 3.6 8.8 8.2H3.2C3.6 6.8 7.4 3.2 12 3.2Z"/><path d="M12 11.4v7.2a2.2 2.2 0 0 0 4.4 0"/>',
   check:'<path d="m4.5 12.5 5 5 10-11"/>',
+  destello:'<path d="M12 3.2 13.9 9l5.8 1.9-5.8 1.9L12 18.6l-1.9-5.8L4.3 10.9 10.1 9Z"/>' +
+    '<path d="M18.5 3.5v3M20 5h-3"/>',
   recargar:'<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20.2 4.2v4.4h-4.4"/>',
   montana:'<path d="m2.5 19.5 6.2-11 3.6 6.2M9.4 19.5l5.4-9.4 6.7 9.4z"/>',
   escuela:'<path d="M3.5 9.8 12 5.2l8.5 4.6L12 14.4z"/><path d="M6.8 11.6v4.8c0 1.5 2.3 2.8 5.2 2.8s5.2-1.3 5.2-2.8v-4.8M20.5 9.8v5"/>',
@@ -1155,11 +1204,12 @@ function eur(n){
 /* ---------- blindaje de la carga ---------- */
 var TABLAS = ['usuarios','patron','custodia','eventos','eventos_excepciones','tareas',
   'tipos_evento','comentarios','gastos','categorias_gasto','liquidaciones','cuenta','alimentos',
-  'comidas','objetivos_semana','citas','medicacion','dosis','episodios','vacunas',
+  'comidas','objetivos_semana','platos','citas','medicacion','dosis','episodios','vacunas',
   'crecimiento','documentos','mensajes','actividad','visitas'];
 function normalizar(d){
   d = d || {};
   TABLAS.forEach(function(k){ if(!Array.isArray(d[k])) d[k]=[]; });
+  d.comidas.forEach(migraComida);
   if(!d.config) d.config = {};
   if(!d.hoy) d.hoy = hoyStr();
   return d;
@@ -1288,13 +1338,54 @@ function eventosDe(f){
   });
   return out.sort(function(a,b){ return (a.hora||'99:99').localeCompare(b.hora||'99:99'); });
 }
+/**
+ * Los próximos n eventos, UNO POR EVENTO.
+ *
+ * Antes esto recorría día a día y empujaba cada ocurrencia, así que un
+ * viaje de cinco días salía cinco veces seguidas en la tarjeta de hoy y
+ * se comía el hueco de todo lo demás. Ahora cada evento aparece una vez,
+ * en su primer día visible, y lleva el tramo que ocupa.
+ */
 function proximosEventos(n, desdeFecha){
-  var f = desdeFecha || state.data.hoy, out = [];
+  var f = desdeFecha || state.data.hoy, out = [], vistos = {};
   for(var i=0; i<60 && out.length<n; i++){
-    eventosDe(f).forEach(function(o){ if(out.length<n) out.push(o); });
+    eventosDe(f).forEach(function(o){
+      /* Las repeticiones sí vuelven: cada semana es una cita distinta.
+         Lo que no se repite es el mismo tramo largo un día tras otro. */
+      var k = esLargo(o.ev) ? 'L'+o.ev.id : o.ev.id + '@' + o.fecha;
+      if(vistos[k] || out.length >= n) return;
+      vistos[k] = true;
+      out.push(o);
+    });
     f = addDays(f,1);
   }
   return out;
+}
+
+/**
+ * Normaliza a HH:MM, que es lo único que acepta <input type="time">.
+ * El Sheet puede devolver "9:30", "9.30" o "930" de cuando el campo era
+ * texto libre; si no se puede leer, se devuelve vacío antes que romper
+ * el input y perder el resto del formulario.
+ */
+function horaHHMM(v){
+  var t = String(v == null ? '' : v).trim();
+  if(!t) return '';
+  var m = t.match(/^(\d{1,2})\s*[:.,hH]?\s*(\d{2})?$/);
+  if(!m) return '';
+  var hh = Math.min(23, +m[1]), mm = Math.min(59, +(m[2] || 0));
+  return (hh<10?'0':'') + hh + ':' + (mm<10?'0':'') + mm;
+}
+
+/** "26–30 ago", "Hoy · hasta el 30" — lo que dura, dicho como un tramo. */
+function cuandoEvento(o){
+  var ini = fechaKey(o.fecha), fin = fechaKey(o.ev.fecha_fin);
+  if(!esLargo(o.ev)) return cuando(ini);
+  var hoy = state.data.hoy;
+  var empieza = ini <= hoy ? null : cuando(ini);
+  return (empieza ? empieza + ' – ' : 'Hasta el ') +
+         (empieza ? fechaCorta(fin) : fechaCorta(fin)) +
+         (ini <= hoy && fin >= hoy ? ' · en curso' : '');
 }
 function cuando(f){
   return f===state.data.hoy ? 'Hoy'
@@ -1641,14 +1732,16 @@ function pintarHoy(){
   if(prox.length){
     html += '<div class="hoy-sep"></div><div class="hoy-evs">' + prox.map(function(o){
       var tp = tipoEvento(o.ev.tipo);
-      var extra = [cuando(o.fecha)];
+      var extra = [cuandoEvento(o)];
       if(o.ev.lugar) extra.push(esc(o.ev.lugar));
       else if(o.ev.responsable) extra.push('lleva ' + esc(nombreDe(o.ev.responsable).toLowerCase()));
+      /* Un tramo de varios días no tiene "hora": ponerla confunde. */
+      var hora = esLargo(o.ev) ? '' : String(o.hora || '');
       return '<div class="ev">' +
         '<div class="ev-i" style="background:'+tp.color+'1F;color:'+tp.color+'">' +
           svg(icoEvento(tp.id), 20) + '</div>' +
         '<div class="ev-t"><b>'+esc(o.ev.titulo)+'</b><span>'+extra.join(' · ')+'</span></div>' +
-        '<div class="ev-h">'+esc(o.hora||'')+'</div></div>';
+        '<div class="ev-h">'+esc(hora)+'</div></div>';
     }).join('') + '</div>';
 
     /* La nota accionable del evento que ya está a la vista se pega aquí, sin
@@ -1682,7 +1775,8 @@ function pintarSecciones(){
   out.push(tarjeta('cal','calendario','Calendario',
     prox ? '<div class="sec-l">Próximo evento</div>' +
            '<div class="sec-v">'+esc(prox.ev.titulo)+'</div>' +
-           '<div class="sec-s">'+cuando(prox.fecha)+(prox.hora?' · '+esc(prox.hora):'')+'</div>'
+           '<div class="sec-s">'+cuandoEvento(prox) +
+           (esLargo(prox.ev)||!prox.hora ? '' : ' · '+esc(prox.hora))+'</div>'
          : '<div class="vac"><b>Sin eventos</b>Añade el primero y aparecerá aquí.</div>',
     'Ver semana completa','calendario'));
 
@@ -1755,36 +1849,80 @@ function pintarSemana(){
   $('#semPrev').innerHTML = svg('chevronI',16);
   $('#semNext').innerHTML = svg('chevron',16);
 
+  /* Una columna de 48px no aguanta un título. Antes se metía icono, hora
+     y nombre recortado dentro de cada día y no se leía nada. Ahora la
+     columna solo dice de quién es el día, los eventos de un día son
+     puntos, y lo que dura varios días se dibuja como una BANDA que
+     cruza las columnas: así un viaje se ve como lo que es, un tramo. */
   var html = '';
   for(var i=0;i<7;i++){
-    var f = addDays(lun,i), c = custodiaDe(f), evs = eventosDe(f);
+    var f = addDays(lun,i), c = custodiaDe(f);
+    var sueltos = eventosDe(f).filter(function(o){ return !esLargo(o.ev); });
     var cls = ['d', c.quien?claveColor(c.quien):'', (c.estimado&&c.quien)?'est':'',
                f===state.data.hoy?'hoy':''].filter(String).join(' ');
     var col = c.quien ? 'var(--'+claveColor(c.quien)+')' : 'var(--t3)';
     html += '<div class="'+cls+'">' +
       '<span class="dw">'+DOW_CORTO[i]+'</span>' +
       '<span class="nu">'+(+f.split('-')[2])+'</span>' +
-      '<span class="i" style="color:'+col+'">'+svg('casa',17)+'</span>' +
+      '<span class="i" style="color:'+col+'">'+svg('casa',16)+'</span>' +
       '<span class="qn">'+(c.quien?esc(nombreDe(c.quien)):'—')+'</span>' +
-      '<div class="evs">' +
-        evs.slice(0,1).map(function(o){
-          var tp = tipoEvento(o.ev.tipo);
-          return '<span class="i" style="color:'+tp.color+'">'+svg(icoEvento(tp.id),14)+'</span>' +
-                 '<span class="eh">'+esc(o.hora||'·')+'</span>' +
-                 '<span class="en">'+esc(o.ev.titulo)+'</span>';
+      '<div class="pts">' +
+        sueltos.slice(0,3).map(function(o){
+          return '<i style="background:'+tipoEvento(o.ev.tipo).color+'"></i>';
         }).join('') +
-        (evs.length>1 ? '<span class="mas">+'+(evs.length-1)+'</span>' : '') +
+        (sueltos.length>3 ? '<span class="mas">+'+(sueltos.length-3)+'</span>' : '') +
       '</div></div>';
   }
   $('#semDias').innerHTML = html;
+  $('#semBandas').innerHTML = bandasSemana(lun);
 
+  /* La leyenda solo nombra lo que de verdad se ve como punto: las bandas
+     ya llevan su nombre escrito dentro. */
   var usados = {};
-  for(var j=0;j<7;j++) eventosDe(addDays(lun,j)).forEach(function(o){ usados[String(o.ev.tipo)]=true; });
+  for(var j=0;j<7;j++){
+    eventosDe(addDays(lun,j)).forEach(function(o){
+      if(!esLargo(o.ev)) usados[String(o.ev.tipo)] = true;
+    });
+  }
   var tipos = state.data.tipos_evento.filter(function(t){ return usados[String(t.id)]; });
+  var hayBandas = $('#semBandas').innerHTML !== '';
   $('#semLeg').innerHTML = tipos.length
     ? tipos.map(function(t){
         return '<span><i style="background:'+t.color+'"></i>'+esc(t.nombre)+'</span>'; }).join('')
-    : '<span style="color:var(--t3)">Sin eventos esta semana</span>';
+    : (hayBandas ? '' : '<span style="color:var(--t3)">Sin eventos esta semana</span>');
+}
+
+/**
+ * Bandas de lo que dura varios días, colocadas sobre la rejilla de 7.
+ * Cada una ocupa las columnas que abarca DENTRO de esta semana, y las
+ * puntas indican si viene de antes o sigue después.
+ */
+function bandasSemana(lun){
+  var dom = addDays(lun,6), vistos = {}, bandas = [];
+  state.data.eventos.forEach(function(ev){
+    if(!esLargo(ev) || vistos[ev.id]) return;
+    var ini = fechaKey(ev.fecha), fin = fechaKey(ev.fecha_fin) || ini;
+    if(fin < lun || ini > dom) return;                 /* no toca esta semana */
+    vistos[ev.id] = true;
+    var desde = Math.max(0, diffDias(lun, ini));
+    var hasta = Math.min(6, diffDias(lun, fin));
+    bandas.push({ ev:ev, a:desde, b:hasta,
+                  viene: ini < lun, sigue: fin > dom });
+  });
+  if(!bandas.length) return '';
+  bandas.sort(function(x,y){ return x.a - y.a || (y.b-y.a) - (x.b-x.a); });
+  return bandas.slice(0,3).map(function(b){
+    var tp = tipoEvento(b.ev.tipo);
+    return '<button class="bnd-s" data-calev="'+esc(b.ev.id)+'" ' +
+      'style="grid-column:'+(b.a+1)+' / '+(b.b+2)+';background:'+tp.color+'18;' +
+      'color:'+tp.color+';border-color:'+tp.color+'40">' +
+      (b.viene ? '<span class="pt-a">‹</span>' : '') +
+      svg(icoEvento(tp.id),13) +
+      '<span class="nm">'+esc(b.ev.titulo)+'</span>' +
+      (b.sigue ? '<span class="pt-a">›</span>' : '') +
+      '</button>';
+  }).join('') +
+  (bandas.length>3 ? '<div class="bnd-mas">y '+(bandas.length-3)+' más</div>' : '');
 }
 
 /**
@@ -1985,10 +2123,23 @@ var TIPOS_COMIDA = [
   {id:'comida',   nom:'Comida',   em:'🍽️'}, {id:'merienda', nom:'Merienda', em:'🍪'},
   {id:'cena',     nom:'Cena',     em:'🌙'}, {id:'otro',     nom:'Otra',     em:'🍴'}
 ];
+/* DÓNDE comió. Antes esto mezclaba dos preguntas distintas en un solo
+   campo: "con papá" y "fuera" no se excluyen — se puede comer fuera con
+   papá. Ahora `lugar` dice dónde y `con` dice a cargo de quién. */
 var LUGARES_C = [
-  {id:'papa', nom:'Con papá'}, {id:'mama', nom:'Con mamá'},
-  {id:'cole', nom:'Cole'},     {id:'fuera', nom:'Fuera'}
+  {id:'casa',  nom:'En casa'}, {id:'cole', nom:'Cole'},
+  {id:'fuera', nom:'Fuera'},   {id:'otros', nom:'Otros'}
 ];
+
+/** Compatibilidad con lo apuntado antes de separar los dos campos. */
+function migraComida(c){
+  var l = String(c.lugar||'').trim().toLowerCase();
+  if(l === 'papa' || l === 'mama'){
+    if(!c.con) c.con = l;
+    c.lugar = 'casa';
+  }
+  return c;
+}
 var ESTADOS_T = [
   {id:'comio',   nom:'Se lo comió', col:'var(--ali)'},
   {id:'probo',   nom:'Lo probó',    col:'var(--cal)'},
@@ -2161,6 +2312,113 @@ function arcoGauge(pct, px){
       'transform="rotate(135 52 52)"/></svg>';
 }
 
+/* ============================================================
+   QUÉ CONVIENE PARA LA SIGUIENTE COMIDA
+
+   La app no dice si ha comido bien o mal: eso no se decide en una
+   comida. Solo responde a la pregunta práctica de quien está delante
+   de la nevera — qué falta y qué ya está cubierto.
+
+   Todo se calcula al pintar, desde lo registrado. No hay IA aquí:
+   con los objetivos semanales del Sheet basta y sobra.
+   ============================================================ */
+
+/** ¿Qué comida toca ahora? La siguiente que no esté ya registrada hoy. */
+function siguienteComida(){
+  var h = new Date().getHours();
+  var orden = ['desayuno','almuerzo','comida','merienda','cena'];
+  var hechas = {};
+  comidasDelDia(state.data.hoy).forEach(function(c){ hechas[String(c.tipo)] = true; });
+  var toca = h < 10 ? 'desayuno' : h < 12 ? 'almuerzo' : h < 15 ? 'comida'
+           : h < 18 ? 'merienda' : 'cena';
+  var i = orden.indexOf(toca);
+  for(; i < orden.length; i++){ if(!hechas[orden[i]]) return orden[i]; }
+  return '';                                   /* el día ya está completo */
+}
+
+/**
+ * Qué falta y qué sobra, mirando el día Y la semana.
+ * Devuelve listas ordenadas por urgencia real, no por peso teórico.
+ */
+function consejoComida(){
+  var hoy = state.data.hoy, lun = lunesDe(hoy);
+  var diasPasados = diffDias(lun, hoy) + 1;
+  var faltan = [], cubiertos = [], pasados = [];
+
+  objetivosSemana().forEach(function(o){
+    var g = String(o.grupo), obj = num(o.objetivo);
+    if(!obj) return;
+    var sem = racionesSemana(g, lun), dia = racionesDia(g, hoy);
+
+    if(String(o.tipo) === 'max'){
+      if(sem > obj) pasados.push({ o:o, sem:sem, obj:obj });
+      return;
+    }
+    /* Lo que tocaría llevar a estas alturas de la semana, no el total:
+       pedir 14 raciones de verdura un lunes no ayuda a nadie. */
+    var esperado = obj * (diasPasados / 7);
+    if(dia > 0){ cubiertos.push({ o:o, dia:dia }); return; }
+    if(sem < esperado * 0.75) faltan.push({ o:o, sem:sem, obj:obj, deuda:esperado - sem });
+  });
+
+  faltan.sort(function(a,b){ return b.deuda - a.deuda; });
+  cubiertos.sort(function(a,b){ return b.dia - a.dia; });
+  return { faltan:faltan, cubiertos:cubiertos, pasados:pasados,
+           comida:siguienteComida(), dias:diasPasados };
+}
+
+function pintarConsejo(){
+  var c = consejoComida();
+  var nom = { desayuno:'el desayuno', almuerzo:'el almuerzo', comida:'la comida',
+              merienda:'la merienda', cena:'la cena' }[c.comida] || '';
+  var reg = comidasDelDia(state.data.hoy).length;
+
+  /* Sin nada registrado hoy no hay nada que aconsejar: inventarlo sería
+     justo lo que el planteamiento pide no hacer. */
+  if(!reg){
+    return '<div class="cons"><div class="cons-hd">' + svg('destello',16) +
+      '<b>' + (nom ? 'Para ' + nom : 'Hoy') + '</b></div>' +
+      '<p class="cons-vacio">Cuando apuntéis la primera comida del día, aquí ' +
+      'aparecerá qué conviene para la siguiente.</p></div>';
+  }
+
+  var h = '<div class="cons"><div class="cons-hd">' + svg('destello',16) +
+    '<b>' + (nom ? 'Para ' + nom : 'Por hoy ya está') + '</b></div>';
+
+  if(c.faltan.length){
+    h += '<ul class="cons-l">' + c.faltan.slice(0,3).map(function(f){
+      return '<li class="si"><span class="em">'+esc(f.o.emoji||'•')+'</span>' +
+        '<span>'+esc(String(f.o.nombre||f.o.grupo))+'</span></li>';
+    }).join('') + '</ul>';
+  }
+
+  var lineas = [];
+  if(c.cubiertos.length){
+    lineas.push('Hoy ' + listaEs(c.cubiertos.slice(0,3).map(function(x){
+      return String(x.o.nombre||x.o.grupo).toLowerCase(); })) +
+      (c.cubiertos.length === 1 ? ' ya está' : ' ya están') + ': no hace falta insistir.');
+  }
+  if(!c.faltan.length && !c.cubiertos.length){
+    lineas.push('La semana va equilibrada. Lo que apetezca.');
+  } else if(!c.faltan.length){
+    lineas.push('No falta ningún grupo a estas alturas de la semana.');
+  }
+  c.pasados.slice(0,2).forEach(function(p){
+    lineas.push(String(p.o.nombre||p.o.grupo) + ': ya van ' +
+      String(Math.round(p.sem*10)/10).replace('.',',') + ' esta semana, de ' + p.obj + '.');
+  });
+
+  h += lineas.map(function(l){ return '<p class="cons-p">'+esc(l)+'</p>'; }).join('');
+  return h + '</div>';
+}
+
+/** "verdura, fruta y pescado" — con la coma y la y en su sitio. */
+function listaEs(a){
+  if(!a.length) return '';
+  if(a.length === 1) return a[0];
+  return a.slice(0,-1).join(', ') + ' y ' + a[a.length-1];
+}
+
 function pintarAlimentacion(){
   var lun = state.aliLunes || lunesDe(state.data.hoy);
   state.aliLunes = lun;
@@ -2177,6 +2435,11 @@ function pintarAlimentacion(){
     ' – '+(+dom.split('-')[2])+' '+MESES[+dom.split('-')[1]-1]+'</span></div>';
 
   var out = '';
+
+  /* Lo primero de la pantalla es la pregunta práctica: qué toca ahora.
+     El índice de la semana viene después — informa, pero no se actúa
+     sobre él delante de la nevera. Solo en la semana en curso. */
+  if(esActual) out += pintarConsejo();
 
   /* ---- ICH ---- */
   var i = ich(lun), iAnt = ich(addDays(lun,-7));
@@ -2354,7 +2617,7 @@ function abrirComida(grupoId){
     }
     if(c){
       base = { grupo_id:c.grupo_id, fecha:state.aliDia, hora:c.hora, tipo_comida:c.tipo,
-        lugar:c.lugar, items:c.items.map(function(it){
+        lugar:c.lugar, con:c.con, items:c.items.map(function(it){
           return { alimento_id:String(it.alimento_id||''), nombre:String(it.nombre||''),
                    grupo:String(it.grupo||'otros'), estado_toma:String(it.estado_toma||'comio'),
                    emoji:(alimento(it.alimento_id)||{}).emoji || '' };
@@ -2370,6 +2633,9 @@ function abrirComida(grupoId){
     var n = new Date();
     base.hora = pad(n.getHours())+':'+pad(n.getMinutes());
   }
+  if(!base.lugar) base.lugar = 'casa';
+  /* A cargo de: quien tenga la custodia ese día acierta casi siempre. */
+  if(!base.con) base.con = custodiaDe(base.fecha).quien || state.user;
   borrador = base;
   pintarHojaComida();
 }
@@ -2384,12 +2650,45 @@ function pintarHojaComida(){
         t.em+' '+t.nom+'</button>';
     }).join('') + '</div>';
 
-  h += '<div class="f-lb">Hora y dónde</div><div class="fila2">' +
-    '<input class="inp" id="inHora" style="width:96px" type="text" inputmode="numeric" ' +
-      'value="'+esc(b.hora)+'" placeholder="13:30">' +
-    '<div class="chips" style="flex:1" id="chLugar">' + LUGARES_C.map(function(l){
+  h += '<div class="f-lb">Hora</div>' +
+    '<input class="inp" id="inHora" style="width:130px" type="time" ' +
+      'value="'+esc(horaHHMM(b.hora))+'">';
+
+  h += '<div class="f-lb">Dónde</div><div class="chips" id="chLugar">' +
+    LUGARES_C.map(function(l){
       return '<button class="chip'+(b.lugar===l.id?' on':'')+'" data-lugar="'+l.id+'">' +
-        esc(l.nom)+'</button>'; }).join('') + '</div></div>';
+        esc(l.nom)+'</button>'; }).join('') + '</div>';
+
+  /* Dónde comió y a cargo de quién estaba son dos preguntas: se puede
+     comer fuera con papá. Viene puesto según la custodia del día, que
+     acierta casi siempre. */
+  h += '<div class="f-lb">A cargo de</div><div class="chips" id="chCon">' +
+    state.data.usuarios.filter(function(u){ return String(u.rol) !== 'hija'; })
+      .map(function(u){
+        var k = claveColor(u.username), on = b.con === u.username;
+        return '<button class="chip'+(on?' on':'')+'" data-con="'+esc(u.username)+'" ' +
+          (on ? 'style="background:var(--'+k+'-s);color:var(--'+k+'-d);' +
+                'border-color:var(--'+k+')"' : '') + '>' + esc(u.nombre)+'</button>';
+      }).join('') + '</div>';
+
+  /* El plato tal cual se dice en casa. Es lo natural de escribir, y lo
+     que se repite semana a semana: la segunda vez se resuelve solo. */
+  h += '<div class="f-lb">El plato</div>' +
+    '<div class="plato-f">' +
+      '<input class="inp" id="inPlato" type="text" placeholder="Arroz a la cubana…" ' +
+        'value="'+esc(b.plato||'')+'" autocomplete="off" autocorrect="off">' +
+      '<button class="plato-b" id="btnPlato">'+svg('destello',17)+'</button>' +
+    '</div>';
+  if(b.platoEstado === 'cargando'){
+    h += '<div class="plato-e">Mirando de qué se compone…</div>';
+  } else if(b.platoAviso){
+    h += '<div class="plato-e ko">'+esc(b.platoAviso)+'</div>';
+  } else if(b.platoFuente){
+    h += '<div class="plato-e">' + (
+      b.platoFuente === 'ia'         ? 'Propuesto por la IA. Corrige lo que no cuadre: se guarda tu versión.'
+      : b.platoFuente === 'biblioteca' ? 'Deducido de vuestros alimentos. Corrige si falta algo.'
+      : 'Ya lo teníais guardado.') + '</div>';
+  }
 
   h += '<div class="f-lb">Qué ha comido</div>' +
     '<div class="busca"><span class="lupa i">'+svg('lupa',17)+'</span>' +
@@ -2422,6 +2721,61 @@ function pintarHojaComida(){
 
   abrirHoja(h);
   pintarBusqueda();
+}
+
+/* ---------- interpretar un plato ----------
+   Se escribe "Arroz a la cubana" y se marcan cereales + huevos +
+   verduras. El backend resuelve en tres capas (guardado → biblioteca →
+   IA); aquí solo se pinta el resultado y se deja corregir, porque la
+   corrección es lo que hace que la próxima vez acierte. */
+
+function interpretarPlato(){
+  var nombre = (($('#inPlato')||{}).value || '').trim();
+  if(!nombre){ toast('Escribe primero el plato', true); return; }
+  borrador.plato = nombre;
+  borrador.platoEstado = 'cargando';
+  borrador.platoAviso = '';
+  pintarHojaComida();
+
+  llamar('interpretaPlato', { nombre:nombre })
+    .then(function(d){
+      borrador.platoEstado = '';
+      borrador.platoFuente = d.fuente;
+      borrador.platoAviso = d.aviso || '';
+      if(!d.grupos || !d.grupos.length){
+        if(!borrador.platoAviso) borrador.platoAviso = 'No he sabido de qué se compone. Márcalo tú.';
+        pintarHojaComida(); return;
+      }
+      /* Los grupos entran como items sin alimento concreto: cuentan
+         para los objetivos, no para la variedad. Igual que el modo
+         "solo grupos", porque es exactamente lo mismo. */
+      d.grupos.forEach(function(g){
+        if(borrador.items.some(function(it){ return !it.alimento_id && it.grupo===g; })) return;
+        var o = objGrupo(g);
+        borrador.items.push({ alimento_id:'', nombre:(o&&o.nombre)||g, grupo:g,
+                              estado_toma:'comio', emoji:(o&&o.emoji)||'🍽️', dePlato:true });
+      });
+      pintarHojaComida();
+    })
+    .catch(function(err){
+      borrador.platoEstado = '';
+      borrador.platoAviso = String(err.message||err);
+      pintarHojaComida();
+    });
+}
+
+/** Al guardar la comida se guarda también lo que sabemos del plato. */
+function recordarPlato(){
+  var b = borrador;
+  if(!b.plato) return Promise.resolve();
+  var grupos = b.items.filter(function(it){ return !it.alimento_id; })
+                      .map(function(it){ return it.grupo; });
+  /* Si lo has tocado a mano, se guarda como manual: manda sobre la IA. */
+  var fuente = (b.platoFuente === 'ia' && !b.platoTocado) ? 'ia' : 'manual';
+  if(!grupos.length) return Promise.resolve();
+  return llamarPost({ action:'savePlato', payload:{
+    nombre:b.plato, grupos:grupos, fuente:fuente, creado_por:state.user } })
+    .catch(function(){});          /* que no falle guardar la comida por esto */
 }
 
 function buscarAlimentos(q){
@@ -2497,11 +2851,12 @@ function guardarComida(){
   var btn = $('#guardarComida');
   if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
 
+  recordarPlato();
   llamarPost({
     action:'saveComida',
     payload:{
-      grupo_id:b.grupo_id || '', fecha:b.fecha, hora:b.hora,
-      tipo_comida:b.tipo_comida, lugar:b.lugar, creado_por:state.user,
+      grupo_id:b.grupo_id || '', fecha:b.fecha, hora:b.hora, nota:b.plato || '',
+      tipo_comida:b.tipo_comida, lugar:b.lugar, con:b.con, creado_por:state.user,
       items: b.items.map(function(it){
         return { alimento_id:it.alimento_id||'', nombre:it.nombre,
                  grupo:it.grupo, estado_toma:it.estado_toma };
@@ -3136,6 +3491,16 @@ function detalleDia(){
       esc(nombreDe(c.quien).toLowerCase())+' <span style="color:var(--'+k+')">' +
       svg('casa',15)+'</span></span>' : '') + '</div>';
 
+  /* El convenio es la norma, no una ley física: hay días que se cambian.
+     Se corrige aquí, en el día, y queda marcado como cambio para que se
+     distinga de lo que dice el convenio. */
+  h += '<button class="dia-cust" data-cust="'+f+'">' + svg('casa',15) +
+    '<span>' + (c.origen === 'cambio' ? 'Cambiado' : 'Cambiar de quién es este día') +
+    '</span>' + svg('chevron',13) + '</button>';
+  if(c.origen === 'cambio' && c.motivo){
+    h += '<div class="dia-mot">'+esc(c.motivo)+'</div>';
+  }
+
   if(!evs.length){
     h += '<div class="dia-vacio">' +
       (state.calCat ? 'Nada de esta categoría este día.' : 'Nada apuntado este día.') + '</div>';
@@ -3272,8 +3637,8 @@ function pintarFormEvento(){
       }).join('') + '</div>' +
     '<div class="f-lb">Cuándo</div><div class="fila2">' +
       '<input class="inp" id="eFecha" type="date" value="'+esc(b.fecha)+'">' +
-      '<input class="inp" id="eHora" type="text" inputmode="numeric" style="width:100px" ' +
-        'value="'+esc(b.hora)+'" placeholder="17:30"></div>' +
+      '<input class="inp" id="eHora" type="time" style="width:118px" ' +
+        'value="'+esc(horaHHMM(b.hora))+'"></div>' +
     '<div class="f-lb">Último día (si dura varios)</div>' +
     '<input class="inp" id="eFin" type="date" value="'+esc(b.fecha_fin)+'">' +
     '<div class="f-lb">Dónde</div>' +
@@ -3335,6 +3700,65 @@ function leerFormEvento(){
   if(v('eLugar')!==null)  b.lugar = v('eLugar');
   if(v('eAccion')!==null) b.accion = v('eAccion');
   if(v('eHasta')!==null)  b.repite_hasta = v('eHasta');
+}
+
+/* ---------- cambiar de quién es un día ---------- */
+var borradorCust = null;
+
+function formCustodia(f){
+  var c = custodiaDe(f);
+  borradorCust = { fecha:f, username:c.quien || state.user, motivo:c.motivo || '',
+                   eraCambio: c.origen === 'cambio' };
+  pintarFormCustodia();
+}
+
+function pintarFormCustodia(){
+  var b = borradorCust, c = custodiaDe(b.fecha);
+  var us = state.data.usuarios.filter(function(u){ return String(u.rol) !== 'hija'; });
+
+  var h = '<h3>¿Con quién está el ' + (+b.fecha.split('-')[2]) + ' de ' +
+    MESES[+b.fecha.split('-')[1]-1] + '?</h3>' +
+    '<div class="f-lb">Ese día se queda con</div><div class="cust-g">' +
+    us.map(function(u){
+      var k = claveColor(u.username), on = b.username === u.username;
+      return '<button class="cust-o'+(on?' on':'')+'" data-custq="'+esc(u.username)+'" ' +
+        'style="--c:var(--'+k+');--cs:var(--'+k+'-s);--cd:var(--'+k+'-d)">' +
+        avatarHTML(u.username, 40) + '<b>'+esc(u.nombre)+'</b>' +
+        (on ? '<span class="tk">'+svg('check',14)+'</span>' : '') + '</button>';
+    }).join('') + '</div>' +
+    '<div class="f-lb">Por qué (opcional)</div>' +
+    '<input class="inp" id="cuMotivo" value="'+esc(b.motivo)+'" ' +
+      'placeholder="Boda, viaje, cambio de turno…">' +
+    '<div class="aviso">El convenio no se toca: esto apunta un cambio para ' +
+      'ese día suelto y queda marcado como tal. Lo verá también ' +
+      esc(nombreDe(otro(state.user)).toLowerCase()) + '.</div>' +
+    '<button class="btn" style="background:var(--cal)" id="cuGuardar">Guardar el cambio</button>';
+
+  if(b.eraCambio){
+    h += '<button class="btn sec" id="cuVolver">Volver a lo que dice el convenio</button>';
+  }
+  abrirHoja(h);
+}
+
+function guardarCustodia(){
+  var b = borradorCust;
+  b.motivo = (($('#cuMotivo')||{}).value || '').trim();
+  var btn = $('#cuGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  llamarPost({ action:'saveCustodia', payload:{
+      fecha:b.fecha, username:b.username, origen:'cambio',
+      motivo:b.motivo, creado_por:state.user } })
+    .then(function(){ cerrarHoja(); toast('Día cambiado'); return recargar(); })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar el cambio'; }
+    });
+}
+
+function quitarCustodia(){
+  llamarPost({ action:'deleteCustodia', fecha:borradorCust.fecha, creado_por:state.user })
+    .then(function(){ cerrarHoja(); toast('Vuelve al convenio'); return recargar(); })
+    .catch(function(err){ toast(String(err.message||err), true); });
 }
 
 function guardarEvento(){
@@ -4096,8 +4520,8 @@ function pintarFormSalud(){
       campo('Motivo','fMotivo',b.motivo,'Revisión rutinaria') +
       '<div class="f-lb">Cuándo</div><div class="fila2">' +
         '<input class="inp" id="fFecha" type="date" value="'+esc(b.fecha)+'">' +
-        '<input class="inp" id="fHora" type="text" inputmode="numeric" style="width:104px" ' +
-          'value="'+esc(b.hora)+'" placeholder="17:30"></div>' +
+        '<input class="inp" id="fHora" type="time" style="width:118px" ' +
+          'value="'+esc(horaHHMM(b.hora))+'"></div>' +
       campo('Centro','fCentro',b.centro,'Clínica Sonríe') +
       campo('Profesional','fProf',b.profesional,'Opcional') +
       '<div class="f-lb">Quién la lleva</div><div class="chips">' +
@@ -4124,8 +4548,8 @@ function pintarFormSalud(){
     }
     h += '<div class="f-lb">Cuándo</div><div class="fila2">' +
       '<input class="inp" id="fFecha" type="date" value="'+esc(b.fecha)+'">' +
-      '<input class="inp" id="fHora" type="text" inputmode="numeric" style="width:104px" ' +
-        'value="'+esc(b.hora)+'" placeholder="18:45"></div>';
+      '<input class="inp" id="fHora" type="time" style="width:118px" ' +
+        'value="'+esc(horaHHMM(b.hora))+'"></div>';
     if(b.evolucion){
       h += '<div class="f-lb">Evolución</div><div class="aviso" style="background:var(--surface2);' +
         'color:var(--t2);white-space:pre-line">'+esc(b.evolucion)+'</div>';
@@ -4354,6 +4778,9 @@ document.addEventListener('click', function(e){
   var chL = e.target.closest('[data-lugar]');
   if(chL){ borrador.lugar = (borrador.lugar===chL.dataset.lugar) ? '' : chL.dataset.lugar;
     pintarHojaComida(); return; }
+  var chC = e.target.closest('[data-con]');
+  if(chC){ borrador.con = chC.dataset.con; pintarHojaComida(); return; }
+  if(e.target.closest('#btnPlato')){ interpretarPlato(); return; }
   var add = e.target.closest('[data-add]');
   if(add){
     var a = alimento(add.dataset.add);
@@ -4365,6 +4792,7 @@ document.addEventListener('click', function(e){
     return;
   }
   var quitar = e.target.closest('[data-quitar]');
+  if(quitar) borrador.platoTocado = true;   /* tu corrección manda sobre la IA */
   if(quitar){ borrador.items.splice(+quitar.dataset.quitar,1); pintarHojaComida(); return; }
   var est = e.target.closest('[data-est]');
   if(est){ borrador.items[+est.dataset.ix].estado_toma = est.dataset.est;
@@ -4431,6 +4859,13 @@ document.addEventListener('click', function(e){
     if(mesDe(state.calDia) !== state.calMes) state.calMes = mesDe(state.calDia);
     pintarCalendario(); return;
   }
+  var cst = e.target.closest('[data-cust]');
+  if(cst){ formCustodia(cst.dataset.cust); return; }
+  var cq = e.target.closest('[data-custq]');
+  if(cq){ borradorCust.username = cq.dataset.custq; pintarFormCustodia(); return; }
+  if(e.target.closest('#cuGuardar')){ guardarCustodia(); return; }
+  if(e.target.closest('#cuVolver')){ quitarCustodia(); return; }
+
   var ccat = e.target.closest('[data-calcat]');
   if(ccat){ state.calCat = ccat.dataset.calcat; pintarCalendario(); return; }
   if(e.target.closest('#fabCal')){ formEvento(''); return; }
