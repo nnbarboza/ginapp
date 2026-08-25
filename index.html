@@ -35,8 +35,8 @@
   --ini:#64748B;
 
   /* --- estado --- */
-  --ok:#35A853; --warn:#E7A93B; --warn-s:#FFF6E5; --err:#D64545; --err-s:#FDEDED;
-  --info:#4386C5;
+  --ok:#35A853; --warn:#E7A93B; --warn-s:#FFF6E5; --warn-d:#9A6510; --warn-b:#F5DFAE;
+  --err:#D64545; --err-s:#FDEDED; --info:#4386C5;
 
   /* --- neutros --- */
   --bg:#F8FAFC; --amb:#F8FAFC;
@@ -244,6 +244,27 @@ svg{display:block;flex-shrink:0}
 .nov-i span{font-size:12px;color:var(--t3)}
 .nov-i:last-child{padding-bottom:16px}
 
+/* ---------- ATENCIÓN ----------
+   Lo único de la home que NO se apaga por haber pasado por delante:
+   se apaga cuando la cosa deja de estar pendiente. Capa de ESTADO
+   (aviso), nunca de sección ni de perfil. */
+.aten{background:var(--warn-s);border:1px solid var(--warn-b);border-radius:var(--r-l);
+  padding:14px 15px;margin-bottom:14px}
+.aten-hd{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;
+  letter-spacing:.4px;text-transform:uppercase;color:var(--warn-d);margin-bottom:9px}
+.aten-i{display:flex;align-items:center;gap:11px;width:100%;background:none;border:0;
+  padding:9px 0;text-align:left;cursor:pointer;border-top:1px solid var(--warn-b)}
+.aten-i:first-of-type{border-top:0;padding-top:2px}
+.aten-i:last-of-type{padding-bottom:0}
+.aten-i .ic{width:32px;height:32px;border-radius:11px;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;background:var(--surface);color:var(--warn-d)}
+.aten-i div{flex:1;min-width:0}
+.aten-i b{display:block;font-size:14px;font-weight:600;color:var(--t1);
+  letter-spacing:-.15px;line-height:1.3}
+.aten-i span{display:block;font-size:12px;color:var(--t2);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aten-i .fl-ch{color:var(--warn-d);flex-shrink:0}
+
 /* ---------- OTRAS SECCIONES ---------- */
 .tt-s{padding:20px 0 12px}
 .tt-s h2{margin:0;font-size:26px;font-weight:700;letter-spacing:-.8px}
@@ -360,6 +381,54 @@ svg{display:block;flex-shrink:0}
 
 
 
+
+
+/* ---------- LOGIN ---------- */
+#login{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;padding:24px;
+  transition:opacity .3s}
+#login.out{opacity:0;pointer-events:none}
+#login .logo{transform:scale(1.2);margin-bottom:26px}
+#login h2{margin:0 0 6px;font-size:20px;font-weight:700;letter-spacing:-.4px;text-align:center}
+#login p{margin:0 0 22px;font-size:13.5px;color:var(--t2);text-align:center;max-width:280px;
+  line-height:1.5}
+.lg-users{display:flex;gap:14px;justify-content:center;width:100%}
+.lg-u{background:var(--surface);border-radius:var(--r-l);padding:18px 14px;box-shadow:var(--sh);
+  display:flex;flex-direction:column;align-items:center;gap:10px;flex:1;max-width:150px}
+.lg-u .av{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:25px;font-weight:700;overflow:hidden}
+.lg-u b{font-size:15px;font-weight:700}
+.lg-back{margin-top:20px;font-size:13px;font-weight:600;color:var(--t2);text-decoration:underline}
+.pin-p{display:flex;gap:11px;justify-content:center;margin:4px 0 22px}
+.pin-p i{width:15px;height:15px;border-radius:50%;background:var(--surface);
+  box-shadow:inset 0 0 0 1.5px var(--border)}
+.pin-p i.on{background:var(--yo);box-shadow:none}
+.pin-p i.mal{background:var(--err);box-shadow:none}
+.tecla-g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:270px}
+.tecla{height:62px;border-radius:20px;background:var(--surface);box-shadow:var(--sh);
+  display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:600}
+.tecla:active{background:var(--surface2)}
+.tecla.vacia{background:transparent;box-shadow:none}
+#login .err{color:var(--err);font-size:13px;font-weight:600;min-height:20px;margin-top:14px}
+.aviso-conf{background:var(--cal-s);color:var(--cal-d);border-radius:14px;padding:12px 14px;
+  font-size:12px;line-height:1.45;margin-top:24px;max-width:320px;text-align:center;
+  font-weight:500}
+
+/* ---------- SOLO LECTURA ---------- */
+.ajeno{background:var(--surface2);border-radius:14px;padding:13px;font-size:12.5px;
+  color:var(--t2);line-height:1.5;margin-top:16px;display:flex;gap:10px;align-items:flex-start}
+.ajeno b{color:var(--t1);font-weight:600}
+.ro-l{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+  border-top:1px solid var(--border);font-size:14px}
+.ro-l:first-of-type{border-top:none}
+.ro-l span{color:var(--t2);flex-shrink:0}
+.ro-l b{font-weight:600;text-align:right}
+
+/* ---------- AVISOS EN LA NAV ---------- */
+.nav button .pill{position:absolute;top:-1px;right:calc(50% - 18px);background:var(--info);
+  color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;padding:0 3px;
+  border:2px solid rgba(255,255,255,.92)}
 
 /* ---------- PERFIL ---------- */
 .pf-hd{display:flex;gap:16px;align-items:flex-start;padding:6px 0 18px}
@@ -814,12 +883,17 @@ svg{display:block;flex-shrink:0}
   <p id="splashTx">Cargando…</p>
 </div>
 
+<div id="login" hidden>
+  <div class="logo"><span class="gin">G<span class="li">I<svg class="cor" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21C7 17.8 3.5 14.6 3.5 10.6 3.5 7.6 5.8 5.5 8.5 5.5c1.5 0 2.8.7 3.5 1.9.7-1.2 2-1.9 3.5-1.9 2.7 0 5 2.1 5 5.1 0 4-3.5 7.2-8.5 10.4Z"/></svg></span>N</span><span class="app">app</span></div>
+  <div id="lgCuerpo" style="width:100%;display:flex;flex-direction:column;align-items:center"></div>
+</div>
+
 <div id="toast"></div>
 
 <div class="wrap">
 
   <div class="hd-top">
-    <div class="logo"><span class="gin">G<span class="li">I<svg class="cor" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21C7 17.8 3.5 14.6 3.5 10.6 3.5 7.6 5.8 5.5 8.5 5.5c1.5 0 2.8.7 3.5 1.9.7-1.2 2-1.9 3.5-1.9 2.7 0 5 2.1 5 5.1 0 4-3.5 7.2-8.5 10.4Z"/></svg></span>N</span><span class="app">app</span></div>
+    <div style="margin-right:auto"></div>
     <button class="campana" id="btnNov"><b id="novN" hidden>0</b></button>
     <button class="perfil" id="btnPerfil">
       <span class="nm" id="pfNom">—</span>
@@ -838,6 +912,7 @@ svg{display:block;flex-shrink:0}
 
   <!-- ===================== INICIO ===================== -->
   <section id="s-inicio">
+    <div class="aten" id="cardAten" hidden></div>
     <div class="hoy" id="cardHoy"></div>
 
     <div class="rap" id="rapidas"></div>
@@ -923,7 +998,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.7.0';
+var APP_VERSION = '0.8.0';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -933,6 +1008,7 @@ var APP_VERSION = '0.7.0';
 var BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyou9H8Zv_nw3zD5-F99eGN097wf8TfS78R78I8AOrbjT8-bg7aWFR-5dtlDWphaGfCrw/exec';
 
 var LS_USER = 'ginapp_user';
+var LS_TOKEN = 'ginapp_token';
 var LS_URL  = 'ginapp_backend_url';   // solo respaldo si la constante no está puesta
 
 var DIAS_COL  = ['dom','lun','mar','mie','jue','vie','sab'];
@@ -1293,14 +1369,33 @@ function backend(){
   if(BACKEND_URL && BACKEND_URL.indexOf('PEGA-AQUI') < 0) return BACKEND_URL;
   return localStorage.getItem(LS_URL) || '';
 }
+function token(){ return localStorage.getItem(LS_TOKEN) || ''; }
+
+/** Un error del backend con su código, para poder distinguir el 'auth'. */
+function errorBackend(j){
+  var e = new Error((j && j.error) || 'Respuesta inesperada del backend');
+  e.code = j && j.code;
+  return e;
+}
+/** Sesión caducada o token inválido: se limpia y se vuelve a la puerta. */
+function sesionCaida(err){
+  if(err && err.code === 'auth'){
+    localStorage.removeItem(LS_TOKEN);
+    pintarLogin();
+    return true;
+  }
+  return false;
+}
+
 function llamar(action, params){
   var url = new URL(backend());
   url.searchParams.set('action', action);
   Object.keys(params||{}).forEach(function(k){ url.searchParams.set(k, params[k]); });
+  if(token()) url.searchParams.set('token', token());
   return fetch(url.toString())
     .then(function(r){ return r.json(); })
     .then(function(j){
-      if(!j || !j.ok) throw new Error((j && j.error) || 'Respuesta inesperada del backend');
+      if(!j || !j.ok) throw errorBackend(j);
       return j.data;
     });
 }
@@ -1309,15 +1404,18 @@ function llamar(action, params){
  * permite mandar payloads largos que no caben en una URL.
  */
 function llamarPost(body){
+  body = body || {};
+  body.token = token();
   return fetch(backend(), {
     method:'POST',
     headers:{ 'Content-Type':'text/plain;charset=utf-8' },
     body: JSON.stringify(body)
   }).then(function(r){ return r.json(); })
     .then(function(j){
-      if(!j || !j.ok) throw new Error((j && j.error) || 'El backend no pudo guardar');
+      if(!j || !j.ok) throw errorBackend(j);
       return j.data;
-    });
+    })
+    .catch(function(err){ sesionCaida(err); throw err; });
 }
 
 /** Recarga los datos del Sheet y repinta. Nada se guarda en local. */
@@ -1636,14 +1734,125 @@ function pintarNovedades(){
   }).join('');
 }
 
+/* ============================================================
+   ATENCIÓN
+   Tres cosas del otro merecen no pasar desapercibidas: un mensaje
+   del tablón, un día de custodia que se sale del convenio, y la
+   salud en curso. No son avisos del registro de actividad: son
+   ESTADOS que se calculan al pintar. Por eso no se apagan por
+   entrar en la sección — se apagan cuando dejan de estar
+   pendientes. Y por eso tampoco se guarda nada.
+   ============================================================ */
+var DIAS_VISTA_CUSTODIA = 14;   /* más allá no es urgente, es agenda */
+var DIAS_VISTA_CITA     = 7;
+var DIAS_EPISODIO       = 2;    /* una fiebre de hace 3 días ya no es noticia */
+
+function atencion(){
+  var out = [], hoy = state.data.hoy;
+
+  mensajesSinLeer().forEach(function(m){
+    out.push({ ico:'ticket', tit:'Mensaje de '+nombreDe(m.autor),
+      sub:String(m.texto||'').replace(/\s+/g,' '), ir:'mensajes', id:m.id });
+  });
+
+  var tope = addDays(hoy, DIAS_VISTA_CUSTODIA);
+  state.data.custodia.filter(function(c){
+    var f = fechaKey(c.fecha);
+    return f >= hoy && f <= tope &&
+           String(c.origen||'') !== 'convenio' &&
+           String(c.creado_por||'') !== state.user &&
+           String(c.creado_por||'') !== 'convenio';
+  }).sort(function(a,b){ return fechaKey(a.fecha).localeCompare(fechaKey(b.fecha)); })
+    .forEach(function(c){
+      out.push({ ico:'calendario', tit:'Cambio de custodia · '+fechaCorta(fechaKey(c.fecha)),
+        sub: (fechaKey(c.fecha)===hoy ? 'Hoy' : 'Ese día') + ' le toca a ' +
+             nombreDe(c.username).toLowerCase() +
+             (c.motivo ? ' · '+String(c.motivo) : ''),
+        ir:'calendario', dia:fechaKey(c.fecha) });
+    });
+
+  /* No hay campo "cerrado": un episodio se considera en curso mientras
+     sea de los últimos DIAS_EPISODIO. Se apaga solo con el calendario. */
+  state.data.episodios.filter(function(e){
+    return fechaKey(e.fecha) >= addDays(hoy, -DIAS_EPISODIO) &&
+           String(e.creado_por||'') !== state.user;
+  }).sort(function(a,b){ return fechaKey(b.fecha).localeCompare(fechaKey(a.fecha)); })
+    .forEach(function(e){
+      out.push({ ico:'termometro', tit:'Episodio · '+(e.tipo||'salud'),
+        sub:(fechaKey(e.fecha)===hoy ? 'Hoy' : fechaCorta(fechaKey(e.fecha))) + ' · ' +
+            String(e.descripcion||e.evolucion||'sin detalle').replace(/\s+/g,' '),
+        ir:'salud', id:e.id, tipo:'episodio' });
+    });
+
+  medicacionActiva().filter(function(m){
+    return String(m.creado_por||'') !== state.user;
+  }).forEach(function(m){
+    out.push({ ico:'pastilla', tit:'Medicación en curso · '+(m.nombre||''),
+      sub:(m.dosis||'') + (m.cada_horas ? ' cada '+m.cada_horas+' h' : ''),
+      ir:'salud', id:m.id, tipo:'medicacion' });
+  });
+
+  var topeC = addDays(hoy, DIAS_VISTA_CITA);
+  state.data.citas.filter(function(c){
+    var f = fechaKey(c.fecha);
+    return f >= hoy && f <= topeC && String(c.creado_por||'') !== state.user;
+  }).sort(function(a,b){ return fechaKey(a.fecha).localeCompare(fechaKey(b.fecha)); })
+    .forEach(function(c){
+      out.push({ ico:'pediatra', tit:'Cita · '+(c.tipo||'médico'),
+        sub:fechaCorta(fechaKey(c.fecha)) + (c.hora ? ' · '+c.hora : '') +
+            (c.centro ? ' · '+c.centro : ''),
+        ir:'salud', id:c.id, tipo:'cita' });
+    });
+
+  return out;
+}
+
+function pintarAtencion(){
+  var n = atencion();
+  state._aten = n;
+  insignia(n.length);            /* también cuando es 0: si no, el icono se queda pillado */
+  if(!n.length){ $('#cardAten').hidden = true; $('#cardAten').innerHTML = ''; return; }
+  $('#cardAten').hidden = false;
+  $('#cardAten').innerHTML =
+    '<div class="aten-hd">'+svg('campana',14)+'Atención</div>' +
+    n.slice(0,5).map(function(a, i){
+      return '<button class="aten-i" data-aten="'+i+'">' +
+        '<span class="ic">'+svg(a.ico,17)+'</span>' +
+        '<div><b>'+esc(a.tit)+'</b><span>'+esc(a.sub)+'</span></div>' +
+        '<span class="fl-ch">'+svg('chevron',16)+'</span></button>';
+    }).join('') +
+    (n.length > 5 ? '<div class="aten-i" style="color:var(--t2);font-size:12px">y '+
+      (n.length-5)+' más</div>' : '');
+}
+
+/** Abre lo que hay detrás del aviso, no solo la sección. */
+function abrirAtencion(i){
+  var a = (state._aten || [])[i];
+  if(!a) return;
+  if(a.ir === 'mensajes'){ state.msgTodos = true; ir('perfil'); return; }
+  if(a.ir === 'calendario'){ state.calDia = a.dia; ir('calendario'); return; }
+  ir('salud');
+  if(a.tipo === 'episodio')   formEpisodio(a.id);
+  if(a.tipo === 'medicacion') formMedicacion(a.id);
+  if(a.tipo === 'cita')       formCita(a.id);
+}
+
+/** Contador en el icono de la app instalada. No es push: no despierta
+    el móvil, solo deja el número puesto hasta que se resuelve. */
+function insignia(n){
+  try {
+    if(n > 0 && navigator.setAppBadge) navigator.setAppBadge(n);
+    else if(navigator.clearAppBadge)   navigator.clearAppBadge();
+  } catch(e){}
+}
+
 function pintarNav(){
   $('#nav').innerHTML = SECCIONES.map(function(s){
     var on = s.id===state.seccion;
     var col = (s.c==='ini' || s.c==='yo') ? 'var(--yo)' : 'var(--'+s.c+')';
     var nom = s.id==='perfil' ? (usuario(state.user).nombre || 'Perfil') : s.nom;
-    var badge = (s.id==='perfil' && mensajesSinLeer().length)
-      ? '<i class="bar" style="opacity:1;background:var(--info);width:6px;height:6px;' +
-        'border-radius:50%;bottom:auto;top:-2px;right:14px;left:auto;position:absolute"></i>' : '';
+    var n = (s.id==='inicio') ? 0 : novedadesSeccion(s.id);
+    var badge = n ? '<i class="pill">'+(n>9?'9+':n)+'</i>' : '';
     return '<button data-s="'+s.id+'" class="'+(on?'on':'')+'" style="--act:'+col+'">' +
       svg(s.ico, 23) + '<span>'+esc(nom)+'</span><i class="bar"></i>'+badge+'</button>';
   }).join('');
@@ -1666,6 +1875,7 @@ function pintarTodo(){
   pintarSemana();
   pintarRecordatorio();
   pintarNovedades();
+  pintarAtencion();
   pintarNav();
 }
 
@@ -2033,6 +2243,15 @@ function abrirComida(grupoId){
                tipo_comida:'', lugar:'', items:[] };
   if(grupoId){
     var c = comidasDelDia(state.aliDia).filter(function(x){ return x.grupo_id===grupoId; })[0];
+    if(c && c.items.length && !esMio(c.items[0])){
+      var t0 = TIPOS_COMIDA.filter(function(x){ return x.id===c.tipo; })[0] || TIPOS_COMIDA[5];
+      return hojaAjena(t0.nom + (c.hora ? ' · '+c.hora : ''),
+        c.items.map(function(it){
+          var e = String(it.estado_toma);
+          return [String(it.nombre||''),
+                  e==='comio' ? 'Se lo comió' : e==='probo' ? 'Lo probó' : 'Lo rechazó'];
+        }), c.items[0].creado_por);
+    }
     if(c){
       base = { grupo_id:c.grupo_id, fecha:state.aliDia, hora:c.hora, tipo_comida:c.tipo,
         lugar:c.lugar, items:c.items.map(function(it){
@@ -2228,6 +2447,138 @@ function borrarComida(){
   llamarPost({ action:'deleteComida', grupo_id:borrador.grupo_id, creado_por:state.user })
     .then(function(){ cerrarHoja(); toast('Comida borrada'); return recargar(); })
     .catch(function(err){ toast(String(err.message||err), true); });
+}
+
+/* ============================================================
+   ACCESO
+   Un solo espacio compartido (§3): se ve todo. Pero cada registro
+   tiene dueño y solo su autor lo edita o lo borra, y quien manda
+   en eso es el backend, no esta pantalla.
+   ============================================================ */
+
+var lg = { username:'', pin:'', error:'' };
+
+function pintarLogin(){
+  $('#login').hidden = false;
+  $('#login').classList.remove('out');
+  $('#splash').hidden = true;
+
+  var us = (state.data ? state.data.usuarios : []).filter(function(u){
+    return String(u.rol) !== 'hija';
+  });
+  var modo = (state.data && state.data.modo) || 'confianza';
+  var h = '';
+
+  if(!lg.username){
+    h += '<h2>¿Quién eres?</h2>' +
+      '<p>' + (modo === 'pin'
+        ? 'Cada perfil entra con su PIN.'
+        : 'Aún no hay PIN configurado: entra quien diga ser quién.') + '</p>' +
+      '<div class="lg-users">' + us.map(function(u){
+        var k = claveColor(u.username);
+        return '<button class="lg-u" data-lguser="'+esc(u.username)+'">' +
+          avatarHTML(u.username, 62) +
+          '<b style="color:var(--'+k+'-d)">'+esc(u.nombre)+'</b></button>';
+      }).join('') + '</div>';
+    if(modo !== 'pin'){
+      h += '<div class="aviso-conf">Mientras ningún perfil tenga PIN, cualquiera que abra ' +
+        'la app puede entrar como cualquiera de los dos. Para cerrarlo, pon un PIN de 4 ' +
+        'cifras en la columna <b>pin</b> de la pestaña Usuarios.</div>';
+    }
+  } else {
+    var u = usuario(lg.username), k = claveColor(lg.username);
+    h += '<h2>Hola, '+esc(u.nombre)+'</h2><p>Marca tu PIN</p>' +
+      '<div class="pin-p">' + [0,1,2,3].map(function(i){
+        return '<i class="'+(lg.error ? 'mal' : (i < lg.pin.length ? 'on' : ''))+'"></i>';
+      }).join('') + '</div>' +
+      '<div class="tecla-g">' +
+        [1,2,3,4,5,6,7,8,9].map(function(n){
+          return '<button class="tecla" data-tecla="'+n+'">'+n+'</button>'; }).join('') +
+        '<span class="tecla vacia"></span>' +
+        '<button class="tecla" data-tecla="0">0</button>' +
+        '<button class="tecla" data-tecla="del">'+svg('chevronI',20)+'</button>' +
+      '</div>' +
+      '<div class="err">'+esc(lg.error)+'</div>' +
+      '<button class="lg-back" data-lguser="">Cambiar de perfil</button>';
+  }
+  $('#lgCuerpo').innerHTML = h;
+}
+
+function entrar(){
+  llamar('login', { username: lg.username, pin: lg.pin })
+    .then(function(d){
+      localStorage.setItem(LS_TOKEN, d.token);
+      localStorage.setItem(LS_USER, d.username);
+      state.user = d.username;
+      lg = { username:'', pin:'', error:'' };
+      $('#login').classList.add('out');
+      setTimeout(function(){ $('#login').hidden = true; }, 320);
+      pintarTodo();
+      marcarSeccionVista('inicio');
+    })
+    .catch(function(err){
+      lg.error = String(err.message || err);
+      lg.pin = '';
+      pintarLogin();
+      setTimeout(function(){ lg.error = ''; pintarLogin(); }, 1400);
+    });
+}
+
+function salir(){
+  localStorage.removeItem(LS_TOKEN);
+  lg = { username:'', pin:'', error:'' };
+  pintarLogin();
+}
+
+/* ---------- propiedad de cada registro ---------- */
+
+/** ¿Este registro lo hice yo? Sin autor, se considera de los dos. */
+function esMio(reg, campo){
+  if(!reg) return true;
+  var d = String(reg[campo || 'creado_por'] || '').trim().toLowerCase();
+  return !d || d === state.user;
+}
+/** Vista de solo lectura para lo que registró el otro. */
+function hojaAjena(titulo, lineas, autor, nota){
+  abrirHoja('<h3>'+esc(titulo)+'</h3>' +
+    lineas.filter(Boolean).map(function(l){
+      return '<div class="ro-l"><span>'+esc(l[0])+'</span><b>'+esc(l[1])+'</b></div>';
+    }).join('') +
+    '<div class="ajeno">'+svg('escudo',17)+'<div>' +
+      '<b>Lo registró '+esc(nombreDe(autor).toLowerCase())+'.</b> ' +
+      (nota || 'Puedes verlo, pero solo quien lo apuntó puede cambiarlo o borrarlo.') +
+    '</div></div>' +
+    '<button class="btn sec" id="msgCerrar">Cerrar</button>');
+}
+
+/* ---------- avisos por sección ---------- */
+var SECCION_DE = { calendario:'calendario', alimentacion:'alimentacion',
+                   gastos:'gastos', salud:'salud', mensajes:'perfil' };
+
+/** Cosas que ha hecho el otro en una sección desde tu última visita. */
+function novedadesSeccion(seccion){
+  var v = state.data.visitas.filter(function(x){
+    return String(x.username)===state.user && String(x.seccion)===seccion;
+  })[0];
+  var desde = v ? String(v.ts||'') : '';
+  var n = state.data.actividad.filter(function(a){
+    return String(a.username) !== state.user &&
+           (SECCION_DE[String(a.seccion)] || String(a.seccion)) === seccion &&
+           String(a.timestamp||'') > desde;
+  }).length;
+  if(seccion === 'perfil') n += mensajesSinLeer().length;
+  return n;
+}
+/** Al entrar en una sección se marca vista: así el aviso se apaga solo. */
+function marcarSeccionVista(seccion){
+  var v = state.data.visitas.filter(function(x){
+    return String(x.username)===state.user && String(x.seccion)===seccion;
+  })[0];
+  var ahora = new Date().toISOString();
+  if(v) v.ts = ahora;
+  else state.data.visitas.push({ username:state.user, seccion:seccion, ts:ahora });
+  llamar('marcarVisto', { username: state.user, seccion: seccion })
+    .catch(function(err){ sesionCaida(err); });
 }
 
 /* ============================================================
@@ -2512,6 +2863,7 @@ function hojaAjustes(){
     '<div class="msg-aviso">Lo demás se ajusta en el Sheet: la cuota mensual, los objetivos ' +
     'de alimentación, los colores y las categorías. Cambiar una fila cambia la app, ' +
     'sin tocar código.</div>' +
+    '<button class="btn del" id="pfSalir">Cerrar sesión</button>' +
     '<button class="btn sec" id="msgCerrar">Cerrar</button>');
 }
 
@@ -2781,6 +3133,18 @@ var DIAS_SEM = [{id:'lun',n:'L'},{id:'mar',n:'M'},{id:'mie',n:'X'},{id:'jue',n:'
 
 function formEvento(id){
   var ev = id ? state.data.eventos.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  if(ev && !esMio(ev)){
+    var t = tipoEvento(ev.tipo);
+    return hojaAjena(ev.titulo, [
+      ['Categoría', t.nombre],
+      ['Fecha', fechaCorta(fechaKey(ev.fecha)) +
+        (fechaKey(ev.fecha_fin) ? ' – '+fechaCorta(fechaKey(ev.fecha_fin)) : '')],
+      ev.hora ? ['Hora', String(ev.hora)] : null,
+      ev.lugar ? ['Lugar', String(ev.lugar)] : null,
+      ev.responsable ? ['Se encarga', nombreDe(ev.responsable)] : null,
+      ev.accion ? ['Recordatorio', String(ev.accion)] : null
+    ], ev.creado_por);
+  }
   borradorEvento = ev
     ? { id:ev.id, titulo:String(ev.titulo||''), tipo:String(ev.tipo||'otros'),
         fecha:fechaKey(ev.fecha), fecha_fin:fechaKey(ev.fecha_fin), hora:String(ev.hora||''),
@@ -3144,6 +3508,16 @@ var borradorGasto = null;
 
 function formGasto(id){
   var g = id ? state.data.gastos.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  if(g && !esMio(g)){
+    var c = categoriaGasto(g.categoria), o = String(g.origen||'comun');
+    return hojaAjena(g.descripcion || c.nombre, [
+      ['Importe', eur(num(g.importe))],
+      ['Fecha', fechaCorta(fechaKey(g.fecha))],
+      ['Categoría', c.nombre],
+      ['Pagado', o==='comun' ? 'Desde la cuenta común' : 'Lo pagó '+nombreDe(o).toLowerCase()],
+      truthy(g.compartido) ? null : ['Reparto', 'No se reparte']
+    ], g.creado_por);
+  }
   borradorGasto = g
     ? { id:g.id, descripcion:String(g.descripcion||''), importe:String(g.importe||''),
         fecha:fechaKey(g.fecha), categoria:String(g.categoria||'otro'),
@@ -3539,6 +3913,15 @@ var borradorSalud = null;
 
 function formCita(id){
   var c = id ? state.data.citas.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  if(c && !esMio(c)){
+    return hojaAjena(c.motivo || c.tipo || 'Cita', [
+      ['Fecha', fechaCorta(fechaKey(c.fecha)) + (c.hora ? ' · '+c.hora : '')],
+      c.centro ? ['Centro', String(c.centro)] : null,
+      c.profesional ? ['Profesional', String(c.profesional)] : null,
+      c.acompana ? ['La lleva', nombreDe(c.acompana)] : null,
+      c.resultado ? ['Resultado', String(c.resultado)] : null
+    ], c.creado_por);
+  }
   var n = new Date();
   borradorSalud = c
     ? { k:'cita', id:c.id, fecha:fechaKey(c.fecha), hora:String(c.hora||''),
@@ -3552,6 +3935,15 @@ function formCita(id){
 }
 function formEpisodio(id){
   var e = id ? state.data.episodios.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  if(e && !esMio(e)){
+    return hojaAjena(e.descripcion || e.tipo || 'Episodio', [
+      ['Cuándo', fechaCorta(fechaKey(e.fecha)) + (e.hora ? ' · '+e.hora : '')],
+      num(e.temperatura) > 0 ? ['Temperatura', String(e.temperatura).replace('.',',')+' °C'] : null,
+      e.evolucion ? ['Evolución', String(e.evolucion)] : null,
+      e.notas ? ['Notas', String(e.notas)] : null
+    ], e.creado_por,
+    'Puedes verlo, pero la evolución de un episodio solo la sigue quien lo abrió.');
+  }
   var n = new Date();
   borradorSalud = e
     ? { k:'episodio', id:e.id, fecha:fechaKey(e.fecha), hora:String(e.hora||''),
@@ -3565,6 +3957,16 @@ function formEpisodio(id){
 }
 function formMedicacion(id){
   var m = id ? state.data.medicacion.filter(function(x){ return String(x.id)===String(id); })[0] : null;
+  if(m && !esMio(m)){
+    return hojaAjena(m.nombre, [
+      ['Dosis', String(m.dosis||'—')],
+      num(m.cada_horas) > 0 ? ['Pauta', 'cada '+num(m.cada_horas)+' h'] : null,
+      ['Desde', fechaCorta(fechaKey(m.inicio))],
+      m.fin ? ['Hasta', fechaCorta(fechaKey(m.fin))] : null,
+      m.motivo ? ['Motivo', String(m.motivo)] : null
+    ], m.creado_por,
+    'Las dosis las puede marcar cualquiera de los dos: eso es justo lo que evita duplicarlas.');
+  }
   borradorSalud = m
     ? { k:'medicacion', id:m.id, nombre:String(m.nombre||''), dosis:String(m.dosis||''),
         cada_horas:String(m.cada_horas||''), inicio:fechaKey(m.inicio), fin:fechaKey(m.fin),
@@ -3711,6 +4113,8 @@ function ir(seccion){
   if(seccion === 'calendario') pintarCalendario();
   if(seccion === 'perfil') pintarPerfil();
   $('#fabCal').hidden = (seccion !== 'calendario');
+  if(seccion !== 'inicio') marcarSeccionVista(seccion);
+  pintarNav();
   $('#fabSalud').hidden = (seccion !== 'salud');
   window.scrollTo(0,0);
 }
@@ -3759,13 +4163,17 @@ function arrancar(){
       var guardado = localStorage.getItem(LS_USER);
       var validos = state.data.usuarios.map(function(u){ return String(u.username); });
       state.user = (guardado && validos.indexOf(guardado)>=0) ? guardado : (validos[0] || 'papa');
+
+      /* Sin token no se entra: leer es abierto, escribir no. */
+      if(!token()){ pintarLogin(); return; }
+
       localStorage.setItem(LS_USER, state.user);
       pintarTodo();
       $('#splash').classList.add('out');
       setTimeout(function(){ $('#splash').hidden = true; }, 400);
       /* Se marca como visto DESPUÉS de pintar: si no, se borrarían las
          novedades de esta misma visita antes de que las veas. */
-      llamar('marcarVisto', { username: state.user, seccion: 'inicio' }).catch(function(){});
+      marcarSeccionVista('inicio');
     })
     .catch(function(err){
       $('#splashTx').innerHTML = 'No se pudo cargar.<br>' +
@@ -3785,18 +4193,42 @@ function pedirUrl(){
 
 /* ---------- eventos globales ---------- */
 document.addEventListener('click', function(e){
+  /* ---------- login ---------- */
+  var lgu = e.target.closest('[data-lguser]');
+  if(lgu){
+    lg.username = lgu.dataset.lguser;
+    lg.pin = ''; lg.error = '';
+    if(lg.username && (state.data.modo !== 'pin')) entrar();
+    else pintarLogin();
+    return;
+  }
+  var tec = e.target.closest('[data-tecla]');
+  if(tec){
+    var t = tec.dataset.tecla;
+    if(t === 'del') lg.pin = lg.pin.slice(0,-1);
+    else if(lg.pin.length < 4) lg.pin += t;
+    lg.error = '';
+    pintarLogin();
+    if(lg.pin.length === 4) setTimeout(entrar, 120);
+    return;
+  }
+  if(e.target.closest('#pfSalir')){ salir(); return; }
+
+  var at = e.target.closest('[data-aten]');
+  if(at){ abrirAtencion(Number(at.dataset.aten)); return; }
+
   var nav = e.target.closest('#nav button');
   if(nav){ ir(nav.dataset.s); return; }
   var card = e.target.closest('[data-ir]');
   if(card){ ir(card.dataset.ir); return; }
   var opt = e.target.closest('[data-user]');
   if(opt){
-    state.user = opt.dataset.user;
-    localStorage.setItem(LS_USER, state.user);
+    /* Cambiar de perfil es volver a identificarse: si no, el PIN no serviría de nada. */
     cerrarHoja();
-    pintarTodo();
-    llamar('marcarVisto', { username: state.user, seccion: 'inicio' }).catch(function(){});
-    toast('Ahora eres ' + nombreDe(state.user));
+    localStorage.removeItem(LS_TOKEN);
+    lg = { username: opt.dataset.user, pin:'', error:'' };
+    if(state.data.modo === 'pin') pintarLogin();   /* pide el PIN del otro perfil */
+    else entrar();                                 /* sin PIN, el cambio es directo */
     return;
   }
   if(e.target.closest('#btnPerfil')){ hojaPerfil(); return; }
