@@ -139,7 +139,11 @@ svg{display:block;flex-shrink:0}
 .perfil .av{width:32px;height:32px;border-radius:50%;background:var(--yo-s);color:var(--yo-d);
   display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
   overflow:hidden}
-.perfil .av img{width:100%;height:100%;object-fit:cover}
+/* La regla estaba solo dentro de .perfil, así que en el login y en el
+   selector de usuario la foto salía a tamaño natural y se desbordaba.
+   El avatar es el mismo componente en todas partes: la regla también. */
+.av{overflow:hidden;flex-shrink:0}
+.av img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
 .perfil .cv{color:var(--t3)}
 
 /* ---------- TARJETA HOY ---------- */
@@ -353,6 +357,26 @@ svg{display:block;flex-shrink:0}
 .gsep{font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
   color:var(--gas-d);margin:12px 0 8px}
 .plato-acc .pa.foto{flex:0 0 108px}
+
+/* Notas de un evento */
+/* El check del recordatorio: un círculo vacío que se puede tocar. */
+.rc-ok{width:26px;height:26px;border-radius:50%;border:2px solid var(--cal);
+  background:var(--surface);flex-shrink:0;cursor:pointer;margin-top:2px;
+  display:flex;align-items:center;justify-content:center}
+.rc-ok:active{transform:scale(.92)}
+.rec .ir{color:var(--t3);display:flex;align-items:center;cursor:pointer}
+
+.notas{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.nt{display:flex;gap:10px;align-items:flex-start;padding:10px 2px;
+  border-top:1px solid var(--border)}
+.nt:first-child{border-top:0}
+.nt .pt{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.nt div{flex:1;min-width:0}
+.nt p{margin:0;font-size:13.5px;line-height:1.4}
+.nt span{font-size:11.5px;color:var(--t3)}
+.nt .qt{color:var(--t3);flex-shrink:0;padding:2px}
+.nota-f{display:flex;gap:8px;align-items:stretch}
+.nota-f .inp{flex:1;min-width:0}
 
 /* Qué conviene para la siguiente comida */
 .cons{background:var(--ali-c);border:1px solid var(--ali-s);border-radius:var(--r-l);
@@ -692,7 +716,7 @@ svg{display:block;flex-shrink:0}
    huecos de puntos y de bandas están siempre reservados. Con altura
    flexible, un mes con eventos se veía escalonado. */
 .cd{border-radius:10px;padding:5px 1px 4px;display:flex;flex-direction:column;align-items:center;
-  gap:2px;height:64px;background:transparent;overflow:hidden}
+  gap:2px;height:68px;background:transparent;overflow:hidden}
 .cd.papa{background:var(--papa-s)} .cd.mama{background:var(--mama-s)}
 .cd.avis{background:var(--avis-s)}
 .cd.fuera{opacity:.34}
@@ -708,13 +732,19 @@ svg{display:block;flex-shrink:0}
 .cd.papa.hoy .nu{color:var(--papa-d)}
 .cd.mama.hoy .nu{color:var(--mama-d)}
 .cd.avis.hoy .nu{color:var(--avis-d)}
+/* El aro va por dentro y sin borde: un `border` cambiaría la caja y
+   empujaría el contenido medio píxel hacia abajo — eso era el salto. */
 .cd.sel{box-shadow:inset 0 0 0 2px var(--t1)}
 .cd.sel .nu{font-weight:800}
 .cd .pts{display:flex;gap:2px;justify-content:center;align-items:center;height:6px;flex-shrink:0}
 .cd .pts i{width:4.5px;height:4.5px;border-radius:50%;display:block}
-.cd .bnds{display:flex;flex-direction:column;gap:2px;width:calc(100% + 2px);height:8px;
+.cd .bnds{display:flex;flex-direction:column;gap:1.5px;width:calc(100% + 2px);height:11.5px;
   flex-shrink:0;margin-top:auto}
-.cd .bnds i{display:block;height:3px;border-radius:2px;background:transparent}
+.cd .bnds i{display:block;height:2.5px;border-radius:2px;background:transparent}
+/* Cuando hay más tramos que huecos, el último se parte en trocitos:
+   dice "aquí hay más" sin mentir sobre cuántos. */
+.cd .bnds i.mas{background:repeating-linear-gradient(90deg,
+  var(--t3) 0 4px, transparent 4px 7px)}
 .rej-leg{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px;
   padding-top:11px;border-top:1px solid var(--border);font-size:11.5px;color:var(--t2)}
 .rej-leg span{display:inline-flex;align-items:center;gap:6px}
@@ -727,6 +757,8 @@ svg{display:block;flex-shrink:0}
   color:var(--t2)}
 .cats-h button.on{color:#fff}
 .cats-h button .pt{width:8px;height:8px;border-radius:50%}
+.cats-h button svg{flex-shrink:0}
+.hist .cats-h{margin:0 0 6px;padding:0 0 6px}
 
 .dia-d{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
   margin-bottom:12px}
@@ -1039,6 +1071,14 @@ svg{display:block;flex-shrink:0}
 
 .pie{text-align:center;font-size:11.5px;color:var(--t3);padding:6px 0 26px}
 .pie #pieDbg button{color:var(--t3);text-decoration:underline}
+/* Barra fina arriba mientras se traen datos. Guardar en Apps Script
+   tarda un par de segundos y sin señal parece que no ha pasado nada. */
+#cargando{position:fixed;top:0;left:0;right:0;height:3px;z-index:900;
+  background:var(--surface2);overflow:hidden}
+#cargando i{display:block;height:100%;width:40%;background:var(--yo);
+  border-radius:0 3px 3px 0;animation:barra 1.1s ease-in-out infinite}
+@keyframes barra{
+  0%{transform:translateX(-100%)} 60%{transform:translateX(250%)} 100%{transform:translateX(250%)}}
 .pie-v{margin-top:9px}
 /* Traer datos es una acción neutra: no pertenece a ninguna sección
    ni a ningún perfil, así que va en gris, no en el color de nadie. */
@@ -1069,6 +1109,8 @@ svg{display:block;flex-shrink:0}
 </div>
 
 <div id="toast"></div>
+
+<div id="cargando" hidden><i></i></div>
 
 <div class="wrap">
 
@@ -1172,7 +1214,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.3';
+var APP_VERSION = '0.9.5';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1313,7 +1355,7 @@ function eur(n){
 
 /* ---------- blindaje de la carga ---------- */
 var TABLAS = ['usuarios','patron','custodia','eventos','eventos_excepciones','tareas',
-  'tipos_evento','comentarios','gastos','categorias_gasto','liquidaciones','cuenta','alimentos',
+  'tipos_evento','comentarios','recordatorios','gastos','categorias_gasto','liquidaciones','cuenta','alimentos',
   'comidas','objetivos_semana','platos','citas','medicacion','dosis','episodios','vacunas',
   'crecimiento','documentos','mensajes','actividad','visitas'];
 function normalizar(d){
@@ -1651,7 +1693,15 @@ function llamarPost(body){
 }
 
 /** Recarga los datos del Sheet y repinta. Nada se guarda en local. */
+var _cargas = 0;
+function cargando(on){
+  _cargas = Math.max(0, _cargas + (on ? 1 : -1));
+  var el = $('#cargando');
+  if(el) el.hidden = _cargas === 0;
+}
+
 function recargar(){
+  cargando(true);
   return llamar('getBootstrap', {}).then(function(d){
     state.data = normalizar(d);
     state._primeraVez = null;
@@ -1662,7 +1712,8 @@ function recargar(){
     if(state.seccion === 'calendario') pintarCalendario();
     if(state.seccion === 'perfil') pintarPerfil();
     pintarPieHora();
-  });
+    cargando(false);
+  }, function(err){ cargando(false); throw err; });
 }
 
 /**
@@ -2051,20 +2102,43 @@ function bandasSemana(lun){
  * a la vista en la tarjeta de hoy. Repetir tres veces el mismo
  * dentista es la forma más rápida de que se deje de leer.
  */
+/** ¿Está hecho el recordatorio de esta ocurrencia? Se guarda por
+    evento + fecha: la mochila del viaje de agosto no es la de diciembre. */
+function recordatorioHecho(evId, fecha){
+  return state.data.recordatorios.some(function(r){
+    return String(r.evento_id) === String(evId) && fechaKey(r.fecha) === fecha;
+  });
+}
+
 function pintarRecordatorio(){
   var yaVisibles = proximosEventos(2).map(function(o){ return o.ev.id + '@' + o.fecha; });
+  /* Un recado ya hecho deja de reclamar sitio: es lo que se pide de un
+     recordatorio. Sigue en el evento, pero no en la portada. */
   var cand = proximosEventos(14).filter(function(o){
     return String(o.ev.accion||'').trim() &&
-           yaVisibles.indexOf(o.ev.id + '@' + o.fecha) < 0;
+           yaVisibles.indexOf(o.ev.id + '@' + o.fecha) < 0 &&
+           !recordatorioHecho(o.ev.id, o.fecha);
   })[0];
   if(!cand){ $('#cardRec').innerHTML = ''; return; }
   $('#cardRec').innerHTML =
-    '<div class="rec"><span class="i">'+svg('pin',22)+'</span><div>' +
+    '<div class="rec"><button class="rc-ok" data-rechecho="'+esc(cand.ev.id) +
+      '|'+cand.fecha+'" aria-label="Marcar como hecho"></button><div>' +
       '<div class="tt">Recordatorio</div>' +
       '<b>'+esc(cand.ev.titulo)+' · '+cuando(cand.fecha).toLowerCase() +
         (cand.hora?' a las '+esc(cand.hora):'')+'</b>' +
       '<p>'+esc(cand.ev.accion)+'</p>' +
-    '</div>'+svg('chevron',16,' style="color:var(--t3)"')+'</div>';
+    '</div><span class="ir" data-calev="'+esc(cand.ev.id)+'">' +
+      svg('chevron',16)+'</span></div>';
+}
+
+function marcarRecordatorio(clave, hecho){
+  var p = String(clave).split('|');
+  cargando(true);
+  llamarPost({ action:'marcarRecordatorio', payload:{
+    evento_id:p[0], fecha:p[1], hecho:hecho, creado_por:state.user } })
+    .then(function(){ return recargar(); })
+    .then(function(){ cargando(false); if(hecho) toast('Hecho ✓'); })
+    .catch(function(err){ cargando(false); toast(String(err.message||err), true); });
 }
 
 function pintarNovedades(){
@@ -2775,17 +2849,23 @@ function pintarDiaComidas(f){
     tira + '<div class="cm-l">' + filas + '</div></div>';
 }
 
-/** Los grupos de la comida, y lo añadido detrás. */
+/**
+ * En la tarjeta del día se ve el NOMBRE del plato y sus categorías.
+ * Nada más: listar ahí todos los alimentos convertía la tarjeta en un
+ * muro de texto y tapaba lo único que se lee de un vistazo — qué comió
+ * y de qué grupos fue.
+ */
 function resumenComida(c){
-  var grupos = [], extras = [];
+  var grupos = [], extras = 0;
   c.items.forEach(function(it){
-    if(it.alimento_id){ extras.push(String(it.nombre||'')); return; }
+    if(it.alimento_id){ extras++; return; }
     var o = objGrupo(String(it.grupo));
     grupos.push(String((o && o.nombre) || it.grupo));
   });
   var out = grupos.map(function(g){ return '<i class="gp">'+esc(g)+'</i>'; }).join('');
-  if(extras.length) out += '<span class="ex">'+esc(extras.join(' · '))+'</span>';
-  return out || '—';
+  /* Lo añadido se cuenta, no se enumera: el detalle está al abrirla. */
+  if(extras) out += '<span class="ex">+'+extras+(extras===1?' más':' más')+'</span>';
+  return out || '<span class="ex">Sin categorías</span>';
 }
 
 function listaComidas(f){
@@ -3408,6 +3488,35 @@ function mensajesSinLeer(){
     return String(m.autor) !== state.user && !String(m.leido_por||'').trim();
   });
 }
+/** Notas colgadas de algo. Cualquiera de los dos puede escribirlas. */
+function comentariosDe(entidad, refId){
+  return state.data.comentarios.filter(function(c){
+    return String(c.entidad) === entidad && String(c.ref_id) === String(refId);
+  }).sort(function(a,b){
+    return String(a.timestamp||'').localeCompare(String(b.timestamp||''));
+  });
+}
+
+function guardarNota(){
+  var t = (($('#eNota')||{}).value || '').trim();
+  if(!t){ toast('Escribe algo primero', true); return; }
+  var id = borradorEvento.id;
+  cargando(true);
+  llamarPost({ action:'saveComentario', payload:{
+    entidad:'evento', ref_id:id, texto:t, autor:state.user, creado_por:state.user } })
+    .then(function(){ return recargar(); })
+    .then(function(){ cargando(false); pintarFormEvento(); toast('Nota añadida'); })
+    .catch(function(err){ cargando(false); toast(String(err.message||err), true); });
+}
+
+function borrarNota(id){
+  cargando(true);
+  llamarPost({ action:'deleteComentario', id:id, creado_por:state.user })
+    .then(function(){ return recargar(); })
+    .then(function(){ cargando(false); pintarFormEvento(); })
+    .catch(function(err){ cargando(false); toast(String(err.message||err), true); });
+}
+
 function cuandoTs(ts){
   var f = String(ts||'').slice(0,10), hh = String(ts||'').slice(11,16);
   if(!f) return '';
@@ -3826,7 +3935,10 @@ function vistaMes(y, m){
          y la rejilla se desalinearía en cuanto se empieza a usar. */
       '<span class="pts">' + puntos.slice(0,3).map(function(o){
         return '<i style="background:'+tipoEvento(o.ev.tipo).color+'"></i>'; }).join('') + '</span>' +
-      '<span class="bnds">' + [0,1].map(function(n){
+      /* Tres huecos en vez de dos, y si hay más de tres el último se
+         pinta a rayas para decir que queda algo por ver. */
+      '<span class="bnds">' + [0,1,2].map(function(n){
+        if(n === 2 && largos.length > 3) return '<i class="mas"></i>';
         var o = largos[n];
         return '<i'+(o ? ' style="background:'+tipoEvento(o.ev.tipo).color+'"' : '')+'></i>';
       }).join('') + '</span>' +
@@ -3987,6 +4099,7 @@ function formEvento(id){
 
 function pintarFormEvento(){
   var b = borradorEvento;
+  var esViaje = b.tipo === 'viajes';
   var h = '<h3>'+(b.id?'Editar evento':'Nuevo evento')+'</h3>' +
     '<div class="f-lb">Qué es</div>' +
     '<input class="inp" id="eTit" type="text" value="'+esc(b.titulo)+'" placeholder="Natación">' +
@@ -3997,12 +4110,17 @@ function pintarFormEvento(){
           'data-ecampo="tipo" data-val="'+esc(t.id)+'">'+esc(t.emoji||'')+' ' +
           esc(t.nombre)+'</button>';
       }).join('') + '</div>' +
-    '<div class="f-lb">Cuándo</div><div class="fila2">' +
+    '<div class="f-lb">Empieza</div><div class="fila2">' +
       '<input class="inp" id="eFecha" type="date" value="'+esc(b.fecha)+'">' +
       '<input class="inp" id="eHora" type="time" style="width:118px" ' +
         'value="'+esc(horaHHMM(b.hora))+'"></div>' +
-    '<div class="f-lb">Último día (si dura varios)</div>' +
-    '<input class="inp" id="eFin" type="date" value="'+esc(b.fecha_fin)+'">' +
+    /* Un viaje sale y llega; una clase empieza y acaba. Es la misma
+       pareja de campos, así que se dice con las palabras de cada cosa. */
+    '<div class="f-lb">' + (esViaje ? 'Vuelve' : 'Acaba') +
+      ' <span class="op">opcional</span></div><div class="fila2">' +
+      '<input class="inp" id="eFin" type="date" value="'+esc(b.fecha_fin)+'">' +
+      '<input class="inp" id="eHoraFin" type="time" style="width:118px" ' +
+        'value="'+esc(horaHHMM(b.hora_fin))+'"></div>' +
     '<div class="f-lb">Dónde</div>' +
     '<input class="inp" id="eLugar" type="text" value="'+esc(b.lugar)+'" ' +
       'placeholder="Piscina Municipal">' +
@@ -4039,12 +4157,36 @@ function pintarFormEvento(){
       '<div class="aviso">Las repeticiones no se guardan como filas: se generan al pintar. ' +
       'Así cambiar la hora de la natación la cambia en todas, no en una.</div>';
   }
-  h += '<div class="f-lb">Recordatorio (opcional)</div>' +
+  h += '<div class="f-lb">Recordatorio <span class="op">opcional</span></div>' +
     '<input class="inp" id="eAccion" type="text" value="'+esc(b.accion)+'" ' +
-      'placeholder="Llevar la tarjeta sanitaria">' +
+      'placeholder="Hacer la mochila">' +
     '<div class="aviso" style="background:var(--surface2);color:var(--t2)">' +
-    'Si escribes algo aquí, aparecerá como recordatorio en el inicio. Si lo dejas vacío, ' +
-    'el evento no genera ningún aviso.</div>';
+    'Es un recado que hay que hacer: sale en el inicio y se puede marcar como ' +
+    'hecho. Para contar algo del evento sin que sea un recado, usa las notas.</div>';
+
+  /* Las notas las escribe cualquiera de los dos, aunque el evento no sea
+     suyo: una nota no cambia el evento, solo añade contexto. Por eso van
+     aparte y no dentro del formulario que solo puede tocar su dueño. */
+  if(b.id){
+    var ns = comentariosDe('evento', b.id);
+    h += '<div class="f-lb">Notas</div>';
+    if(ns.length){
+      h += '<div class="notas">' + ns.map(function(n){
+        var mio = String(n.autor) === state.user;
+        return '<div class="nt"><span class="pt" style="background:'+colorDe(n.autor)+'"></span>' +
+          '<div><p>'+esc(n.texto)+'</p><span>'+esc(nombreDe(n.autor))+' · ' +
+          esc(cuandoTs(n.timestamp))+'</span></div>' +
+          (mio ? '<button class="qt" data-notaborra="'+esc(n.id)+'">' +
+                 svg('cerrar',13)+'</button>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
+    h += '<div class="nota-f">' +
+      '<input class="inp" id="eNota" type="text" placeholder="Añadir una nota…">' +
+      '<button class="pa" id="btnNota" style="flex:0 0 auto;padding:0 16px">' +
+        svg('mas',15)+'</button></div>' +
+      '<div class="plato-e">Las notas las puede escribir cualquiera de los dos, ' +
+      'aunque el evento no sea suyo.</div>';
+  }
 
   h += '<button class="btn" style="background:var(--cal-d)" id="evGuardar">' +
        (b.id?'Guardar cambios':'Guardar evento')+'</button>';
@@ -4058,6 +4200,7 @@ function leerFormEvento(){
   if(v('eTit')!==null)    b.titulo = v('eTit');
   if(v('eFecha'))         b.fecha = v('eFecha');
   if(v('eHora')!==null)   b.hora = v('eHora');
+  if(v('eHoraFin')!==null) b.hora_fin = v('eHoraFin');
   if(v('eFin')!==null)    b.fecha_fin = v('eFin');
   if(v('eLugar')!==null)  b.lugar = v('eLugar');
   if(v('eAccion')!==null) b.accion = v('eAccion');
@@ -4193,7 +4336,8 @@ function guardarEvento(){
   if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
   llamarPost({ action:'saveEvento', payload:{
       id:b.id, titulo:b.titulo, tipo:b.tipo || 'otros', fecha:b.fecha, fecha_fin:b.fecha_fin,
-      hora:b.hora, lugar:b.lugar, responsable:b.responsable, accion:b.accion,
+      hora:b.hora, hora_fin:b.hora_fin, lugar:b.lugar,
+      responsable:b.responsable, accion:b.accion,
       repite:b.repite, repite_dias:b.repite_dias, repite_hasta:b.repite_hasta,
       creado_por:state.user } })
     .then(function(){ cerrarHoja(); toast('Evento guardado'); return recargar(); })
@@ -4780,12 +4924,24 @@ function pintarSalud(){
       '<div class="vl" style="color:var(--cal-d)">'+state.data.documentos.length+'</div>' +
       '<div class="lb">archivos</div></button></div>';
 
-  /* ---- Historial ---- */
+  /* ---- Historial, con sus filtros dentro ----
+     Las categorías eran una tarjeta aparte titulada "Categorías rápidas"
+     que en realidad solo filtraba esta lista. Separadas, además, cada
+     botón medía distinto según lo larga que fuera la palabra. Ahora son
+     una fila de filtros dentro de lo que filtran. */
   var filtro = state.salCat || '';
   var hist = historialSalud(filtro);
   out += '<div class="hist"><div class="hist-hd"><b>Últimos registros</b>' +
     (hist.length>4 ? '<button id="salTodo">Ver historial completo '+svg('chevron',13)+'</button>' : '') +
-    '</div>';
+    '</div>' +
+    '<div class="cats-h"><button data-salcat="" class="'+(filtro?'':'on') +
+      '" style="'+(filtro?'':'background:var(--sal-d);color:#fff')+'">Todos</button>' +
+    CATS_SALUD.map(function(c){
+      var on = filtro === c.id;
+      return '<button data-salcat="'+c.id+'" class="'+(on?'on':'')+'" style="' +
+        (on?'background:var(--sal-d);color:#fff':'')+'">' +
+        svg(c.ico,14)+esc(c.nom)+'</button>';
+    }).join('') + '</div>';
   if(!hist.length){
     out += '<div class="hist-vacio">' +
       (filtro ? 'Nada registrado en esta categoría.' : 'Todavía no hay nada registrado.') +
@@ -4805,13 +4961,6 @@ function pintarSalud(){
     }).join('');
   }
   out += '</div>';
-
-  /* ---- Categorías ---- */
-  out += '<div class="cats"><h3>Categorías rápidas</h3><div class="cats-g">' +
-    CATS_SALUD.map(function(c){
-      return '<button data-salcat="'+c.id+'" class="'+(filtro===c.id?'on':'')+'">' +
-        '<span class="i">'+svg(c.ico,20)+'</span><span>'+esc(c.nom)+'</span></button>';
-    }).join('') + '</div></div>';
 
   /* ---- Documentos ---- */
   out += '<div class="doc-b"><span class="i">'+svg('carpeta',24)+'</span>' +
@@ -5225,6 +5374,11 @@ document.addEventListener('click', function(e){
   if(nc){ abrirComida('', nc.dataset.nuevacomida); return; }
   var ad = e.target.closest('[data-alidia]');
   if(ad){ state.aliDia = ad.dataset.alidia; pintarAlimentacion(); return; }
+  var rch = e.target.closest('[data-rechecho]');
+  if(rch){ marcarRecordatorio(rch.dataset.rechecho, true); return; }
+  if(e.target.closest('#btnNota')){ guardarNota(); return; }
+  var nb = e.target.closest('[data-notaborra]');
+  if(nb){ borrarNota(nb.dataset.notaborra); return; }
   if(e.target.closest('#btnPlato')){ interpretarPlato(); return; }
   var ab = e.target.closest('[data-abrir]');
   if(ab){ borrador.items[+ab.dataset.abrir].abierto = true; pintarHojaComida(); return; }
