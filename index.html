@@ -296,6 +296,18 @@ svg{display:block;flex-shrink:0}
   font-size:13.5px;font-weight:600;cursor:pointer}
 .pa.foto{flex:0 0 96px;background:var(--surface2);color:var(--t2)}
 .pa:active{transform:scale(.97)}
+/* El mismo bloque de adjuntar sirve en Gastos, pero allí el acento es
+   terracota: si no, un botón verde de Alimentación aparece en medio. */
+.plato-acc.gas .pa{background:var(--gas-s);color:var(--gas-d)}
+.plato-acc.gas .pa.foto{background:var(--surface2);color:var(--t2)}
+.plato-e.gas .sp{border-color:var(--gas-s);border-top-color:var(--gas)}
+.cmp{display:flex;align-items:center;gap:9px;margin-top:10px;padding:0 12px;height:44px;
+  border-radius:var(--r-btn);background:var(--gas-s);color:var(--gas-d);font-size:13.5px}
+.cmp .i{display:flex;flex-shrink:0}
+.cmp a{flex:1;min-width:0;font-weight:600;color:var(--gas-d);text-decoration:none;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp .qt{flex-shrink:0;color:var(--gas-d);opacity:.65;padding:4px;display:flex}
+.cmp .qt:active{opacity:1}
 .si .tg{font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
   background:var(--cal-s);color:var(--cal-d);border-radius:6px;padding:3px 6px;
   margin-left:7px;flex-shrink:0}
@@ -890,17 +902,22 @@ svg{display:block;flex-shrink:0}
 .cc-top{display:flex;gap:15px;align-items:center}
 .cc-tx{flex:1;min-width:0}
 .cc-tx .lb{font-size:12px;color:var(--t2)}
-.cc-tx .vl{font-size:29px;font-weight:700;letter-spacing:-1.4px;line-height:1.1;margin-top:2px}
-.cc-tx .sb{font-size:12.5px;color:var(--t2);margin-top:2px}
+.cc-tx .vl{font-size:29px;font-weight:700;letter-spacing:-1.4px;line-height:1.1;margin-top:2px;
+  white-space:nowrap}
+.cc-tx .est-chip{margin-top:7px}
+.cc-tx .sb{font-size:12.5px;color:var(--t2);margin-top:6px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cc-est{display:flex;flex-direction:column;gap:9px;flex-shrink:0;align-items:flex-end;
   text-align:right}
 .est-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;
   font-size:12px;font-weight:700}
 .cc-mov{font-size:12px;color:var(--t2)}
 .cc-mov b{display:block;font-size:13px;color:var(--t1);font-weight:600;margin-top:2px}
-.cc-pie{width:100%;margin-top:14px;background:var(--gas-s);color:var(--gas-d);border-radius:13px;
-  padding:12px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;
+.cc-acc{display:flex;gap:8px;margin-top:14px}
+.cc-pie{flex:1;background:var(--gas-s);color:var(--gas-d);border-radius:13px;
+  padding:12px;font-size:13px;font-weight:600;display:flex;justify-content:center;gap:6px;
   align-items:center}
+.cc-pie:active{transform:scale(.97)}
 .cc-pend{margin-top:12px;background:var(--cal-s);color:var(--cal-d);border-radius:13px;
   padding:11px 13px;font-size:12.5px;font-weight:500;line-height:1.45}
 .cc-pend b{font-weight:700}
@@ -1278,7 +1295,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.7';
+var APP_VERSION = '0.9.8';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1408,7 +1425,22 @@ function diffDias(a,b){
 }
 function lunesDe(f){ var d=dow(f); return addDays(f, d===0 ? -6 : 1-d); }
 function fechaCorta(f){ var p=f.split('-'); return (+p[2])+' '+MESES_C[+p[1]-1]; }
-function num(v){ var n=parseFloat(String(v==null?0:v).replace(',','.')); return isNaN(n)?0:n; }
+/**
+ * Un número escrito por una persona en España. La app imprime "1.240,55",
+ * así que alguien acaba escribiéndolo igual: sin esto, parseFloat se
+ * quedaba con 1,24 € y no avisaba de nada.
+ *  · si hay coma, los puntos son miles     → 1.240,55 = 1240.55
+ *  · si no hay coma pero los puntos separan grupos de tres, son miles
+ *                                          → 1.240    = 1240
+ *  · en cualquier otro caso el punto es decimal → 24.50 = 24.5
+ */
+function num(v){
+  var s = String(v==null ? 0 : v).trim().replace(/[\s €]/g,'');
+  if(s.indexOf(',') >= 0) s = s.replace(/\./g,'').replace(',','.');
+  else if(/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g,'');
+  var n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
 function truthy(v){
   if(v===true||v===1) return true;
   var s=String(v).trim().toLowerCase();
@@ -3916,7 +3948,12 @@ function esMio(reg, campo){
 function hojaAjena(titulo, lineas, autor, nota){
   abrirHoja('<h3>'+esc(titulo)+'</h3>' +
     lineas.filter(Boolean).map(function(l){
-      return '<div class="ro-l"><span>'+esc(l[0])+'</span><b>'+esc(l[1])+'</b></div>';
+      /* Un valor puede ser un enlace ({href,txt}): el comprobante de un
+         gasto ajeno se ve, aunque no se pueda tocar. */
+      var v = (l[1] && l[1].href)
+        ? '<a href="'+esc(l[1].href)+'" target="_blank" rel="noopener">'+esc(l[1].txt)+'</a>'
+        : esc(l[1]);
+      return '<div class="ro-l"><span>'+esc(l[0])+'</span><b>'+v+'</b></div>';
     }).join('') +
     '<div class="ajeno">'+svg('escudo',17)+'<div>' +
       '<b>Lo registró '+esc(nombreDe(autor).toLowerCase())+'.</b> ' +
@@ -4911,27 +4948,11 @@ function mesAnterior(ym, n){
   var d = new Date(+p[0], +p[1]-1+n, 1);
   return d.getFullYear()+'-'+pad(d.getMonth()+1);
 }
-/** Repinta la hoja de aporte conservando lo escrito. */
-function formAporteRepintar(){
-  var b = borradorAporte;
-  if($('#aImp')) b.importe = String($('#aImp').value||'').trim();
-  if($('#aFecha')) b.fecha = String($('#aFecha').value||'').trim() || b.fecha;
-  var guardado = b;
-  formAporte();
-  borradorAporte = guardado;
-  if($('#aImp')) $('#aImp').value = b.importe;
-  if($('#aFecha')) $('#aFecha').value = b.fecha;
-  $$('[data-acampo]').forEach(function(x){
-    var on = x.dataset.val === b.username;
-    x.classList.toggle('on', on);
-    x.style.background = on ? colorDe(b.username) : '';
-  });
-}
-
 function textoMovimiento(m){
   var t = String(m.tipo||'aporte'), q = m.username ? nombreDe(m.username).toLowerCase() : '';
   var n = t==='aporte' ? 'aporte de '+q : t==='reembolso' ? 'reembolso a '+q
-        : t==='retirada' ? 'retirada' : 'ajuste';
+        : t==='retirada' ? 'retirada'
+        : (String(m.nota||'').trim() ? String(m.nota).trim().toLowerCase() : 'ajuste');
   return n + ' · ' + eur(num(m.importe)) + ' · ' + fechaCorta(fechaKey(m.fecha));
 }
 /**
@@ -4986,11 +5007,15 @@ function pintarGastos(){
   out += '<div class="cc"><h3>Cuenta común</h3><div class="cc-top">' +
     donut([{ v:Math.max(0,saldo), col:'var(--gas)' },
            { v:Math.max(0,pend.papa+pend.mama), col:'var(--cal)' }], 96) +
+    /* El chip de estado va debajo del importe, no al lado: con cuatro
+       cifras y el símbolo del euro se quedaba sin ancho y el "€" caía
+       a una segunda línea. */
     '<div class="cc-tx"><div class="lb">Saldo disponible</div>' +
       '<div class="vl" style="color:'+(saldo<0?'var(--err)':'var(--gas-d)')+'">'+eur(saldo)+'</div>' +
+      '<span class="est-chip" style="background:var(--'+est.c+'-s);' +
+        'color:var(--'+est.c+'-d)">'+svg(est.ico,13)+esc(est.t)+'</span>' +
       (um ? '<div class="sb">Último: '+esc(textoMovimiento(um))+'</div>' : '') +
-    '</div><div class="cc-est"><span class="est-chip" style="background:var(--'+est.c+'-s);' +
-      'color:var(--'+est.c+'-d)">'+svg(est.ico,13)+esc(est.t)+'</span></div></div>';
+    '</div></div>';
   if(pend.n){
     var frases = [];
     if(pend.papa>0) frases.push('<b>'+eur(pend.papa)+'</b> a papá');
@@ -4998,8 +5023,13 @@ function pintarGastos(){
     out += '<div class="cc-pend">Pendiente de devolver desde la cuenta común: ' +
       frases.join(' y ')+' · '+pend.n+(pend.n===1?' gasto adelantado':' gastos adelantados')+'</div>';
   }
-  out += '<button class="cc-pie" id="gasMovs">Ver movimientos de la cuenta ' +
-    svg('chevron',14)+'</button></div>';
+  /* Este par va siempre: si no hay cuota mensual configurada la tarjeta de
+     aportes no se pinta, y sin esto no habría forma de meter ni el saldo
+     de partida ni un ingreso suelto. */
+  out += '<div class="cc-acc">' +
+    '<button class="cc-pie" id="gasAporteCC">'+svg('mas',14)+' Ingresar</button>' +
+    '<button class="cc-pie" id="gasMovs">Movimientos '+svg('chevron',14)+'</button>' +
+    '</div></div>';
 
   var cuota = cfgNum('cuota_mensual', 0);
   var adultos = state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; });
@@ -5090,15 +5120,18 @@ function formGasto(id){
       ['Fecha', fechaCorta(fechaKey(g.fecha))],
       ['Categoría', c.nombre],
       ['Pagado', o==='comun' ? 'Desde la cuenta común' : 'Lo pagó '+nombreDe(o).toLowerCase()],
-      truthy(g.compartido) ? null : ['Reparto', 'No se reparte']
+      truthy(g.compartido) ? null : ['Reparto', 'No se reparte'],
+      g.comprobante ? ['Comprobante', { href:String(g.comprobante), txt:'Verlo' }] : null,
+      g.nota ? ['Comentarios', String(g.nota)] : null
     ], g.creado_por);
   }
   borradorGasto = g
     ? { id:g.id, descripcion:String(g.descripcion||''), importe:String(g.importe||''),
         fecha:fechaKey(g.fecha), categoria:String(g.categoria||'otro'),
-        origen:String(g.origen||'comun'), compartido:truthy(g.compartido) }
+        origen:String(g.origen||'comun'), compartido:truthy(g.compartido),
+        comprobante:String(g.comprobante||''), nota:String(g.nota||'') }
     : { id:'', descripcion:'', importe:'', fecha:state.data.hoy, categoria:'',
-        origen:'comun', compartido:true };
+        origen:'comun', compartido:true, comprobante:'', nota:'' };
   pintarFormGasto();
 }
 
@@ -5139,6 +5172,29 @@ function pintarFormGasto(){
         ? 'Quedará pendiente de devolver desde la cuenta común.'
         : 'Ni se reparte ni se reembolsa: solo queda apuntado en el historial.') + '</div>';
   }
+  /* Comprobante: la foto del ticket, o el PDF de la factura. Un input
+     de imagen sin `capture` deja que el móvil ofrezca cámara o carrete;
+     el segundo acepta cualquier fichero, para las facturas en PDF. */
+  h += '<div class="f-lb">Comprobante <span class="op">opcional</span></div>';
+  if(b.comprobante){
+    h += '<div class="cmp"><span class="i">'+svg('ticket',17)+'</span>' +
+      '<a href="'+esc(b.comprobante)+'" target="_blank" rel="noopener">Ver comprobante</a>' +
+      '<button class="qt" id="gQuitaCmp">'+svg('cerrar',14)+'</button></div>';
+  } else if(b.subiendo){
+    h += '<div class="plato-e gas"><i class="sp"></i>Subiendo…</div>';
+  } else {
+    h += '<div class="plato-acc gas">' +
+      '<label class="pa" for="gFoto">'+svg('camara',16)+'<span>Foto</span>' +
+        '<input type="file" id="gFoto" accept="image/*" hidden></label>' +
+      '<label class="pa foto" for="gFich">'+svg('carpeta',16)+'<span>Fichero</span>' +
+        '<input type="file" id="gFich" hidden></label>' +
+      '</div>';
+  }
+
+  h += '<div class="f-lb">Comentarios <span class="op">opcional</span></div>' +
+    '<textarea class="inp ta" id="gNota" rows="2" ' +
+      'placeholder="Lo que haga falta recordar de este gasto…">'+esc(b.nota||'')+'</textarea>';
+
   h += '<button class="btn" style="background:var(--gas)" id="gasGuardar">' +
        (b.id?'Guardar cambios':'Guardar gasto')+'</button>';
   if(b.id) h += '<button class="btn del" id="gasBorrar">Borrar este gasto</button>';
@@ -5151,6 +5207,70 @@ function leerFormGasto(){
   if($('#gDesc'))  b.descripcion = v('gDesc');
   if($('#gImp'))   b.importe = v('gImp');
   if($('#gFecha')) b.fecha = v('gFecha') || b.fecha;
+  if($('#gNota'))  b.nota = v('gNota');
+}
+
+/**
+ * Sube el comprobante. Las fotos se reducen antes de mandarlas: un
+ * ticket de móvil son 4 MB y a 1200px se lee igual ocupando el 3%.
+ * Los ficheros que no son imagen van tal cual, con tope de 8 MB.
+ */
+function comprobanteElegido(input){
+  var f = input.files && input.files[0];
+  if(!f) return;
+  input.value = '';
+  /* Adjuntar repinta la hoja: sin esto se perderían el concepto, el
+     importe y los comentarios que ya estuvieran escritos. */
+  leerFormGasto();
+  var esImagen = /^image\//.test(f.type);
+
+  function mandar(dataUrl, mime, nombre){
+    borradorGasto.subiendo = true;
+    pintarFormGasto();
+    llamarPost({ action:'subirArchivo', payload:{
+      archivo:dataUrl, mime:mime, titulo:nombre,
+      fecha:borradorGasto.fecha, creado_por:state.user } })
+      .then(function(d){
+        borradorGasto.subiendo = false;
+        borradorGasto.comprobante = d.url;
+        pintarFormGasto();
+        toast('Comprobante adjuntado');
+      })
+      .catch(function(err){
+        borradorGasto.subiendo = false;
+        pintarFormGasto();
+        toast(String(err.message||err), true);
+      });
+  }
+
+  if(esImagen){
+    var img = new Image();
+    img.onload = function(){
+      var max = 1200;
+      var e = Math.min(1, max / Math.max(img.width, img.height));
+      var cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * e);
+      cv.height = Math.round(img.height * e);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      var url;
+      try { url = cv.toDataURL('image/jpeg', 0.8); }
+      catch(err){ toast('No he podido leer la foto', true); return; }
+      URL.revokeObjectURL(img.src);
+      mandar(url, 'image/jpeg', f.name || 'Comprobante');
+    };
+    img.onerror = function(){ toast('No he podido leer la foto', true); };
+    img.src = URL.createObjectURL(f);
+    return;
+  }
+
+  if(f.size > 8 * 1024 * 1024){
+    toast('El fichero pesa más de 8 MB. Hazle una foto en vez de eso.', true); return;
+  }
+  var fr = new FileReader();
+  fr.onload = function(){ mandar(String(fr.result), f.type || 'application/octet-stream',
+                                 f.name || 'Comprobante'); };
+  fr.onerror = function(){ toast('No he podido leer el fichero', true); };
+  fr.readAsDataURL(f);
 }
 
 function guardarGasto(){
@@ -5162,6 +5282,7 @@ function guardarGasto(){
   llamarPost({ action:'saveGasto', payload:{
       id:b.id, fecha:b.fecha, categoria:b.categoria || 'otro', descripcion:b.descripcion,
       importe:num(b.importe), origen:b.origen, compartido:b.compartido ? 'TRUE' : 'FALSE',
+      comprobante:b.comprobante || '', nota:b.nota || '',
       pagado_por: b.origen==='comun' ? 'comun' : b.origen, creado_por:state.user } })
     .then(function(){ cerrarHoja(); toast('Gasto guardado'); return recargar(); })
     .catch(function(err){
@@ -5176,39 +5297,74 @@ function borrarGasto(){
 }
 
 var borradorAporte = null;
+
+/**
+ * Aporte o saldo inicial. Son dos cosas distintas y conviene no
+ * mezclarlas: un aporte lleva nombre y cuenta para saber quién ha
+ * puesto cuánto; el saldo de partida ya estaba en la cuenta y no es
+ * de nadie en particular, así que va como 'ajuste' y sin username.
+ * Aun así es un movimiento con fecha, no un número de configuración:
+ * el histórico tiene que poder explicarse solo.
+ */
 function formAporte(){
   borradorAporte = { username:state.user, importe:String(cfgNum('cuota_mensual',0)||''),
-                     fecha:state.data.hoy };
-  var b = borradorAporte;
-  abrirHoja('<h3>Nuevo aporte</h3>' +
-    '<div class="f-lb">Quién lo ingresa</div><div class="chips">' +
+                     fecha:state.data.hoy, tipo:'aporte' };
+  pintarFormAporte();
+}
+
+function pintarFormAporte(){
+  var b = borradorAporte, ini = b.tipo === 'ajuste';
+  var h = '<h3>'+(ini?'Saldo inicial':'Nuevo aporte')+'</h3>' +
+    '<div class="f-lb">Qué apuntas</div><div class="chips">' +
+      '<button class="chip'+(ini?'':' on')+'" style="'+(ini?'':'background:var(--gas)')+'" ' +
+        'data-acampo="tipo" data-val="aporte">Un aporte</button>' +
+      '<button class="chip'+(ini?' on':'')+'" style="'+(ini?'background:var(--gas)':'')+'" ' +
+        'data-acampo="tipo" data-val="ajuste">Saldo de partida</button></div>';
+  if(!ini){
+    h += '<div class="f-lb">Quién lo ingresa</div><div class="chips">' +
       state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; }).map(function(u){
         var on = b.username===String(u.username);
         return '<button class="chip'+(on?' on':'')+'" style="'+
           (on?'background:'+colorDe(u.username):'')+'" data-acampo="username" ' +
           'data-val="'+esc(u.username)+'">'+esc(u.nombre)+'</button>';
-      }).join('') + '</div>' +
-    '<div class="f-lb">Importe y fecha</div><div class="fila2">' +
+      }).join('') + '</div>';
+  }
+  h += '<div class="f-lb">Importe y fecha</div><div class="fila2">' +
       '<input class="inp" id="aImp" type="text" inputmode="decimal" style="width:118px" ' +
         'value="'+esc(b.importe)+'" placeholder="250">' +
       '<input class="inp" id="aFecha" type="date" value="'+esc(b.fecha)+'"></div>' +
-    '<div class="aviso">Apunta aquí el dinero que entra en la cuenta común. ' +
-    'Reembolsos y retiradas llegan en la siguiente entrega.</div>' +
-    '<button class="btn" style="background:var(--gas)" id="apGuardar">Guardar aporte</button>');
+    '<div class="aviso">' + (ini
+      ? 'Lo que ya había en la cuenta cuando empezasteis a usar la app. ' +
+        'No se apunta a nombre de nadie y solo hay que ponerlo una vez.'
+      : 'Apunta aquí el dinero que entra en la cuenta común. ' +
+        'Reembolsos y retiradas llegan en la siguiente entrega.') + '</div>' +
+    '<button class="btn" style="background:var(--gas)" id="apGuardar">' +
+      (ini?'Guardar saldo inicial':'Guardar aporte')+'</button>';
+  abrirHoja(h);
 }
-function guardarAporte(){
+
+function leerFormAporte(){
   var b = borradorAporte;
   if($('#aImp')) b.importe = String($('#aImp').value||'').trim();
   if($('#aFecha')) b.fecha = String($('#aFecha').value||'').trim() || b.fecha;
+}
+
+function guardarAporte(){
+  leerFormAporte();
+  var b = borradorAporte, ini = b.tipo === 'ajuste';
   if(num(b.importe) <= 0){ toast('Pon un importe mayor que 0', true); return; }
   var btn = $('#apGuardar');
   if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
-  llamarPost({ action:'saveMovimiento', payload:{ tipo:'aporte', username:b.username,
+  llamarPost({ action:'saveMovimiento', payload:{ tipo:b.tipo,
+      username: ini ? '' : b.username,
+      nota: ini ? 'Saldo de partida' : '',
       importe:num(b.importe), fecha:b.fecha, creado_por:state.user } })
-    .then(function(){ cerrarHoja(); toast('Aporte registrado'); return recargar(); })
+    .then(function(){ cerrarHoja();
+      toast(ini ? 'Saldo inicial guardado' : 'Aporte registrado'); return recargar(); })
     .catch(function(err){
       toast(String(err.message||err), true);
-      if(btn){ btn.disabled = false; btn.textContent = 'Guardar aporte'; }
+      if(btn){ btn.disabled = false;
+        btn.textContent = ini ? 'Guardar saldo inicial' : 'Guardar aporte'; }
     });
 }
 
@@ -6023,7 +6179,7 @@ document.addEventListener('click', function(e){
     state.gasMes = mesAnterior(state.gasMes, 1); state.gasTodos = false; pintarGastos(); return; }
   if(e.target.closest('#gasTodos')){ state.gasTodos = !state.gasTodos; pintarGastos(); return; }
   if(e.target.closest('#gasNuevo')){ formGasto(''); return; }
-  if(e.target.closest('#gasAporte')){ formAporte(); return; }
+  if(e.target.closest('#gasAporte') || e.target.closest('#gasAporteCC')){ formAporte(); return; }
   if(e.target.closest('#gasMovs')){ toast('Los movimientos llegan en la siguiente entrega'); return; }
   var gz = e.target.closest('[data-gasto]');
   if(gz){ formGasto(gz.dataset.gasto); return; }
@@ -6036,7 +6192,17 @@ document.addEventListener('click', function(e){
     pintarFormGasto(); return;
   }
   var ac = e.target.closest('[data-acampo]');
-  if(ac){ borradorAporte[ac.dataset.acampo] = ac.dataset.val; formAporteRepintar(); return; }
+  if(ac){ leerFormAporte();
+    var an = ac.dataset.acampo;
+    /* La cuota mensual solo es una propuesta razonable para un aporte;
+       como saldo de partida sería un número inventado. */
+    if(an === 'tipo' && ac.dataset.val !== borradorAporte.tipo){
+      borradorAporte.importe = ac.dataset.val === 'ajuste'
+        ? '' : String(cfgNum('cuota_mensual',0)||'');
+    }
+    borradorAporte[an] = ac.dataset.val; pintarFormAporte(); return; }
+  if(e.target.closest('#gQuitaCmp')){
+    leerFormGasto(); borradorGasto.comprobante = ''; pintarFormGasto(); return; }
   if(e.target.closest('#gasGuardar')){ guardarGasto(); return; }
   if(e.target.closest('#gasBorrar')){ borrarGasto(); return; }
   if(e.target.closest('#apGuardar')){ guardarAporte(); return; }
@@ -6089,6 +6255,8 @@ document.addEventListener('click', function(e){
 
 document.addEventListener('change', function(e){
   if(e.target.id === 'inFoto'){ fotoElegida(e.target); return; }
+  if(e.target.id === 'gFoto' || e.target.id === 'gFich'){
+    comprobanteElegido(e.target); return; }
 });
 
 document.addEventListener('input', function(e){
