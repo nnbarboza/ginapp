@@ -305,6 +305,70 @@ svg{display:block;flex-shrink:0}
   padding:4px 0;cursor:pointer}
 .chips.beb .chip{font-size:13px}
 
+/* ---------- GRÁFICAS ---------- */
+.bh{display:flex;flex-direction:column;gap:2px}
+.bh-r{display:flex;align-items:center;gap:10px;min-height:26px}
+.bh-r .nm{width:98px;flex-shrink:0;font-size:12.5px;color:var(--t1);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.bh-r .nm i{font-style:normal;margin-right:5px}
+.bh-r .tr{flex:1;min-width:0;height:9px;background:var(--surface2);border-radius:5px;
+  overflow:hidden}
+.bh-r .tr i{display:block;height:100%;border-radius:5px}
+.bh-r .vl{width:30px;flex-shrink:0;text-align:right;font-size:12px;font-weight:700;
+  color:var(--t2);font-variant-numeric:tabular-nums}
+.bh{max-width:100%;overflow:hidden}
+.ln-c{margin-top:4px}
+.ln-svg{width:100%;height:116px;display:block;overflow:visible}
+.ln-x{display:flex;justify-content:space-between;margin-top:2px;padding-left:26px}
+.ln-nota{font-size:11px;color:var(--t3);margin-top:6px}
+.ln-x span{font-size:9.5px;color:var(--t3);font-variant-numeric:tabular-nums}
+.ln-ult{margin-top:8px;font-size:12.5px;color:var(--t2)}
+.ln-ult b{color:var(--ali-d);font-weight:700}
+
+/* Enlaces del fondo de Alimentación */
+.ali-pies{display:flex;flex-direction:column;gap:2px;background:var(--surface);
+  border-radius:var(--r-l);box-shadow:var(--sh);padding:4px 14px;margin-bottom:14px}
+.ali-pies button{display:flex;align-items:center;gap:12px;width:100%;padding:14px 2px;
+  text-align:left;color:var(--ali-d);border-top:1px solid var(--border);cursor:pointer}
+.ali-pies button:first-child{border-top:0}
+.ali-pies div{flex:1;min-width:0}
+.ali-pies b{display:block;font-size:14px;font-weight:600;color:var(--t1)}
+.ali-pies span{font-size:12px;color:var(--t3)}
+
+/* Estadísticas */
+.st-kpis{display:flex;gap:10px;margin-bottom:16px}
+.st-kpis div{flex:1;background:var(--ali-c);border-radius:var(--r);padding:14px 12px}
+.st-kpis b{display:block;font-size:28px;font-weight:700;letter-spacing:-1px;color:var(--ali-d);
+  line-height:1}
+.st-kpis span{display:block;font-size:11.5px;color:var(--t2);margin-top:5px;line-height:1.3}
+.st-b{margin-bottom:22px}
+.st-b h4{margin:0 0 11px;font-size:14px;font-weight:700;letter-spacing:-.2px}
+.st-p{margin:10px 0 0;font-size:11.5px;color:var(--t3);line-height:1.4}
+
+/* Biblioteca */
+.bib-n{font-size:11.5px;color:var(--t3);margin:12px 0 6px}
+.bib-l{display:flex;flex-direction:column;gap:2px}
+.bib-i{display:flex;align-items:center;gap:11px;width:100%;padding:11px 2px;text-align:left;
+  border-top:1px solid var(--border);cursor:pointer}
+.bib-i:first-child{border-top:0}
+.bib-i .em{font-size:19px;width:24px;text-align:center;flex-shrink:0}
+.bib-i .tx{flex:1;min-width:0}
+.bib-i b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.bib-i span{font-size:11.5px;color:var(--t3)}
+.bib-i .es{flex-shrink:0;font-size:10.5px;font-weight:700;border-radius:7px;padding:4px 8px}
+
+/* Insights */
+.ins{background:var(--surface);border-radius:var(--r-l);box-shadow:var(--sh);
+  padding:15px 16px;margin-bottom:14px}
+.ins-hd{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;
+  letter-spacing:.3px;text-transform:uppercase;color:var(--t3);margin-bottom:11px}
+.ins-i{display:flex;gap:11px;align-items:flex-start;padding:8px 0}
+.ins-i .em{font-size:19px;line-height:1.2;width:24px;text-align:center;flex-shrink:0}
+.ins-i div{flex:1;min-width:0}
+.ins-i b{display:block;font-size:13.5px;font-weight:600;line-height:1.35}
+.ins-i p{margin:2px 0 0;font-size:12px;color:var(--t2);line-height:1.35}
+
 /* ---------- LAS COMIDAS DEL DÍA ---------- */
 .cm-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cm-hd h3{margin:0;font-size:17px;font-weight:700;letter-spacing:-.3px}
@@ -1214,7 +1278,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.5';
+var APP_VERSION = '0.9.7';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1289,6 +1353,7 @@ var IC = {
   regla:'<rect x="2.8" y="8.5" width="18.4" height="7" rx="2"/><path d="M7 8.5v3M11 8.5v4.4M15 8.5v3M19 8.5v4.4"/>',
   sombrilla:'<path d="M12 3.2c4.6 0 8.4 3.6 8.8 8.2H3.2C3.6 6.8 7.4 3.2 12 3.2Z"/><path d="M12 11.4v7.2a2.2 2.2 0 0 0 4.4 0"/>',
   check:'<path d="m4.5 12.5 5 5 10-11"/>',
+  grafica:'<path d="M4 20V9M10 20V4M16 20v-7M22 20H2"/>',
   camara:'<path d="M3.5 8.6A1.6 1.6 0 0 1 5.1 7h2.1l1.2-2h7.2l1.2 2h2.1A1.6 1.6 0 0 1 20.5 8.6' +
     'v9.3a1.6 1.6 0 0 1-1.6 1.6H5.1a1.6 1.6 0 0 1-1.6-1.6Z"/>' +
     '<circle cx="12" cy="13" r="3.4"/>',
@@ -2466,6 +2531,128 @@ function ich(lunes){
 
 /* Mensajes: siempre en positivo y orientados a la oportunidad (§25).
    Se elige el primero que aplique, así el consejo es el más útil, no el más bonito. */
+/* ============================================================
+   ESTADÍSTICAS
+   Todo se calcula al pintar, desde lo registrado. Nada se guarda.
+   ============================================================ */
+
+/** Cuántas veces aparece cada alimento, en todo el histórico o en un tramo. */
+function rankingAlimentos(desde, hasta, n){
+  var cuenta = {};
+  state.data.comidas.forEach(function(c){
+    if(!c.alimento_id) return;                       /* solo alimentos concretos */
+    if(String(c.estado_toma) === 'rechazo') return;  /* rechazado no es consumido */
+    var f = fechaKey(c.fecha);
+    if(desde && f < desde) return;
+    if(hasta && f > hasta) return;
+    var k = String(c.alimento_id);
+    cuenta[k] = (cuenta[k] || 0) + 1;
+  });
+  return Object.keys(cuenta).map(function(k){
+    var a = alimento(k) || { id:k, nombre:'(borrado)', grupo:'otros' };
+    return { id:k, nombre:String(a.nombre||''), grupo:String(a.grupo||'otros'),
+             emoji:String(a.emoji||''), estado:String(a.estado||''), veces:cuenta[k] };
+  }).sort(function(a,b){ return b.veces - a.veces || a.nombre.localeCompare(b.nombre); })
+    .slice(0, n || 999);
+}
+
+/** El índice de las últimas n semanas, para ver la evolución. */
+function serieIch(n){
+  var out = [], lun = lunesDe(state.data.hoy);
+  for(var i = n - 1; i >= 0; i--){
+    var l = addDays(lun, -7 * i);
+    out.push({ lunes:l, v: ich(l), variedad: variedadDe(l).length });
+  }
+  return out;
+}
+
+/** Cuántos alimentos distintos se han probado alguna vez, por grupo. */
+function repertorioPorGrupo(){
+  var vistos = {};
+  state.data.comidas.forEach(function(c){
+    if(c.alimento_id && String(c.estado_toma) !== 'rechazo') vistos[String(c.alimento_id)] = true;
+  });
+  var por = {};
+  Object.keys(vistos).forEach(function(id){
+    var a = alimento(id);
+    if(!a) return;
+    var g = String(a.grupo || 'otros');
+    por[g] = (por[g] || 0) + 1;
+  });
+  return por;
+}
+
+/* ---------- GRÁFICAS ----------
+   Una sola serie por gráfica, un solo color. Colorear cada barra según
+   su tamaño sería pintar dos veces el mismo dato y gastar el único
+   canal libre que queda. La rejilla es una línea fina, nunca de puntos.
+   Y el valor va escrito al lado de cada barra: un tooltip no puede ser
+   la única forma de leer un número. */
+
+/** Barras horizontales ordenadas. Es a la vez gráfica y tabla. */
+function barrasH(filas, color){
+  if(!filas.length) return '';
+  var max = Math.max.apply(null, filas.map(function(f){ return f.v; })) || 1;
+  return '<div class="bh">' + filas.map(function(f){
+    var pc = Math.max(2, Math.round(f.v / max * 100));
+    return '<div class="bh-r">' +
+      '<span class="nm">'+(f.em ? '<i>'+esc(f.em)+'</i>' : '')+esc(f.n)+'</span>' +
+      '<span class="tr"><i style="width:'+pc+'%;background:'+color+'"></i></span>' +
+      '<span class="vl">'+esc(String(f.t !== undefined ? f.t : f.v))+'</span>' +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+/**
+ * Línea de evolución. Un solo trazo, sin leyenda (el título ya lo
+ * nombra), con el último punto etiquetado y el eje llevando el resto.
+ * El alto incluye la banda del eje: si no, el card se queda con un
+ * scroll interno de dos píxeles.
+ */
+function lineaEvolucion(puntos, color){
+  var conDato = puntos.filter(function(p){ return p.y !== null; });
+  if(conDato.length < 2) return '';
+  /* Deja hueco a la izquierda para las etiquetas del eje: sin escala,
+     un "29" suelto no dice si es mucho o poco. */
+  var W = 320, H = 96, P = 6, EJE = 20, EY = 20;
+  var max = 100, min = 0;
+  var x = function(i){ return EY + P + i * (W - EY - P*2) / (puntos.length - 1); };
+  var y = function(v){ return P + (1 - (v - min) / (max - min)) * (H - P*2); };
+
+  var d = '', primero = true;
+  puntos.forEach(function(p, i){
+    if(p.y === null){ primero = true; return; }
+    d += (primero ? 'M' : 'L') + x(i).toFixed(1) + ' ' + y(p.y).toFixed(1) + ' ';
+    primero = false;
+  });
+
+  var ult = null;
+  for(var i = puntos.length - 1; i >= 0; i--){ if(puntos[i].y !== null){ ult = i; break; } }
+
+  return '<div class="ln-c"><svg viewBox="0 0 '+W+' '+(H+EJE)+'" ' +
+    'preserveAspectRatio="none" class="ln-svg" aria-hidden="true">' +
+    /* Rejilla: dos líneas finas, sólidas, un tono por debajo del fondo */
+    [0,50,100].map(function(v){
+      return '<line x1="'+(EY+P)+'" x2="'+(W-P)+'" y1="'+y(v).toFixed(1)+'" y2="'+y(v).toFixed(1)+
+        '" stroke="var(--border)" stroke-width="1"/>' +
+        '<text x="'+(EY-2)+'" y="'+(y(v)+3.5).toFixed(1)+'" text-anchor="end" ' +
+        'font-size="9" fill="var(--t3)">'+v+'</text>';
+    }).join('') +
+    '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round"/>' +
+    puntos.map(function(p, i){
+      if(p.y === null) return '';
+      var r = i === ult ? 5 : 3.5;
+      return '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" r="'+r+'" ' +
+        'fill="'+color+'" stroke="var(--surface)" stroke-width="2"/>';
+    }).join('') +
+    '</svg><div class="ln-x">' + puntos.map(function(p){
+      return '<span>'+esc(p.x)+'</span>';
+    }).join('') + '</div></div>' +
+    '<div class="ln-nota">Semanas sin datos suficientes no dibujan punto.</div>' +
+    (ult !== null ? '<div class="ln-ult">Última semana: <b>'+puntos[ult].y+'</b></div>' : '');
+}
+
 function mensajeSemana(lunes){
   var i = ich(lunes);
   var nuevos = nuevosDe(lunes).length;
@@ -2696,6 +2883,7 @@ function pintarAlimentacion(){
 
   /* ---- Qué conviene para la siguiente ---- */
   if(esActual) out += pintarConsejo();
+  if(esActual) out += pintarInsights();
 
   /* ---- Selector de semana + tabla, juntos ---- */
   var objs = objetivosSemana();
@@ -2744,6 +2932,17 @@ function pintarAlimentacion(){
   var m = mensajeSemana(lun);
   out += '<div class="msg"><div class="em">'+m.em+'</div>' +
     '<div><b>'+esc(m.t)+'</b><p>'+esc(m.p)+'</p></div></div>';
+
+  /* ---- Al fondo, lo que se consulta de vez en cuando ---- */
+  out += '<div class="ali-pies">' +
+    '<button id="aliBib">'+svg('carpeta',18) +
+      '<div><b>Biblioteca de alimentos</b>' +
+      '<span>'+state.data.alimentos.length+' dados de alta · buscar y corregir</span></div>' +
+      svg('chevron',15)+'</button>' +
+    '<button id="aliStats">'+svg('grafica',18) +
+      '<div><b>Estadísticas</b><span>Lo que más come y cómo evoluciona</span></div>' +
+      svg('chevron',15)+'</button>' +
+    '</div>';
 
   $('#aliCuerpo').innerHTML = out;
 
@@ -3242,6 +3441,281 @@ function pintarBusqueda(){
   $('#resBusca').innerHTML = h ? '<div class="res">'+h+'</div>' : '';
 }
 
+/* ============================================================
+   BIBLIOTECA DE ALIMENTOS
+   Todo lo que habéis dado de alta, con filtros. Desde aquí se corrige
+   el grupo de algo mal clasificado y se pasa a "aceptado" lo que ya
+   come sin rechistar — que es lo que hace que deje de preguntarlo.
+   ============================================================ */
+var ESTADOS_AL = [
+  { id:'aceptado',    nom:'Aceptado',    c:'ali' },
+  { id:'aprendizaje', nom:'Probando',    c:'cal' },
+  { id:'rechazado',   nom:'No le gusta', c:'gas' }
+];
+function estadoAlNom(id){
+  var e = ESTADOS_AL.filter(function(x){ return x.id === id; })[0];
+  return e ? e.nom : 'Probando';
+}
+
+/* ============================================================
+   ESTADÍSTICAS
+   ============================================================ */
+function hojaStats(){
+  var top = rankingAlimentos('', '', 10);
+  var serie = serieIch(8);
+  var rep = repertorioPorGrupo();
+  var totalAl = Object.keys(rep).reduce(function(n,k){ return n + rep[k]; }, 0);
+
+  var h = '<h3>Estadísticas</h3>';
+
+  /* Un número solo no es una gráfica: es un número. */
+  h += '<div class="st-kpis">' +
+    '<div><b>'+totalAl+'</b><span>alimentos probados<br>alguna vez</span></div>' +
+    '<div><b>'+state.data.comidas.filter(function(c){ return !!c.grupo_id; })
+      .reduce(function(a,c){ return a.indexOf(c.grupo_id)<0 ? a.concat([c.grupo_id]) : a; }, [])
+      .length+'</b><span>comidas<br>registradas</span></div>' +
+    '</div>';
+
+  if(!top.length){
+    h += '<div class="hist-vacio">Cuando llevéis unos días apuntando, ' +
+      'aquí se verá qué come más.</div>';
+    abrirHoja(h); return;
+  }
+
+  /* Una serie, un color. Colorear cada barra según su tamaño sería
+     pintar dos veces el mismo dato. El número va escrito al lado: un
+     tooltip no puede ser la única forma de leerlo. */
+  h += '<div class="st-b"><h4>Lo que más come</h4>' +
+    barrasH(top.map(function(a){
+      return { n:a.nombre, em:a.emoji, v:a.veces };
+    }), 'var(--ali)') +
+    '<p class="st-p">Veces que aparece en una comida. No cuentan los rechazos.</p></div>';
+
+  /* Evolución del índice: un trazo, sin leyenda — el título ya lo nombra. */
+  var puntos = serie.map(function(x){
+    return { x:(+x.lunes.split('-')[2]) + '/' + (+x.lunes.split('-')[1]),
+             y: x.v ? x.v.total : null };
+  });
+  var linea = lineaEvolucion(puntos, 'var(--ali)');
+  if(linea){
+    h += '<div class="st-b"><h4>Índice de hábitos, últimas 8 semanas</h4>' +
+      linea + '</div>';
+  } else {
+    h += '<div class="st-b"><h4>Índice de hábitos</h4>' +
+      '<p class="st-p">Hacen falta al menos dos semanas con datos para ver ' +
+      'una evolución. Dibujar una línea con un punto sería inventarla.</p></div>';
+  }
+
+  /* Repertorio por grupo: dónde hay variedad y dónde no. */
+  var filas = objetivosSemana().map(function(o){
+    return { n:String(o.nombre||o.grupo), em:String(o.emoji||''), v:rep[String(o.grupo)] || 0 };
+  }).filter(function(f){ return f.v > 0; })
+    .sort(function(a,b){ return b.v - a.v; });
+  if(filas.length){
+    h += '<div class="st-b"><h4>Repertorio por grupo</h4>' +
+      barrasH(filas, 'var(--sal)') +
+      '<p class="st-p">Alimentos distintos que ha probado de cada grupo. ' +
+      'Un grupo con pocos es donde más margen hay.</p></div>';
+  }
+
+  abrirHoja(h);
+}
+
+/* ---------- INSIGHTS ----------
+   Observaciones que se leen solas de los datos. Nada de opiniones: si
+   no hay nada que decir, no se dice nada. */
+function insights(){
+  var lun = state.aliLunes || lunesDe(state.data.hoy);
+  var out = [];
+
+  var v = variedadDe(lun).length, vAnt = variedadDe(addDays(lun,-7)).length;
+  if(v && vAnt){
+    var d = v - vAnt;
+    if(d > 0) out.push({ e:'📈', t:d+(d===1?' alimento más':' alimentos más')+' que la semana pasada',
+                         p:'Vais de '+vAnt+' a '+v+' distintos.' });
+    else if(d < 0) out.push({ e:'🔁', t:'Esta semana se repite más',
+                         p:v+' alimentos distintos, '+(-d)+' menos que la anterior.' });
+  }
+
+  var nv = nuevosDe(lun);
+  if(nv.length){
+    var nom = nv.map(function(id){ return (alimento(id)||{}).nombre; }).filter(String);
+    out.push({ e:'⭐', t:nv.length===1 ? 'Un alimento nuevo' : nv.length+' alimentos nuevos',
+               p: nom.slice(0,3).join(', ') + (nom.length>3 ? ' y '+(nom.length-3)+' más' : '') });
+  }
+
+  /* El grupo que lleva más días sin aparecer: es lo accionable.
+     Un grupo que NUNCA ha aparecido no está "sin aparecer" — es que no
+     forma parte de su dieta. Si no se excluye, se lleva siempre el
+     primer puesto y tapa al que de verdad se ha caído. */
+  var seco = null, TOPE = 21;
+  objetivosSemana().forEach(function(o){
+    if(String(o.tipo) === 'max') return;
+    var g = String(o.grupo), dias = 0, aparecio = false;
+    for(var i = 0; i < TOPE; i++){
+      if(racionesDia(g, addDays(state.data.hoy, -i)) > 0){ aparecio = true; break; }
+      dias++;
+    }
+    if(!aparecio) return;                       /* nunca en tres semanas: no cuenta */
+    if(dias >= 7 && (!seco || dias > seco.dias)) seco = { o:o, dias:dias };
+  });
+  if(seco){
+    out.push({ e:String(seco.o.emoji||'•'),
+               t: String(seco.o.nombre||seco.o.grupo) + ': ' + seco.dias + ' días sin aparecer',
+               p:'Es el grupo que lleva más tiempo fuera del plato.' });
+  }
+
+  /* Lo que más se repite últimamente, dicho sin juicio. */
+  var top = rankingAlimentos(addDays(state.data.hoy,-27), state.data.hoy, 1)[0];
+  if(top && top.veces >= 8){
+    out.push({ e:String(top.emoji||'🍽️'), t:top.nombre+', '+top.veces+' veces este mes',
+               p:'Es lo que más se repite. Ni bien ni mal: solo por si no te habías fijado.' });
+  }
+
+  return out;
+}
+
+function pintarInsights(){
+  var xs = insights();
+  if(!xs.length) return '';
+  return '<div class="ins"><div class="ins-hd">'+svg('destello',15)+'Nos hemos fijado en esto</div>' +
+    xs.slice(0,3).map(function(x){
+      return '<div class="ins-i"><span class="em">'+esc(x.e)+'</span>' +
+        '<div><b>'+esc(x.t)+'</b><p>'+esc(x.p)+'</p></div></div>';
+    }).join('') + '</div>';
+}
+
+function hojaBiblioteca(){
+  state.bibQ = state.bibQ || '';
+  state.bibG = state.bibG || '';
+  state.bibE = state.bibE || '';
+  pintarBiblioteca();
+}
+
+function pintarBiblioteca(){
+  var q = String(state.bibQ||'').trim().toLowerCase();
+  var veces = {};
+  state.data.comidas.forEach(function(c){
+    if(c.alimento_id) veces[String(c.alimento_id)] = (veces[String(c.alimento_id)]||0) + 1;
+  });
+
+  var todos = state.data.alimentos.slice();
+  var lista = todos.filter(function(a){
+    if(q && String(a.nombre||'').toLowerCase().indexOf(q) < 0) return false;
+    if(state.bibG && String(a.grupo) !== state.bibG) return false;
+    if(state.bibE && String(a.estado||'aprendizaje') !== state.bibE) return false;
+    return true;
+  }).sort(function(a,b){
+    return (veces[String(b.id)]||0) - (veces[String(a.id)]||0) ||
+           String(a.nombre).localeCompare(String(b.nombre));
+  });
+
+  /* Los grupos del filtro son los que de verdad tienen alimentos: un
+     filtro que devuelve cero siempre es un filtro que sobra. */
+  var conAlgo = {};
+  todos.forEach(function(a){ conAlgo[String(a.grupo)] = true; });
+  var grupos = objetivosSemana().filter(function(o){ return conAlgo[String(o.grupo)]; });
+
+  var h = '<h3>Biblioteca de alimentos</h3>' +
+    '<div class="busca"><span class="lupa i">'+svg('lupa',17)+'</span>' +
+    '<input class="inp" id="bibQ" type="text" placeholder="Buscar…" ' +
+      'value="'+esc(state.bibQ)+'" autocomplete="off"></div>' +
+    '<div class="cats-h" style="margin-top:10px">' +
+      '<button data-bibg="" class="'+(state.bibG?'':'on')+'" style="' +
+        (state.bibG?'':'background:var(--ali-d);color:#fff')+'">Todos</button>' +
+      grupos.map(function(o){
+        var on = state.bibG === String(o.grupo);
+        return '<button data-bibg="'+esc(o.grupo)+'" class="'+(on?'on':'')+'" style="' +
+          (on?'background:var(--ali-d);color:#fff':'')+'">'+esc(o.emoji||'')+' ' +
+          esc(o.nombre||o.grupo)+'</button>';
+      }).join('') + '</div>' +
+    '<div class="cats-h">' +
+      '<button data-bibe="" class="'+(state.bibE?'':'on')+'" style="' +
+        (state.bibE?'':'background:var(--t2);color:#fff')+'">Cualquier estado</button>' +
+      ESTADOS_AL.map(function(e){
+        var on = state.bibE === e.id;
+        return '<button data-bibe="'+e.id+'" class="'+(on?'on':'')+'" style="' +
+          (on?'background:var(--'+e.c+'-d);color:#fff':'')+'">'+esc(e.nom)+'</button>';
+      }).join('') + '</div>';
+
+  h += '<div class="bib-n">' + lista.length +
+    (lista.length===1?' alimento':' alimentos') +
+    (lista.length !== todos.length ? ' de '+todos.length : '') + '</div>';
+
+  if(!lista.length){
+    h += '<div class="hist-vacio">Nada con esos filtros.</div>';
+  } else {
+    h += '<div class="bib-l">' + lista.map(function(a){
+      var o = objGrupo(String(a.grupo));
+      var est = String(a.estado||'aprendizaje');
+      var e = ESTADOS_AL.filter(function(x){ return x.id===est; })[0] || ESTADOS_AL[1];
+      var n = veces[String(a.id)] || 0;
+      return '<button class="bib-i" data-bibedit="'+esc(a.id)+'">' +
+        '<span class="em">'+esc(a.emoji||'🍽️')+'</span>' +
+        '<div class="tx"><b>'+esc(a.nombre)+'</b>' +
+          '<span>'+esc((o&&o.nombre)||a.grupo)+' · '+
+          (n ? n + (n===1?' vez':' veces') : 'sin registrar')+'</span></div>' +
+        '<span class="es" style="background:var(--'+e.c+'-s);color:var(--'+e.c+'-d)">' +
+          esc(e.nom)+'</span></button>';
+    }).join('') + '</div>';
+  }
+  abrirHoja(h);
+}
+
+/** Editar un alimento: grupo, estado, o retirarlo de la biblioteca. */
+function hojaEditarAlimento(id){
+  var a = alimento(id);
+  if(!a) return;
+  state._edAl = { id:String(a.id), nombre:String(a.nombre||''),
+                  grupo:String(a.grupo||'otros'), emoji:String(a.emoji||''),
+                  estado:String(a.estado||'aprendizaje') };
+  pintarEditarAlimento();
+}
+
+function pintarEditarAlimento(){
+  var b = state._edAl;
+  var h = '<h3>'+esc(b.nombre)+'</h3>' +
+    '<div class="f-lb">Nombre</div>' +
+    '<input class="inp" id="edNom" type="text" value="'+esc(b.nombre)+'">' +
+    '<div class="f-lb">Grupo</div><div class="chips">' +
+      objetivosSemana().map(function(o){
+        var on = b.grupo === String(o.grupo);
+        return '<button class="chip'+(on?' on':'')+'" data-edg="'+esc(o.grupo)+'" style="' +
+          (on?'background:var(--ali-s);color:var(--ali-d);border-color:var(--ali)':'')+'">' +
+          esc(o.emoji||'')+' '+esc(o.nombre||o.grupo)+'</button>';
+      }).join('') + '</div>' +
+    '<div class="f-lb">Cómo va</div><div class="chips">' +
+      ESTADOS_AL.map(function(e){
+        var on = b.estado === e.id;
+        return '<button class="chip'+(on?' on':'')+'" data-ede="'+e.id+'" style="' +
+          (on?'background:var(--'+e.c+'-s);color:var(--'+e.c+'-d);border-color:var(--'+e.c+')':'')+
+          '">'+esc(e.nom)+'</button>';
+      }).join('') + '</div>' +
+    '<div class="aviso">Un alimento <b>aceptado</b> deja de preguntar cómo fue cada ' +
+      'vez que lo apuntas: se da por comido.</div>' +
+    '<button class="btn" id="edGuardar">Guardar</button>' +
+    '<button class="btn sec" id="edRetirar">Retirar de la biblioteca</button>' +
+    '<div class="plato-e">Retirar no borra el histórico: deja de salir en el ' +
+      'buscador, pero lo ya apuntado sigue contando.</div>';
+  abrirHoja(h);
+}
+
+function guardarAlimentoEdit(retirar){
+  var b = state._edAl;
+  b.nombre = (($('#edNom')||{}).value || b.nombre).trim();
+  cargando(true);
+  llamarPost({ action:'saveAlimento', payload:{
+    id:b.id, nombre:b.nombre, grupo:b.grupo, emoji:b.emoji,
+    estado:b.estado, activo: retirar ? false : true, creado_por:state.user } })
+    .then(function(){ return recargar(); })
+    .then(function(){
+      cargando(false);
+      toast(retirar ? 'Retirado de la biblioteca' : 'Guardado');
+      pintarBiblioteca();
+    })
+    .catch(function(err){ cargando(false); toast(String(err.message||err), true); });
+}
+
 function hojaCrearAlimento(nombre){
   var grupos = objetivosSemana();
   abrirHoja('<h3>Nuevo alimento</h3>' +
@@ -3393,12 +3867,19 @@ function pintarLogin(){
 }
 
 function entrar(){
+  cargando(true);
   llamar('login', { username: lg.username, pin: lg.pin })
     .then(function(d){
       localStorage.setItem(LS_TOKEN, d.token);
       localStorage.setItem(LS_USER, d.username);
       state.user = d.username;
       lg = { username:'', pin:'', error:'' };
+      /* Los datos NO viajan hasta que hay token: se piden ahora. */
+      return llamar('getBootstrap', {});
+    })
+    .then(function(d){
+      cargando(false);
+      state.data = normalizar(d);
       $('#login').classList.add('out');
       setTimeout(function(){ $('#login').hidden = true; }, 320);
       pintarTodo();
@@ -3406,10 +3887,14 @@ function entrar(){
       marcarSeccionVista('inicio');
     })
     .catch(function(err){
+      cargando(false);
       lg.error = String(err.message || err);
       lg.pin = '';
       pintarLogin();
-      setTimeout(function(){ lg.error = ''; pintarLogin(); }, 1400);
+      /* El bloqueo por intentos se queda en pantalla: no es un typo. */
+      if(err.code !== 'bloqueado'){
+        setTimeout(function(){ lg.error = ''; pintarLogin(); }, 1400);
+      }
     });
 }
 
@@ -5253,15 +5738,29 @@ function arrancar(){
     $('#pedirUrl').addEventListener('click', pedirUrl);
     return;
   }
+  /* Sin token NO se piden datos: primero la pantalla de entrada, que es
+     lo único que el backend sirve sin identificarse. Antes se pedía el
+     bootstrap entero antes de saber quién eras — y como esa lectura era
+     libre, cualquiera con la URL podía hacer lo mismo. */
+  if(!token()){
+    llamar('getLogin', {})
+      .then(function(d){
+        state.data = normalizar({ usuarios:d.usuarios, modo:d.modo });
+        pintarLogin();
+      })
+      .catch(function(err){
+        $('#splashTx').innerHTML = 'No se pudo conectar.<br>' +
+          '<span style="color:#D64545">' + esc(err.message||err) + '</span>';
+      });
+    return;
+  }
+
   llamar('getBootstrap', {})
     .then(function(d){
       state.data = normalizar(d);
       var guardado = localStorage.getItem(LS_USER);
       var validos = state.data.usuarios.map(function(u){ return String(u.username); });
       state.user = (guardado && validos.indexOf(guardado)>=0) ? guardado : (validos[0] || 'papa');
-
-      /* Sin token no se entra: leer es abierto, escribir no. */
-      if(!token()){ pintarLogin(); return; }
 
       localStorage.setItem(LS_USER, state.user);
       pintarTodo();
@@ -5370,6 +5869,21 @@ document.addEventListener('click', function(e){
   }
   var chC = e.target.closest('[data-con]');
   if(chC){ borrador.con = chC.dataset.con; pintarHojaComida(); return; }
+  if(e.target.closest('#aliBib')){ hojaBiblioteca(); return; }
+  if(e.target.closest('#aliStats')){ hojaStats(); return; }
+  var bg = e.target.closest('[data-bibg]');
+  if(bg){ state.bibG = bg.dataset.bibg; pintarBiblioteca(); return; }
+  var be = e.target.closest('[data-bibe]');
+  if(be){ state.bibE = be.dataset.bibe; pintarBiblioteca(); return; }
+  var bed = e.target.closest('[data-bibedit]');
+  if(bed){ hojaEditarAlimento(bed.dataset.bibedit); return; }
+  var edg = e.target.closest('[data-edg]');
+  if(edg){ state._edAl.grupo = edg.dataset.edg; pintarEditarAlimento(); return; }
+  var ede = e.target.closest('[data-ede]');
+  if(ede){ state._edAl.estado = ede.dataset.ede; pintarEditarAlimento(); return; }
+  if(e.target.closest('#edGuardar')){ guardarAlimentoEdit(false); return; }
+  if(e.target.closest('#edRetirar')){ guardarAlimentoEdit(true); return; }
+
   var nc = e.target.closest('[data-nuevacomida]');
   if(nc){ abrirComida('', nc.dataset.nuevacomida); return; }
   var ad = e.target.closest('[data-alidia]');
@@ -5579,6 +6093,9 @@ document.addEventListener('change', function(e){
 
 document.addEventListener('input', function(e){
   if(e.target.id === 'inBusca'){ pintarBusqueda(); return; }
+  if(e.target.id === 'bibQ'){ state.bibQ = e.target.value;
+    var pos = e.target.selectionStart; pintarBiblioteca();
+    var n = $('#bibQ'); if(n){ n.focus(); n.setSelectionRange(pos,pos); } return; }
   if(e.target.id === 'inHora' && borrador){ borrador.hora = e.target.value; return; }
   if(e.target.id === 'inPlato' && borrador){ borrador.plato = e.target.value; return; }
   if(e.target.id === 'inDesc'  && borrador){ borrador.desc  = e.target.value; return; }
