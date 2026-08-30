@@ -1380,7 +1380,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.12';
+var APP_VERSION = '0.9.13';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1611,7 +1611,10 @@ function claveColor(u){
 /** Quién puede ENTRAR en la app. Ni la hija ni los avis: no apuntan nada. */
 function esPerfil(u){
   var r = String(u.rol||'');
-  return r !== 'hija' && r !== 'abuelos';
+  if(r === 'hija' || r === 'abuelos') return false;
+  /* Y activo: asi se puede retirar un perfil sin borrarlo. Vacio cuenta
+     como activo, igual que en el resto del Sheet. */
+  return u.activo === '' || u.activo === undefined || truthy(u.activo);
 }
 /** Las casas donde puede dormir. Los avis no son un perfil, solo una casa. */
 var CASAS = ['papa','mama','avis'];
@@ -5056,7 +5059,7 @@ function pintarFormEvento(){
     '<input class="inp" id="eLugar" type="text" value="'+esc(b.lugar)+'" ' +
       'placeholder="Piscina Municipal">' +
     '<div class="f-lb">Quién se encarga</div><div class="chips">' +
-      state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; }).map(function(u){
+      state.data.usuarios.filter(esPerfil).map(function(u){
         var on = b.responsable===String(u.username);
         return '<button class="chip'+(on?' on':'')+'" style="'+
           (on?'background:'+colorDe(u.username):'')+'" data-ecampo="responsable" ' +
@@ -5380,7 +5383,7 @@ function estadoCuenta(ym){
   if(saldoComun() < 0) return { t:'En descubierto', c:'cal', ico:'reloj' };
   var cuota = cfgNum('cuota_mensual', 0);
   var falta = state.data.usuarios.filter(function(u){
-    return String(u.rol)!=='hija' && aportadoEnMes(String(u.username), ym) < cuota;
+    return esPerfil(u) && aportadoEnMes(String(u.username), ym) < cuota;
   });
   if(cuota > 0 && falta.length) return { t:'Falta un aporte', c:'cal', ico:'reloj' };
   return { t:'Al día', c:'ali', ico:'escudo' };
@@ -5449,7 +5452,7 @@ function pintarGastos(){
     '</div></div>';
 
   var cuota = cfgNum('cuota_mensual', 0);
-  var adultos = state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; });
+  var adultos = state.data.usuarios.filter(esPerfil);
   if(cuota > 0 && adultos.length){
     out += '<div class="ap"><div class="ap-hd"><b>Aportes de '+mesNom+'</b>' +
       '<button id="gasAporte">Añadir aporte '+svg('mas',13)+'</button></div><div class="ap-g">' +
@@ -5739,7 +5742,7 @@ function pintarFormAporte(){
         'data-acampo="tipo" data-val="ajuste">Saldo de partida</button></div>';
   if(!ini){
     h += '<div class="f-lb">Quién lo ingresa</div><div class="chips">' +
-      state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; }).map(function(u){
+      state.data.usuarios.filter(esPerfil).map(function(u){
         var on = b.username===String(u.username);
         return '<button class="chip'+(on?' on':'')+'" style="'+
           (on?'background:'+colorDe(u.username):'')+'" data-acampo="username" ' +
@@ -6327,7 +6330,7 @@ function pintarFormSalud(){
       campo('Centro','fCentro',b.centro,'Clínica Sonríe') +
       campo('Profesional','fProf',b.profesional,'Opcional') +
       '<div class="f-lb">Quién la lleva</div><div class="chips">' +
-        state.data.usuarios.filter(function(u){ return String(u.rol)!=='hija'; }).map(function(u){
+        state.data.usuarios.filter(esPerfil).map(function(u){
           return '<button class="chip'+(b.acompana===u.username?' on':'')+'" style="'+
             (b.acompana===u.username?'background:'+colorDe(u.username):'')+'" ' +
             'data-salcampo="acompana" data-val="'+esc(u.username)+'">'+esc(u.nombre)+'</button>';
