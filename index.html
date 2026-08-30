@@ -336,6 +336,7 @@ svg{display:block;flex-shrink:0}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gn-f .mk{display:flex;align-items:center;gap:3px;flex-shrink:0;font-size:10.5px;
   font-weight:700;color:var(--gina-d);background:var(--gina-s);border-radius:7px;padding:3px 6px}
+.gn-f .mk.casa{border-radius:999px;padding:3px 8px 3px 6px}
 .gn-f .ed{color:var(--t3);flex-shrink:0;display:flex}
 /* El número se toca para copiarlo, así que tiene que parecer tocable. */
 .gn-cp{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
@@ -350,6 +351,8 @@ svg{display:block;flex-shrink:0}
 .gn-foto{display:block;margin-top:2px;border-radius:var(--r-in);overflow:hidden;
   background:var(--surface2)}
 .gn-foto img{width:100%;display:block;max-height:230px;object-fit:cover}
+.gn-foto .ico-em{display:block;padding:14px;font-size:13.5px;font-weight:600;
+  color:var(--gina-d);text-align:center}
 .si .tg{font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
   background:var(--cal-s);color:var(--cal-d);border-radius:6px;padding:3px 6px;
   margin-left:7px;flex-shrink:0}
@@ -763,21 +766,28 @@ svg{display:block;flex-shrink:0}
 
 .pf-sec-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
 .pf-sec-h b{font-size:16px;font-weight:700;letter-spacing:-.3px}
-.pf-res{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
-.pf-r{border-radius:var(--r);padding:14px 13px;box-shadow:var(--sh);display:flex;
-  flex-direction:column}
-.pf-r .top{display:flex;align-items:center;gap:9px;margin-bottom:11px}
-.pf-r .top .i{width:32px;height:32px;border-radius:11px}
+/* Una fila por sección, a ancho completo. En 2×2 cada tarjeta medía 195px
+   y dentro había que meter dos cifras con sus dos etiquetas: los títulos
+   se partían en tres líneas y los valores salían cortados. A ancho
+   completo cada columna tiene el doble de sitio y no hace falta recortar
+   nada. */
+.pf-res{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.pf-r{border-radius:var(--r);padding:14px;box-shadow:var(--sh);display:block;
+  width:100%;text-align:left}
+.pf-r:active{transform:scale(.995)}
+.pf-r .top{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.pf-r .top .i{width:30px;height:30px;border-radius:10px}
 .pf-r .top b{font-size:14.5px;font-weight:700;letter-spacing:-.2px}
-.pf-r .duo{display:flex;gap:10px}
+.pf-r .duo{display:flex;gap:14px}
 .pf-r .duo > div{flex:1;min-width:0}
-.pf-r .lb{font-size:11px;color:var(--t2);line-height:1.3}
-.pf-r .vl{font-size:19px;font-weight:700;letter-spacing:-.6px;margin-top:3px;line-height:1.1;
+.pf-r .lb{font-size:11.5px;color:var(--t2);line-height:1.3}
+.pf-r .vl{font-size:21px;font-weight:700;letter-spacing:-.6px;margin-top:3px;line-height:1.15;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pf-r .sb{font-size:11px;color:var(--t2);margin-top:2px}
-.pf-r .pie{margin-top:auto;padding-top:11px}
+.pf-r .sb{font-size:11.5px;color:var(--t2);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-r .pie{padding-top:12px}
 .pf-r .pie span{display:flex;justify-content:space-between;align-items:center;
-  border-radius:11px;padding:9px 11px;font-size:12px;font-weight:600}
+  border-radius:11px;padding:9px 12px;font-size:12.5px;font-weight:600}
 
 /* ---------- MENSAJES ---------- */
 .msgs{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
@@ -1345,7 +1355,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.10';
+var APP_VERSION = '0.9.11';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1593,10 +1603,20 @@ function otro(u){ return u==='papa' ? 'mama' : 'papa'; }
    que falta deja un hueco.
    ============================================================ */
 
+/**
+ * Nombre de fichero escrito en el Sheet → ruta que sirve.
+ *
+ * Tolera las tres formas en que se escribe sin querer: con la carpeta
+ * delante ("img/gina.webp"), con barra inicial ("/img/gina.webp") y una
+ * URL entera. Escribir la carpeta dos veces daba "img/img/gina.webp" y
+ * una foto que no aparecía sin decir por qué.
+ */
 function rutaIcono(src){
   var s = String(src||'').trim();
   if(!s) return '';
-  return /^(https?:)?\/\//.test(s) || s.indexOf('data:') === 0 ? s : 'img/' + s;
+  if(/^(https?:)?\/\//.test(s) || s.indexOf('data:') === 0) return s;
+  s = s.replace(/^\.?\//, '').replace(/^img\//i, '');
+  return 'img/' + s;
 }
 
 /** Icono de una fila (usa su `icono`, si no su `emoji`). */
@@ -1626,7 +1646,8 @@ function avatarHTML(u, px){
   var k = claveColor(u);
   var est = 'width:'+px+'px;height:'+px+'px;background:var(--'+k+'-s);color:var(--'+k+'-d)';
   return x.foto
-    ? '<span class="av" style="'+est+'"><img src="img/'+esc(x.foto)+'" alt="" data-fb="'+ini+'"></span>'
+    ? '<span class="av" style="'+est+'"><img src="'+esc(rutaIcono(x.foto))+'" alt="" ' +
+      'data-fb="'+ini+'"></span>'
     : '<span class="av" style="'+est+'">'+ini+'</span>';
 }
 
@@ -2074,13 +2095,14 @@ function pintarCabecera(){
   var g = state.data.usuarios.filter(function(u){ return String(u.username)==='gina'; })[0];
   var foto = (g && g.foto) || c.foto_gina || '';
   $('#fotoGina').innerHTML = foto
-    ? '<img src="img/'+esc(foto)+'" alt="" data-fb="G">'
+    ? '<img src="'+esc(rutaIcono(foto))+'" alt="" data-fb="G">'
     : 'G';
 
   var u = usuario(state.user);
   $('#pfNom').textContent = u.nombre;
   var ini = String(u.nombre||'?').trim().charAt(0).toUpperCase();
-  $('#pfAv').innerHTML = u.foto ? '<img src="img/'+esc(u.foto)+'" alt="" data-fb="'+ini+'">' : ini;
+  $('#pfAv').innerHTML = u.foto
+    ? '<img src="'+esc(rutaIcono(u.foto))+'" alt="" data-fb="'+ini+'">' : ini;
   $('#btnNov').innerHTML = svg('campana',20) + $('#novN').outerHTML;
   var n = novedades().length;
   $('#novN').hidden = !n;
@@ -2422,7 +2444,7 @@ function atencion(){
   }).sort(function(a,b){ return fechaKey(a.fecha).localeCompare(fechaKey(b.fecha)); })
     .forEach(function(c){
       out.push({ ico:'calendario', tit:'Cambio de custodia · '+fechaCorta(fechaKey(c.fecha)),
-        sub: (fechaKey(c.fecha)===hoy ? 'Hoy' : 'Ese día') + ' le toca a ' +
+        sub: (fechaKey(c.fecha)===hoy ? 'Esta noche' : 'Esa noche') + ' duerme con ' +
              nombreDe(c.username).toLowerCase() +
              (c.motivo ? ' · '+String(c.motivo) : ''),
         ir:'calendario', dia:fechaKey(c.fecha) });
@@ -4310,6 +4332,61 @@ function registrosSaludMes(ym){
   return historialSalud('').filter(function(r){ return mesDe(r.fecha) === ym; }).length;
 }
 
+/**
+ * Lo que ha hecho ESTE usuario en un mes. Todo se cuenta al vuelo desde lo
+ * registrado; no hay ningún contador guardado en el Sheet que pueda
+ * quedarse desfasado.
+ *
+ * Un apunte sobre "adelantado": es dinero que salió de su bolsillo y que
+ * la cuenta común aún le debe, así que se miran los gastos con su origen,
+ * compartidos y sin reembolso. Los que puso de su bolsillo para él solo no
+ * cuentan: no se los debe nadie.
+ */
+function miMes(ym){
+  var yo = state.user;
+  var esMes = function(f){ return mesDe(fechaKey(f)) === ym; };
+  var mio = function(r){ return String(r.creado_por||'') === yo; };
+
+  var gs = state.data.gastos.filter(function(g){ return esMes(g.fecha) && mio(g); });
+  var adelantado = 0, sinDevolver = 0;
+  state.data.gastos.forEach(function(g){
+    if(!esMes(g.fecha)) return;
+    if(String(g.origen||'comun') !== yo) return;
+    if(!truthy(g.compartido)) return;
+    if(g.reembolso_id) return;
+    adelantado += num(g.importe);
+    sinDevolver++;
+  });
+
+  /* El próximo evento que cae en un día suyo: es el que le afecta. */
+  var prox = null;
+  proximosEventos(12).some(function(p){
+    if(custodiaDe(fechaKey(p.fecha)).quien !== yo) return false;
+    prox = p; return true;
+  });
+
+  var comidas = {};
+  state.data.comidas.forEach(function(c){
+    if(esMes(c.fecha) && mio(c)) comidas[String(c.grupo_id || c.id)] = 1;
+  });
+
+  return {
+    eventos: state.data.eventos.filter(function(e){ return esMes(e.fecha) && mio(e); }).length,
+    proxTit: prox ? (prox.ev.titulo || 'Un evento') : '—',
+    proxSub: prox ? cuandoEvento(prox) : 'nada en tus días',
+    comidas: Object.keys(comidas).length,
+    alimentos: state.data.alimentos.filter(mio).length,
+    gastos: gs.length,
+    gastadoTotal: gs.reduce(function(a,g){ return a + num(g.importe); }, 0),
+    adelantado: adelantado,
+    sinDevolver: sinDevolver,
+    salud: historialSalud('').filter(function(r){
+      return mesDe(r.fecha) === ym && String(r.creado_por||'') === yo; }).length,
+    dosis: state.data.dosis.filter(function(x){
+      return esMes(x.fecha) && String(x.dado_por||'') === yo; }).length
+  };
+}
+
 var ICO_ACT = {
   calendario:{ico:'calendario', c:'cal'}, gastos:{ico:'gastos', c:'gas'},
   alimentacion:{ico:'alimentacion', c:'ali'}, salud:{ico:'salud', c:'sal'},
@@ -4363,43 +4440,40 @@ function pintarPerfil(){
   out += '<button class="pf-mov" id="pfMovs" style="color:var(--'+k+'-d)">' +
     'Ver movimientos de la cuenta común '+svg('chevron',15)+'</button>';
 
-  /* ---- resumen del mes ---- */
-  var ev = eventosDelMes(ym), im = ichMedioMes(ym);
-  var gs = gastosDeMes(ym);
-  var totalG = gs.reduce(function(a,g){ return a + num(g.importe); }, 0);
-  var porCat = {};
-  gs.forEach(function(g){
-    var kk = String(g.categoria||'otro');
-    porCat[kk] = (porCat[kk]||0) + num(g.importe);
-  });
-  var top = Object.keys(porCat).sort(function(a,b){ return porCat[b]-porCat[a]; })[0];
-  var cita = proximaCita();
+  /* ---- lo que has hecho tú este mes ----
+     Estas tarjetas estaban en una rejilla de 2×2 con dos cifras dentro de
+     cada cuadrado: a 195px de ancho no cabía ni "Categoría principal" y
+     todo salía cortado. Ahora es una fila por sección, a ancho completo.
 
-  out += '<div class="pf-sec-h"><b>Resumen de '+mesNom+'</b></div><div class="pf-res">';
+     Y sobre todo: las cifras son DE QUIEN MIRA, no de la casa. Los totales
+     del hogar ya están en su propia sección; repetirlos aquí no daba
+     ninguna razón para no entrar directamente a Gastos o a Calendario. */
+  var yo = state.user;
+  var mias = miMes(ym);
+
+  out += '<div class="pf-sec-h"><b>Lo que has hecho en '+mesNom+'</b></div>' +
+         '<div class="pf-res">';
 
   out += tarjetaPerfil('cal','calendario','Calendario','calendario',
-    duo('Próximos eventos', eventosEstaSemana(), 'esta semana',
-        'Eventos del mes', ev.pasados, 'ya pasados'), 'Ir al calendario');
+    duo('Eventos que has añadido', mias.eventos, mias.eventos===1?'este mes':'este mes',
+        'Próximo tuyo', mias.proxTit, mias.proxSub), 'Ir al calendario');
 
   out += tarjetaPerfil('ali','alimentacion','Alimentación','alimentacion',
-    im ? duo('ICH medio', im.valor, im.semanas+(im.semanas===1?' semana':' semanas'),
-             'Alimentos nuevos', nuevosDelMes(ym), 'este mes')
-       : '<div class="vac"><b>Sin datos aún</b>Hacen falta semanas con al menos ' +
-         cfgNum('dias_min_ich',3)+' días registrados.</div>',
+    duo('Comidas que has apuntado', mias.comidas, 'este mes',
+        'Alimentos que has creado', mias.alimentos, 'en la biblioteca'),
     'Ver resumen de alimentación');
 
   out += tarjetaPerfil('gas','gastos','Gastos','gastos',
-    gs.length
-      ? duo('Total gastado', eur(totalG), gs.length+(gs.length===1?' gasto':' gastos'),
-            'Categoría principal', top ? categoriaGasto(top).nombre : '—',
-            top ? Math.round(porCat[top]/totalG*100)+'% del total' : '')
-      : '<div class="vac"><b>Sin gastos</b>Nada apuntado este mes.</div>',
+    duo('Has adelantado', eur(mias.adelantado),
+        mias.sinDevolver ? mias.sinDevolver+(mias.sinDevolver===1?' sin devolver':' sin devolver')
+                         : 'todo devuelto',
+        'Has apuntado', mias.gastos+(mias.gastos===1?' gasto':' gastos'),
+        eur(mias.gastadoTotal)+' en total'),
     'Ver resumen de gastos');
 
   out += tarjetaPerfil('sal','salud','Salud','salud',
-    duo('Próxima cita', cita ? (cita.motivo || cita.tipo || 'Cita') : '—',
-        cita ? fechaCorta(fechaKey(cita.fecha))+(cita.hora?' · '+esc(cita.hora):'') : 'nada pendiente',
-        'Registros del mes', registrosSaludMes(ym), 'entradas'),
+    duo('Registros que has hecho', mias.salud, 'este mes',
+        'Dosis que has dado', mias.dosis, mias.dosis===1?'esta vez':'en total este mes'),
     'Ver historial de salud');
 
   out += '</div>';
@@ -4703,7 +4777,7 @@ function detalleDia(){
     /* Cambiar de quién es un día no es algo de cada día: va como icono
        pegado al indicador, no como botón grande ocupando sitio. */
     (c.quien ? '<button class="qn" data-cust="'+f+'" style="color:var(--'+k+'-d);' +
-      'background:var(--'+k+'-s)">Con '+ esc(nombreDe(c.quien).toLowerCase()) +
+      'background:var(--'+k+'-s)">Duerme con '+ esc(nombreDe(c.quien).toLowerCase()) +
       (c.origen === 'cambio' ? '<i class="mk"></i>' : '') +
       '<span class="lp">'+svg('lapiz',13)+'</span></button>' : '') + '</div>';
 
@@ -4967,9 +5041,12 @@ function casasDisponibles(){
 
 function pintarFormCustodia(){
   var b = borradorCust;
+  /* "Con quién está" no dice nada: un día se reparte entre los dos. Lo que
+     un día del calendario marca es DÓNDE DUERME esa noche, y es lo único
+     que no admite dos respuestas. */
   var titulo = b.rango
-    ? '¿Con quién está estos días?'
-    : '¿Con quién está el ' + (+b.fecha.split('-')[2]) + ' de ' +
+    ? '¿Dónde duerme estas noches?'
+    : '¿Dónde duerme el ' + (+b.fecha.split('-')[2]) + ' de ' +
       MESES[+b.fecha.split('-')[1]-1] + '?';
 
   var h = '<h3>'+titulo+'</h3>';
@@ -4986,7 +5063,7 @@ function pintarFormCustodia(){
     if(n) h += '<div class="cust-n">'+n+(n===1?' día':' días')+'</div>';
   }
 
-  h += '<div class="f-lb">'+(b.rango?'Se queda con':'Ese día se queda con')+'</div>' +
+  h += '<div class="f-lb">'+(b.rango?'Duerme con':'Esa noche duerme con')+'</div>' +
     '<div class="cust-g">' + casasDisponibles().map(function(u){
       var k = claveColor(u.username), on = b.username === u.username;
       return '<button class="cust-o'+(on?' on':'')+'" data-custq="'+esc(u.username)+'" ' +
@@ -4994,6 +5071,11 @@ function pintarFormCustodia(){
         avatarHTML(u.username, 38) + '<b>'+esc(u.nombre)+'</b>' +
         (on ? '<span class="tk">'+svg('check',13)+'</span>' : '') + '</button>';
     }).join('') + '</div>';
+
+  h += '<div class="aviso" style="background:var(--surface2);color:var(--t2)">' +
+    'Cada día del calendario marca <b>con quién duerme esa noche</b>. ' +
+    'El cambio en sí ocurre a la hora que tengáis puesta en el patrón, ' +
+    'no a medianoche.</div>';
 
   h += '<div class="f-lb">Por qué (opcional)</div>' +
     '<input class="inp" id="cuMotivo" value="'+esc(b.motivo)+'" ' +
@@ -6118,6 +6200,11 @@ function hojaGina(){
         ? (f.usuario ? esc(f.usuario) : 'Sin usuario')
         : (f.numero ? '<b class="mono">'+esc(f.numero)+'</b>' : 'Sin número');
       var marcas = '';
+      /* Quién lo tiene va primero y con su color: es el dato que se mira
+         de reojo desde la puerta antes de salir. */
+      if(f.en_poder_de) marcas += '<span class="mk casa" style="background:var(--' +
+        claveColor(f.en_poder_de)+'-s);color:var(--'+claveColor(f.en_poder_de)+'-d)">' +
+        svg('casa',12)+' '+esc(nombreDe(f.en_poder_de))+'</span>';
       if(f.foto_a || f.foto_b) marcas += '<span class="mk">'+svg('camara',12)+
         (f.foto_a && f.foto_b ? ' 2' : '')+'</span>';
       if(truthy(f.tiene_secreto)) marcas += '<span class="mk">'+svg('candado',12)+'</span>';
@@ -6177,11 +6264,32 @@ function pintarGinaFicha(){
     }
   }
 
+  /* Quién lo tiene se cambia AQUÍ mismo, de un toque. Es lo que más
+     cambia de toda la ficha —el DNI va y viene cada quince días— y
+     obligar a entrar en «Editar» y guardar para eso sobra. */
+  if(f.tipo === 'documento'){
+    h += '<div class="f-lb">Ahora lo tiene</div><div class="chips">' +
+      casasDisponibles().map(function(u){
+        var un = String(u.username), on = String(f.en_poder_de||'') === un;
+        var k = claveColor(un);
+        return '<button class="chip'+(on?' on':'')+'" data-gnpoder="'+esc(un)+'" ' +
+          (on ? 'style="background:var(--'+k+'-s);color:var(--'+k+'-d);' +
+                'border-color:var(--'+k+')"' : '') + '>' + esc(u.nombre)+'</button>';
+      }).join('') +
+      '<button class="chip'+(f.en_poder_de?'':' on')+'" data-gnpoder="">No se sabe</button>' +
+      '</div>' + (v.guardandoPoder
+        ? '<div class="plato-e"><i class="sp"></i>Guardando…</div>' : '');
+  }
+
   [['foto_a','Anverso'],['foto_b','Reverso']].forEach(function(par){
     if(!f[par[0]]) return;
+    /* class="ico-img" para que, si la foto no carga, el respaldo sustituya
+       LA IMAGEN por un texto con estilo, y no deje un enlace azul pelado
+       dentro de la tarjeta. */
     h += '<div class="f-lb">'+par[1]+'</div>' +
       '<a class="gn-foto" href="'+esc(f[par[0]])+'" target="_blank" rel="noopener">' +
-        '<img src="'+esc(f[par[0]])+'" alt="'+par[1]+'" data-fb="Abrir la foto">' +
+        '<img class="ico-img" src="'+esc(f[par[0]])+'" alt="'+par[1]+'" ' +
+        'data-fb="Abrir la foto">' +
       '</a>';
   });
 
@@ -6192,6 +6300,22 @@ function pintarGinaFicha(){
   h += '<button class="btn sec" data-ginaedit="'+esc(f.id)+'">Editar</button>' +
        '<button class="btn sec" id="gnVolver">Volver</button>';
   abrirHoja(h);
+}
+
+/** Cambia quién lo tiene sin abrir el formulario. Solo manda ese campo. */
+function cambiarPoder(quien){
+  var v = state._gnVer;
+  v.guardandoPoder = true;
+  pintarGinaFicha();
+  llamarPost({ action:'saveGinaFicha', payload:{
+      id:v.id, en_poder_de:quien, actualizado_por:state.user } })
+    .then(function(){ return recargar(); })
+    .then(function(){ v.guardandoPoder = false; pintarGinaFicha(); })
+    .catch(function(err){
+      v.guardandoPoder = false;
+      pintarGinaFicha();
+      toast(String(err.message||err), true);
+    });
 }
 
 function verSecreto(){
@@ -6577,6 +6701,8 @@ document.addEventListener('click', function(e){
   if(e.target.closest('#gnNueva')){ formGina(''); return; }
   if(e.target.closest('#gnVolver')){ hojaGina(); return; }
   if(e.target.closest('#gnVerPass')){ verSecreto(); return; }
+  var gnp = e.target.closest('[data-gnpoder]');
+  if(gnp){ cambiarPoder(gnp.dataset.gnpoder); return; }
   var gnv = e.target.closest('[data-ginaver]');
   if(gnv){ hojaGinaFicha(gnv.dataset.ginaver); return; }
   var gne = e.target.closest('[data-ginaedit]');
