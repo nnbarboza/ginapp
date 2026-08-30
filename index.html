@@ -382,6 +382,28 @@ svg{display:block;flex-shrink:0}
 .ln-ult{margin-top:8px;font-size:12.5px;color:var(--t2)}
 .ln-ult b{color:var(--ali-d);font-weight:700}
 
+/* ---------- CRECIMIENTO ---------- */
+.crec{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:14px}
+.crec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.crec-hd b{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.crec-hd button{display:inline-flex;align-items:center;gap:5px;background:var(--sal-s);
+  color:var(--sal-d);border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600}
+.crec-hd button:active{transform:scale(.96)}
+.crec-k{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
+.crec-k > div{background:var(--surface2);border-radius:var(--r-in);padding:11px 12px;min-width:0}
+.crec-k .lb{font-size:11px;color:var(--t2)}
+.crec-k .vl{font-size:19px;font-weight:700;letter-spacing:-.6px;margin-top:3px;line-height:1.15;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crec-k .sb{font-size:10.5px;color:var(--t3);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crec-g{margin-top:16px}
+.crec-g .tt{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--t3);margin-bottom:2px}
+.crec .ln-svg{height:126px}
+.crec .ln-ult b{color:var(--sal-d)}
+.crec-vac{font-size:12.5px;color:var(--t2);line-height:1.45;margin-top:2px}
+
 /* Enlaces del fondo de Alimentación */
 .ali-pies{display:flex;flex-direction:column;gap:2px;background:var(--surface);
   border-radius:var(--r-l);box-shadow:var(--sh);padding:4px 14px;margin-bottom:14px}
@@ -978,6 +1000,9 @@ svg{display:block;flex-shrink:0}
   padding:12px;font-size:13px;font-weight:600;display:flex;justify-content:center;gap:6px;
   align-items:center}
 .cc-pie:active{transform:scale(.97)}
+/* El mismo pie sirve en Salud, pero allí el acento es turquesa: si no,
+   aparece un botón de Gastos en medio del historial médico. */
+.cc-pie.sal{background:var(--sal-s);color:var(--sal-d)}
 .cc-pend{margin-top:12px;background:var(--cal-s);color:var(--cal-d);border-radius:13px;
   padding:11px 13px;font-size:12.5px;font-weight:500;line-height:1.45}
 .cc-pend b{font-weight:700}
@@ -1355,7 +1380,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.11';
+var APP_VERSION = '0.9.12';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -2631,6 +2656,45 @@ function cfgNum(clave, defecto){
   return v > 0 ? v : defecto;
 }
 function objetivosSemana(){ return state.data.objetivos_semana || []; }
+
+/* ============================================================
+   CRECIMIENTO
+
+   Peso, talla y edad. La edad NO se guarda en ninguna parte: se calcula
+   de la fecha de nacimiento, que va en Config. Guardar una edad sería
+   guardar algo que caduca solo, y en tres meses estaría mal.
+   ============================================================ */
+
+/** Años y meses cumplidos en una fecha. null si no hay fecha de nacimiento. */
+function edadEn(f){
+  var nac = fechaKey(state.data.config.fecha_nacimiento || '');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(nac)) return null;
+  var a = nac.split('-').map(Number), b = String(f).split('-').map(Number);
+  if(b.length !== 3) return null;
+  var meses = (b[0]-a[0])*12 + (b[1]-a[1]);
+  if(b[2] < a[2]) meses--;
+  if(meses < 0) return null;
+  return { anios: Math.floor(meses/12), meses: meses%12, total: meses };
+}
+function edadTexto(f){
+  var e = edadEn(f || state.data.hoy);
+  if(!e) return '';
+  if(e.anios < 2) return e.total + (e.total===1 ? ' mes' : ' meses');
+  return e.anios + ' años' + (e.meses ? ' y ' + e.meses + (e.meses===1?' mes':' meses') : '');
+}
+
+/** Mediciones ordenadas de más antigua a más reciente. */
+function medidas(){
+  return (state.data.crecimiento||[]).slice().sort(function(a,b){
+    return fechaKey(a.fecha).localeCompare(fechaKey(b.fecha));
+  });
+}
+/** Última medición con ese campo relleno. Se miden por separado. */
+function ultimaMedida(campo){
+  var ms = medidas();
+  for(var i = ms.length-1; i >= 0; i--){ if(num(ms[i][campo]) > 0) return ms[i]; }
+  return null;
+}
 function objGrupo(g){
   return objetivosSemana().filter(function(o){ return String(o.grupo)===g; })[0] || null;
 }
@@ -2872,6 +2936,63 @@ function lineaEvolucion(puntos, color){
     }).join('') + '</div></div>' +
     '<div class="ln-nota">Semanas sin datos suficientes no dibujan punto.</div>' +
     (ult !== null ? '<div class="ln-ult">Última semana: <b>'+puntos[ult].y+'</b></div>' : '');
+}
+
+/**
+ * Evolución de una medida con escala propia.
+ *
+ * `lineaEvolucion` está clavada a 0-100 porque dibuja el índice semanal;
+ * un peso de 26,4 kg ahí sería una raya pegada al suelo. Esta calcula su
+ * escala y redondea los extremos para que las etiquetas del eje sean
+ * números que alguien diría en voz alta.
+ *
+ * Una serie por gráfica, siempre. Peso y talla se miden en unidades
+ * distintas: meterlas en el mismo dibujo con dos escalas inventaría una
+ * relación entre las dos que no está en los datos.
+ */
+function lineaMedida(puntos, color, unidad){
+  if(puntos.length < 2) return '';
+  var vs = puntos.map(function(p){ return p.y; });
+  var lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs);
+  /* Un margen del 12% arriba y abajo: sin él, el primer y el último punto
+     se pegan al borde y la línea parece que se sale. */
+  var pad = Math.max((hi - lo) * 0.12, hi * 0.02, 0.5);
+  var min = Math.floor(lo - pad), max = Math.ceil(hi + pad);
+  if(max <= min) max = min + 2;
+  /* Que el recorrido sea par: así la marca de en medio es un entero. Con
+     extremos 114 y 131,5 el centro salía "122,8", que nadie diría en voz
+     alta y no ayuda a leer la gráfica. */
+  if((max - min) % 2) max++;
+
+  var W = 320, H = 104, P = 8, EJE = 22, EY = 30;
+  var x = function(i){ return EY + P + i * (W - EY - P*2) / (puntos.length - 1); };
+  var y = function(v){ return P + (1 - (v - min) / (max - min)) * (H - P*2); };
+  var fmt = function(v){ return (Math.round(v*10)/10).toLocaleString('es-ES'); };
+
+  var d = puntos.map(function(p, i){
+    return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.y).toFixed(1);
+  }).join(' ');
+  var ult = puntos.length - 1;
+
+  return '<div class="ln-c"><svg viewBox="0 0 '+W+' '+(H+EJE)+'" ' +
+    'preserveAspectRatio="none" class="ln-svg" aria-hidden="true">' +
+    [min, (min+max)/2, max].map(function(v){
+      return '<line x1="'+(EY+P)+'" x2="'+(W-P)+'" y1="'+y(v).toFixed(1)+'" ' +
+        'y2="'+y(v).toFixed(1)+'" stroke="var(--border)" stroke-width="1"/>' +
+        '<text x="'+(EY-3)+'" y="'+(y(v)+3.5).toFixed(1)+'" text-anchor="end" ' +
+        'font-size="9" fill="var(--t3)">'+fmt(v)+'</text>';
+    }).join('') +
+    '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round"/>' +
+    puntos.map(function(p, i){
+      return '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" ' +
+        'r="'+(i===ult?5:3.5)+'" fill="'+color+'" stroke="var(--surface)" stroke-width="2"/>';
+    }).join('') +
+    '</svg><div class="ln-x" style="padding-left:'+((EY/W)*100).toFixed(1)+'%">' +
+      puntos.map(function(p){ return '<span>'+esc(p.x)+'</span>'; }).join('') +
+    '</div></div>' +
+    '<div class="ln-ult">Última: <b>'+fmt(puntos[ult].y)+' '+esc(unidad)+'</b> · ' +
+      esc(puntos[ult].x)+'</div>';
 }
 
 function mensajeSemana(lunes){
@@ -5834,6 +5955,8 @@ function pintarSalud(){
         svg('chevron',14)+'</button></div>';
   }
 
+  out += tarjetaCrecimiento();
+
   /* ---- Tres tarjetas ---- */
   var futuras = state.data.citas.filter(function(c){
     return fechaKey(c.fecha) >= state.data.hoy; }).length;
@@ -5927,11 +6050,84 @@ function marcarDosis(medId){
     .catch(function(err){ toast(String(err.message||err), true); });
 }
 
+/**
+ * Peso, talla y edad, con su evolución.
+ *
+ * Dos gráficas separadas a propósito. Peso y talla van en unidades
+ * distintas y meterlas en un mismo dibujo obligaría a dos escalas: eso
+ * dibuja un cruce entre las líneas que no significa nada y se lee como
+ * si lo significara.
+ */
+function tarjetaCrecimiento(){
+  var corto = state.data.config.nombre_corto || 'Gina';
+  var ms = medidas();
+  var uP = ultimaMedida('peso_kg'), uT = ultimaMedida('talla_cm');
+  var edad = edadTexto(state.data.hoy);
+
+  var h = '<div class="crec"><div class="crec-hd"><b>Crecimiento</b>' +
+    '<button id="crecNueva">'+svg('mas',13)+' Medir</button></div>';
+
+  h += '<div class="crec-k">' +
+    '<div><div class="lb">Edad</div>' +
+      '<div class="vl" style="color:var(--gina-d)">' +
+        (edad ? esc(edad.split(' y ')[0]) : '—') + '</div>' +
+      '<div class="sb">' + (edad
+        ? (edad.indexOf(' y ') > 0 ? 'y '+esc(edad.split(' y ')[1]) : 'cumplidos')
+        : 'falta su fecha de nacimiento') + '</div></div>' +
+    '<div><div class="lb">Peso</div>' +
+      '<div class="vl" style="color:var(--sal-d)">' +
+        (uP ? num(uP.peso_kg).toLocaleString('es-ES')+' kg' : '—') + '</div>' +
+      '<div class="sb">'+(uP ? esc(fechaCorta(fechaKey(uP.fecha))) : 'sin medir')+'</div></div>' +
+    '<div><div class="lb">Talla</div>' +
+      '<div class="vl" style="color:var(--sal-d)">' +
+        (uT ? num(uT.talla_cm).toLocaleString('es-ES')+' cm' : '—') + '</div>' +
+      '<div class="sb">'+(uT ? esc(fechaCorta(fechaKey(uT.fecha))) : 'sin medir')+'</div></div>' +
+    '</div>';
+
+  /* Si las medidas cruzan más de un año, la etiqueta lleva el año: dos
+     "12 sep" seguidos, uno de 2024 y otro de 2025, no se distinguen. */
+  var fs = ms.map(function(m){ return fechaKey(m.fecha); });
+  var variosAnios = fs.length > 1 && fs[0].slice(0,4) !== fs[fs.length-1].slice(0,4);
+  function serie(campo){
+    return ms.filter(function(m){ return num(m[campo]) > 0; })
+      .map(function(m){
+        var f = fechaKey(m.fecha), p = f.split('-');
+        var et = MESES[+p[1]-1].slice(0,3).toLowerCase();
+        return { x: variosAnios ? et + ' ' + p[0].slice(2) : (+p[2]) + ' ' + et,
+                 y: num(m[campo]) };
+      });
+  }
+  var sP = serie('peso_kg'), sT = serie('talla_cm');
+
+  if(sP.length >= 2){
+    h += '<div class="crec-g"><div class="tt">Peso · kg</div>' +
+         lineaMedida(sP, 'var(--sal)', 'kg') + '</div>';
+  }
+  if(sT.length >= 2){
+    h += '<div class="crec-g"><div class="tt">Talla · cm</div>' +
+         lineaMedida(sT, 'var(--sal)', 'cm') + '</div>';
+  }
+  if(!ms.length){
+    h += '<div class="crec-vac">Apunta el peso y la talla cada vez que la peséis: ' +
+      'en la revisión del pediatra, o en casa. Con dos medidas ya se ve la evolución.</div>';
+  } else if(sP.length < 2 && sT.length < 2){
+    h += '<div class="crec-vac">Con una sola medida no hay evolución que dibujar. ' +
+      'A la siguiente aparece la gráfica.</div>';
+  }
+
+  if(ms.length){
+    h += '<button class="cc-pie sal" id="crecTodas" style="margin-top:14px">' +
+      'Ver todas las medidas '+svg('chevron',14)+'</button>';
+  }
+  return h + '</div>';
+}
+
 function menuSalud(){
   var opciones = [
     {k:'cita',      nom:'Cita médica',   ico:'pediatra',   sub:'Pediatra, dentista, revisión…'},
     {k:'episodio',  nom:'Episodio',      ico:'termometro', sub:'Fiebre, síntoma, golpe'},
-    {k:'medicacion',nom:'Medicación',    ico:'pastilla',   sub:'Empezar un tratamiento'}
+    {k:'medicacion',nom:'Medicación',    ico:'pastilla',   sub:'Empezar un tratamiento'},
+    {k:'medida',    nom:'Peso y talla',  ico:'escudo',     sub:'Una medición nueva'}
   ];
   abrirHoja('<h3>¿Qué quieres apuntar?</h3>' + opciones.map(function(o){
     return '<button class="opt" data-salnuevo="'+o.k+'">' +
@@ -5942,6 +6138,105 @@ function menuSalud(){
 }
 
 var borradorSalud = null;
+
+/* ---------- peso y talla ---------- */
+var borradorMedida = null;
+
+function formMedida(id){
+  var m = id ? state.data.crecimiento.filter(function(x){
+    return String(x.id)===String(id); })[0] : null;
+  if(m && !esMio(m)){
+    return hojaAjena('Medición del ' + fechaCorta(fechaKey(m.fecha)), [
+      num(m.peso_kg) > 0 ? ['Peso', num(m.peso_kg).toLocaleString('es-ES')+' kg'] : null,
+      num(m.talla_cm) > 0 ? ['Talla', num(m.talla_cm).toLocaleString('es-ES')+' cm'] : null,
+      edadEn(fechaKey(m.fecha)) ? ['Edad entonces', edadTexto(fechaKey(m.fecha))] : null,
+      m.nota ? ['Nota', String(m.nota)] : null
+    ], m.creado_por);
+  }
+  borradorMedida = m
+    ? { id:String(m.id), fecha:fechaKey(m.fecha),
+        peso:num(m.peso_kg) > 0 ? String(m.peso_kg).replace('.', ',') : '',
+        talla:num(m.talla_cm) > 0 ? String(m.talla_cm).replace('.', ',') : '',
+        nota:String(m.nota||'') }
+    : { id:'', fecha:state.data.hoy, peso:'', talla:'', nota:'' };
+  pintarFormMedida();
+}
+
+function pintarFormMedida(){
+  var b = borradorMedida;
+  var e = edadTexto(b.fecha);
+  var h = '<h3>'+(b.id?'Editar medición':'Peso y talla')+'</h3>' +
+    '<div class="f-lb">Cuándo</div>' +
+    '<input class="inp" id="mdFecha" type="date" value="'+esc(b.fecha)+'" style="width:170px">' +
+    (e ? '<div class="plato-e">Ese día tenía '+esc(e)+'.</div>' : '') +
+    /* type="text" + inputmode: un input numérico se come la coma decimal
+       en español y se guardaría 0 sin decir nada. */
+    '<div class="f-lb">Peso y talla <span class="op">al menos uno</span></div>' +
+    '<div class="fila2">' +
+      '<input class="inp" id="mdPeso" type="text" inputmode="decimal" ' +
+        'value="'+esc(b.peso)+'" placeholder="26,4 kg">' +
+      '<input class="inp" id="mdTalla" type="text" inputmode="decimal" ' +
+        'value="'+esc(b.talla)+'" placeholder="128 cm"></div>' +
+    '<div class="f-lb">Nota <span class="op">opcional</span></div>' +
+    '<textarea class="inp ta" id="mdNota" rows="2" ' +
+      'placeholder="En la revisión del pediatra…">'+esc(b.nota)+'</textarea>' +
+    '<button class="btn" id="mdGuardar" style="background:var(--sal)">' +
+      (b.id?'Guardar cambios':'Guardar')+'</button>';
+  if(b.id) h += '<button class="btn del" id="mdBorrar">Borrar esta medición</button>';
+  abrirHoja(h);
+}
+
+function leerFormMedida(){
+  var b = borradorMedida;
+  function v(id){ var x = $('#'+id); return x ? String(x.value||'').trim() : null; }
+  var x;
+  if((x = v('mdFecha')) !== null) b.fecha = x || b.fecha;
+  if((x = v('mdPeso'))  !== null) b.peso = x;
+  if((x = v('mdTalla')) !== null) b.talla = x;
+  if((x = v('mdNota'))  !== null) b.nota = x;
+}
+
+function guardarMedida(){
+  leerFormMedida();
+  var b = borradorMedida;
+  if(num(b.peso) <= 0 && num(b.talla) <= 0){
+    toast('Pon al menos el peso o la talla', true); return;
+  }
+  var btn = $('#mdGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  llamarPost({ action:'saveCrecimiento', payload:{
+      id:b.id, fecha:b.fecha, peso_kg:num(b.peso), talla_cm:num(b.talla),
+      nota:b.nota, creado_por:state.user } })
+    .then(function(){ cerrarHoja(); toast('Medición guardada'); return recargar(); })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
+    });
+}
+
+function borrarMedida(){
+  llamarPost({ action:'deleteCrecimiento', id:borradorMedida.id, creado_por:state.user })
+    .then(function(){ cerrarHoja(); toast('Medición borrada'); return recargar(); })
+    .catch(function(err){ toast(String(err.message||err), true); });
+}
+
+/** Todas las mediciones, de la más reciente a la más antigua. */
+function hojaMedidas(){
+  var ms = medidas().slice().reverse();
+  abrirHoja('<h3>Todas las medidas</h3>' +
+    '<div class="gn-l">' + ms.map(function(m){
+      var f = fechaKey(m.fecha), ed = edadTexto(f);
+      var trozos = [];
+      if(num(m.peso_kg) > 0) trozos.push(num(m.peso_kg).toLocaleString('es-ES')+' kg');
+      if(num(m.talla_cm) > 0) trozos.push(num(m.talla_cm).toLocaleString('es-ES')+' cm');
+      return '<button class="gn-f" data-medida="'+esc(m.id)+'">' +
+        '<div class="tx"><b>'+trozos.join(' · ')+'</b>' +
+        '<p>'+esc(fechaCorta(f))+(ed ? ' · '+esc(ed) : '')+
+        (m.nota ? ' · '+esc(m.nota) : '')+'</p></div>' +
+        '<span class="ed">'+svg('lapiz',14)+'</span></button>';
+    }).join('') + '</div>' +
+    '<button class="btn sec" id="msgCerrar">Cerrar</button>');
+}
 
 function formCita(id){
   var c = id ? state.data.citas.filter(function(x){ return String(x.id)===String(id); })[0] : null;
@@ -6921,9 +7216,16 @@ document.addEventListener('click', function(e){
     var k = sn.dataset.salnuevo;
     if(k==='cita') formCita('');
     else if(k==='episodio') formEpisodio('');
+    else if(k==='medida') formMedida('');
     else formMedicacion('');
     return;
   }
+  if(e.target.closest('#crecNueva')){ formMedida(''); return; }
+  if(e.target.closest('#crecTodas')){ hojaMedidas(); return; }
+  var mz = e.target.closest('[data-medida]');
+  if(mz){ formMedida(mz.dataset.medida); return; }
+  if(e.target.closest('#mdGuardar')){ guardarMedida(); return; }
+  if(e.target.closest('#mdBorrar')){ borrarMedida(); return; }
   var sf = e.target.closest('[data-salcampo]');
   if(sf){
     leerFormSalud();
