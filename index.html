@@ -82,7 +82,10 @@ svg{display:block;flex-shrink:0}
 #splash{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;
   flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .35s}
 #splash.out{opacity:0;pointer-events:none}
-.spin{width:20px;height:20px;border:2.5px solid var(--border);border-top-color:var(--t3);
+/* Colores relativos al fondo, no fijos: con un fondo de color propio el
+   gris de --border desaparecía y la ruedecita no se veía girar. */
+.spin{width:20px;height:20px;border:2.5px solid rgba(15,23,42,.10);
+  border-top-color:rgba(15,23,42,.42);
   border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #splashTx{margin:0;font-size:13.5px;color:var(--t2);max-width:280px;text-align:center;
@@ -100,10 +103,13 @@ svg{display:block;flex-shrink:0}
 .logo .li{position:relative;display:inline-block}
 .logo .cor{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:10px;height:10px;
   color:var(--papa)}
-/* Con imagen propia el logo deja de ser texto: se le da alto y que la
-   imagen se ajuste sola, sea cuadrada o apaisada. */
-.logo.img{display:block;height:56px}
-.logo.img img{height:100%;width:auto;max-width:220px;object-fit:contain;display:block}
+/* Con imagen propia el logo deja de ser texto. El tamaño se limita por
+   los DOS lados: un logo apaisado llena el ancho y uno cuadrado no se
+   queda en un sello de 56px, que es lo que pasaba fijando solo el alto. */
+.logo.img{display:block;height:auto;transform:none !important}
+.logo.img img{display:block;max-height:150px;max-width:min(74vw, 300px);
+  width:auto;height:auto;object-fit:contain}
+#login .logo.img img{max-height:120px}
 
 /* ---------- TOAST ---------- */
 #toast{position:fixed;left:50%;bottom:calc(94px + var(--safe-b));transform:translateX(-50%);
@@ -1408,7 +1414,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.15';
+var APP_VERSION = '0.9.16';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1617,8 +1623,36 @@ function guardarLogos(){
     ['logo_splash','logo_login'].forEach(function(k){
       localStorage.setItem('ginapp_'+k, nombreLogo(k));
     });
+    var col = String(state.data.config.color_carga || '').trim();
+    if(/^#[0-9a-f]{3,8}$/i.test(col)) localStorage.setItem('ginapp_color_carga', col);
+    else localStorage.removeItem('ginapp_color_carga');
   } catch(e){ /* modo privado: se queda el logo dibujado */ }
   pintarLogos(true);
+  fondoCarga();
+}
+
+/**
+ * Color de fondo de la pantalla de carga y de la del PIN.
+ *
+ * Sale de Config (`color_carga`), pero la pantalla de carga se pinta ANTES
+ * de tener datos, así que se recuerda del arranque anterior. La primera
+ * vez de todas sale el fondo de siempre; a partir de la segunda, el suyo.
+ * Es el mismo trato que los logos y por el mismo motivo.
+ */
+function fondoCarga(){
+  var col = '';
+  try { col = localStorage.getItem('ginapp_color_carga') || ''; } catch(e){}
+  if(!/^#[0-9a-f]{3,8}$/i.test(col)) return;
+  ['splash','login'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.background = col;
+  });
+  /* La barra de estado del móvil, a juego: si no, queda una franja
+     blanca encima del lila mientras arranca. */
+  /* Solo mientras se arranca: en cuanto hay datos, pintarCabecera() pone
+     el color de quien tenga la custodia, que es lo que toca dentro. */
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', col);
 }
 
 /** `probar` = intentarlo aunque no conste que funcionó la última vez. */
@@ -7438,6 +7472,7 @@ document.addEventListener('error', function(ev){
   el.parentNode.textContent = el.dataset.fb;
 }, true);
 
+fondoCarga();
 pintarLogos();
 arrancar();
 
