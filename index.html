@@ -171,14 +171,28 @@ svg{display:block;flex-shrink:0}
   vertical-align:2px}
 .hoy-sep{height:1px;background:var(--border);margin:0 16px}
 .hoy-evs{padding:6px 16px 14px}
-.ev{display:flex;align-items:center;gap:12px;padding:9px 0}
+.ev{display:flex;align-items:flex-start;gap:12px;padding:9px 0;cursor:pointer;
+  border-radius:12px}
+.ev:active{background:var(--surface2)}
 .ev-i{width:38px;height:38px;border-radius:13px;display:flex;align-items:center;
   justify-content:center;flex-shrink:0}
 .ev-t{flex:1;min-width:0}
 .ev-t b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.15px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev-t span{display:block;font-size:12.5px;color:var(--t2);margin-top:1px}
-.ev-h{font-size:13.5px;font-weight:700;color:var(--t2);font-variant-numeric:tabular-nums}
+/* El recado, colgando de su evento: mismo bloque, un escalón por debajo.
+   El borde de la izquierda es lo que dice "esto es de ahí arriba". */
+.ev-t .ev-ac{display:flex;align-items:center;gap:7px;margin-top:7px;
+  background:var(--cal-s);color:var(--cal-d);border-radius:10px;
+  padding:7px 10px 7px 8px;font-size:12.5px;font-weight:600;line-height:1.35}
+.ev-t .ev-ac i{font-style:normal;min-width:0;flex:1}
+.ev-t .ev-ac svg{flex-shrink:0}
+.ev-t .ev-ac.ok{background:var(--surface2);color:var(--t3)}
+.ev-t .ev-ac.ok i{text-decoration:line-through}
+.ev-ac .rc-ok{width:20px;height:20px;border-width:1.5px;margin-top:0}
+.ev-ac.ok .rc-ok{border-color:var(--ali);background:var(--ali);color:#fff}
+.ev-h{font-size:13.5px;font-weight:700;color:var(--t2);font-variant-numeric:tabular-nums;
+  padding-top:2px;flex-shrink:0}
 .hoy-vacio{padding:14px 16px 18px;font-size:13px;color:var(--t3)}
 .hoy-nota{margin:2px 16px 16px;background:var(--cal-s);border-radius:14px;padding:10px 12px;
   font-size:12.5px;color:var(--cal-d);display:flex;gap:9px;align-items:flex-start;line-height:1.45;
@@ -515,6 +529,13 @@ svg{display:block;flex-shrink:0}
   background:var(--surface);flex-shrink:0;cursor:pointer;margin-top:2px;
   display:flex;align-items:center;justify-content:center}
 .rc-ok:active{transform:scale(.92)}
+.rc-ok.on{border-color:var(--ali);background:var(--ali)}
+.rec-tog{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;
+  background:var(--cal-s);color:var(--cal-d);border-radius:var(--r-btn);
+  padding:12px 14px;font-size:13.5px;font-weight:600;cursor:pointer;text-align:left}
+.rec-tog:active{transform:scale(.99)}
+.rec-tog .rc-ok{width:22px;height:22px;border-width:2px;margin-top:0}
+.rec-tog.on{background:var(--surface2);color:var(--t2)}
 .rec .ir{color:var(--t3);display:flex;align-items:center;cursor:pointer}
 
 .notas{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
@@ -890,6 +911,13 @@ svg{display:block;flex-shrink:0}
 .cd.papa.hoy .nu{color:var(--papa-d)}
 .cd.mama.hoy .nu{color:var(--mama-d)}
 .cd.avis.hoy .nu{color:var(--avis-d)}
+/* Día sin cole: el número en el mostaza del calendario y en negrita. Va
+   DESPUÉS de las de custodia para ganarles, porque "hoy no hay cole" es
+   lo que se busca cuando se mira el mes de un vistazo. */
+.cd.fest .nu{color:var(--cal-d);font-weight:800}
+.cd.fest .nu::before{content:'';position:absolute;inset:-2px -5px;border-radius:999px;
+  background:var(--cal-s);z-index:-1}
+.cd.fest .nu{z-index:0}
 /* El aro va por dentro y sin borde: un `border` cambiaría la caja y
    empujaría el contenido medio píxel hacia abajo — eso era el salto. */
 .cd.sel{box-shadow:inset 0 0 0 2px var(--t1)}
@@ -1380,7 +1408,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.13';
+var APP_VERSION = '0.9.15';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1558,6 +1586,7 @@ function normalizar(d){
 
 /** Lo que hay que rehacer cada vez que llegan datos nuevos. */
 function trasCargar(){
+  nombrarIconos();
   tiposComidaDelSheet();
   guardarLogos();
   pintarLogos();
@@ -1569,32 +1598,52 @@ function trasCargar(){
    fichero no puede venir del Sheet en ese momento: se recuerda del último
    arranque. La primera vez de todas se ve el logo dibujado, que es
    exactamente para lo que está. */
+/* Los dos logos: img/logo_splash.webp e img/logo_login.webp.
+   Nada que escribir en ningún sitio, se suben y ya.
+
+   La pantalla de carga se pinta ANTES de pedir nada, así que no se puede
+   comprobar si el fichero existe. Se recuerda del arranque anterior: la
+   primera vez sale el dibujo, y solo se sustituye cuando ya se sabe que
+   la imagen carga. Así nunca hay un hueco parpadeando. */
+function nombreLogo(clave){
+  var f = ((state.data.iconos||[]).filter(function(r){
+    return String(r.clave).trim() === clave; })[0] || {}).fichero || '';
+  return f || (clave + '.webp');
+}
+
 function guardarLogos(){
+  /* Solo apunta el nombre esperado; si carga o no lo dirá el navegador. */
   try {
     ['logo_splash','logo_login'].forEach(function(k){
-      var f = ((state.data.iconos||[]).filter(function(r){
-        return String(r.clave).trim() === k; })[0] || {}).fichero || '';
-      if(f) localStorage.setItem('ginapp_'+k, String(f));
-      else localStorage.removeItem('ginapp_'+k);
+      localStorage.setItem('ginapp_'+k, nombreLogo(k));
     });
   } catch(e){ /* modo privado: se queda el logo dibujado */ }
+  pintarLogos(true);
 }
-function pintarLogos(){
+
+/** `probar` = intentarlo aunque no conste que funcionó la última vez. */
+function pintarLogos(probar){
   [['logoSplash','logo_splash'],['logoLogin','logo_login']].forEach(function(par){
     var el = document.getElementById(par[0]);
-    if(!el) return;
-    var f = '';
-    try { f = localStorage.getItem('ginapp_'+par[1]) || ''; } catch(e){}
-    if(!f){ el.classList.remove('img'); return; }
-    /* data-fb vacío no vale aquí: si el fichero falla queremos el dibujo
-       de vuelta, no un hueco. Por eso se guarda el original. */
+    if(!el || el.querySelector('img')) return;
+    var f = '', ok = false;
+    try {
+      f = localStorage.getItem('ginapp_'+par[1]) || (par[1] + '.webp');
+      ok = localStorage.getItem('ginapp_'+par[1]+'_ok') === '1';
+    } catch(e){ f = par[1] + '.webp'; }
+    if(!probar && !ok) return;      /* aún no sabemos si existe: dibujo */
     if(!el.dataset.orig) el.dataset.orig = el.innerHTML;
     el.classList.add('img');
     el.innerHTML = '<img src="'+esc(rutaIcono(f))+'" alt="GINapp" ' +
-                   'onerror="restaurarLogo(this)">';
+                   'data-lg="'+esc(par[1])+'" ' +
+                   'onload="logoOK(this)" onerror="restaurarLogo(this)">';
   });
 }
+function logoOK(img){
+  try { localStorage.setItem('ginapp_'+img.dataset.lg+'_ok','1'); } catch(e){}
+}
 function restaurarLogo(img){
+  try { localStorage.removeItem('ginapp_'+img.dataset.lg+'_ok'); } catch(e){}
   var el = img.parentNode;
   if(el && el.dataset.orig){ el.classList.remove('img'); el.innerHTML = el.dataset.orig; }
 }
@@ -1647,25 +1696,55 @@ function rutaIcono(src){
   return 'img/' + s;
 }
 
-/** Icono de una fila (usa su `icono`, si no su `emoji`). */
+/* Ficheros que hemos pedido y no estaban. Se recuerdan mientras la app
+   siga abierta para no volver a pedirlos treinta veces por pantalla. Al
+   recargar se prueba otra vez: así, subir un icono y darle a Actualizar
+   basta para verlo, sin nada que invalidar a mano. */
+var _iconosRotos = {};
+
+/**
+ * Icono de una fila. El nombre del fichero NO hay que escribirlo en
+ * ningún sitio: sale del id de la propia fila (`ev_cumples.webp`). Subir
+ * el fichero a img/ es el único paso.
+ *
+ * La columna `icono` sigue existiendo por si algún día hace falta que dos
+ * filas compartan dibujo o apuntar a una URL de fuera, pero está vacía y
+ * lo normal es que se quede así.
+ *
+ * Si el fichero no existe, se ve el emoji. Igual que antes.
+ */
 function ico(fila, px, emojiFb){
   var em = String((fila && fila.emoji) || emojiFb || '');
-  var url = rutaIcono(fila && fila.icono);
-  if(!url) return em ? '<span class="ico-em">'+esc(em)+'</span>' : '';
+  var url = rutaIcono((fila && fila.icono) || (fila && fila._icono));
+  if(!url || _iconosRotos[url]){
+    return em ? '<span class="ico-em">'+esc(em)+'</span>' : '';
+  }
   return '<img class="ico-img" src="'+esc(url)+'" width="'+px+'" height="'+px+'" ' +
          'alt="" data-fb="'+esc(em)+'">';
 }
 
-/** Icono suelto de la pestaña Iconos, por clave. '' si no está puesto. */
+/** Icono suelto por clave: el fichero se llama como la clave. */
 function iconoDe(clave, px, emojiFb){
   var f = (state.data.iconos||[]).filter(function(r){
     return String(r.clave).trim() === clave; })[0];
-  return ico({ icono: f && f.fichero, emoji: emojiFb }, px, emojiFb);
+  return ico({ icono:(f && f.fichero) || '', _icono: clave + '.webp',
+               emoji: emojiFb }, px, emojiFb);
 }
-/** ¿Hay imagen puesta para esta clave? Para decidir si tapar un dibujo. */
-function hayIcono(clave){
-  return !!(state.data.iconos||[]).filter(function(r){
-    return String(r.clave).trim() === clave && String(r.fichero||'').trim(); })[0];
+
+/**
+ * Pone a cada fila el nombre de fichero que le toca por convención. Va en
+ * `_icono` y no en `icono`: lo derivado no se guarda nunca, y así una
+ * escritura no puede acabar metiéndolo en el Sheet.
+ */
+function nombrarIconos(){
+  [['tipos_evento','id','ev_'], ['categorias_gasto','id','gas_'],
+   ['objetivos_semana','grupo','gr_'], ['tipos_comida','id','com_']
+  ].forEach(function(t){
+    (state.data[t[0]]||[]).forEach(function(r){
+      var k = String(r[t[1]]||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'_');
+      if(k) r._icono = t[2] + k + '.webp';
+    });
+  });
 }
 
 function avatarHTML(u, px){
@@ -2185,6 +2264,9 @@ function pintarHoy(){
 
   var prox = proximosEventos(2);
   if(prox.length){
+    /* El recado va DENTRO de la fila de su evento, sangrado bajo el
+       título. Antes se pintaba en un bloque aparte al final de los dos
+       eventos, así que con dos a la vista no se sabía de cuál era. */
     html += '<div class="hoy-sep"></div><div class="hoy-evs">' + prox.map(function(o){
       var tp = tipoEvento(o.ev.tipo);
       var extra = [cuandoEvento(o)];
@@ -2192,20 +2274,24 @@ function pintarHoy(){
       else if(o.ev.responsable) extra.push('lleva ' + esc(nombreDe(o.ev.responsable).toLowerCase()));
       /* Un tramo de varios días no tiene "hora": ponerla confunde. */
       var hora = esLargo(o.ev) ? '' : String(o.hora || '');
-      return '<div class="ev">' +
+      var acc = String(o.ev.accion||'').trim();
+      var hecho = acc && recordatorioHecho(o.ev.id, o.fecha);
+      return '<div class="ev" role="button" tabindex="0" data-calev="'+esc(o.ev.id)+'">' +
         '<div class="ev-i" style="background:'+tp.color+'1F;color:'+tp.color+'">' +
           svg(icoEvento(tp.id), 20) + '</div>' +
-        '<div class="ev-t"><b>'+esc(o.ev.titulo)+'</b><span>'+extra.join(' · ')+'</span></div>' +
+        '<div class="ev-t"><b>'+esc(o.ev.titulo)+'</b><span>'+extra.join(' · ')+'</span>' +
+          (acc
+            ? '<span class="ev-ac'+(hecho?' ok':'')+'">' +
+              /* El check es un botón dentro de la fila: se marca sin abrir
+                 el evento, y marcarlo NO borra el recado. */
+              '<button class="rc-ok'+(hecho?' on':'')+'" data-rectog="'+esc(o.ev.id) +
+                '|'+o.fecha+'|'+(hecho?'0':'1')+'" ' +
+                'aria-label="'+(hecho?'Desmarcar':'Marcar como hecho')+'"></button>' +
+              svg('pin',13) + '<i>'+esc(acc)+'</i></span>'
+            : '') +
+        '</div>' +
         '<div class="ev-h">'+esc(hora)+'</div></div>';
     }).join('') + '</div>';
-
-    /* La nota accionable del evento que ya está a la vista se pega aquí, sin
-       repetir el título. El bloque Recordatorio queda para lo que no se ve. */
-    var conAccion = prox.filter(function(o){ return String(o.ev.accion||'').trim(); })[0];
-    if(conAccion){
-      html += '<div class="hoy-nota"><span class="i">' + svg('pin',15) + '</span>' +
-              '<span>' + esc(conAccion.ev.accion) + '</span></div>';
-    }
   } else {
     html += '<div class="hoy-sep"></div>' +
             '<div class="hoy-vacio">No hay nada apuntado en los próximos días.</div>';
@@ -2424,7 +2510,16 @@ function marcarRecordatorio(clave, hecho){
   llamarPost({ action:'marcarRecordatorio', payload:{
     evento_id:p[0], fecha:p[1], hecho:hecho, creado_por:state.user } })
     .then(function(){ return recargar(); })
-    .then(function(){ cargando(false); if(hecho) toast('Hecho ✓'); })
+    .then(function(){
+      cargando(false);
+      /* Si se marcó desde el formulario del evento, la hoja sigue abierta:
+         repintarla para que el check cambie ahí también. */
+      if(borradorEvento && $('#hoja').classList.contains('on') && $('#eAccion')){
+        leerFormEvento();
+        pintarFormEvento();
+      }
+      toast(hecho ? 'Hecho ✓' : 'Vuelve a estar pendiente');
+    })
     .catch(function(err){ cargando(false); toast(String(err.message||err), true); });
 }
 
@@ -2605,7 +2700,7 @@ var TIPOS_COMIDA_FB = [
   {id:'desayuno', nom:'Desayuno', em:'🥣'}, {id:'almuerzo', nom:'Almuerzo', em:'🍎'},
   {id:'comida',   nom:'Comida',   em:'🍽️'}, {id:'merienda', nom:'Merienda', em:'🍪'},
   {id:'cena',     nom:'Cena',     em:'🌙'}, {id:'otro',     nom:'Otra',     em:'🍴'}
-];
+].map(function(t){ t._icono = 'com_' + t.id + '.webp'; return t; });
 var TIPOS_COMIDA = TIPOS_COMIDA_FB;
 
 /** Un tipo de comida por id, sin suponer nunca cuántos hay ni en qué orden. */
@@ -2628,7 +2723,7 @@ function tiposComidaDelSheet(){
     var fb = TIPOS_COMIDA_FB.filter(function(x){ return x.id === String(r.id); })[0] || {};
     return { id:String(r.id), nom:String(r.nombre||fb.nom||r.id),
              em:String(r.emoji||fb.em||'🍴'), emoji:String(r.emoji||fb.em||'🍴'),
-             icono:String(r.icono||'') };
+             icono:String(r.icono||''), _icono:String(r._icono||'') };
   });
 }
 /* DÓNDE comió. Antes esto mezclaba dos preguntas distintas en un solo
@@ -4858,7 +4953,14 @@ function vistaMes(y, m){
     var largos = evs.filter(function(o){ return esLargo(o.ev); });
     var puntos = evs.filter(function(o){ return !esLargo(o.ev); });
     if(!fuera && c.quien && casasDelMes.indexOf(c.quien) < 0) casasDelMes.push(c.quien);
+    /* Un día sin cole se ve por el número, sin tener que leer la banda.
+       Qué categorías cuentan como festivo lo dice el Sheet, no el código:
+       columna `festivo` en Tipos_Evento. */
+    var esFestivo = evs.some(function(o){
+      return truthy(tipoEvento(o.ev.tipo).festivo);
+    });
     var cls = ['cd', c.quien?claveColor(c.quien):'', fuera?'fuera':'',
+               esFestivo?'fest':'',
                f===hoy?'hoy':'', f===sel?'sel':''].filter(String).join(' ');
     celdas += '<button class="'+cls+'" data-caldia="'+f+'">' +
       '<span class="csa" style="color:'+(c.quien?'var(--'+claveColor(c.quien)+')':'var(--t3)')+'">' +
@@ -4928,14 +5030,11 @@ function detalleDia(){
     }).join('');
   }
 
-  /* Si mañana cambia de casa, decirlo: es la pregunta práctica del día */
-  var sig = custodiaDe(addDays(f,1));
-  if(c.quien && sig.quien && sig.quien !== c.quien){
-    var hh = horaCambio(f);
-    h += '<div class="cambio">'+svg('reloj',16)+'<span>Cambio de casa' +
-      (hh ? ' a las <b>'+esc(hh)+'</b>' : '') + ': pasa con <b>' +
-      esc(nombreDe(sig.quien).toLowerCase())+'</b></span></div>';
-  }
+  /* Aquí había un "Cambio de casa: pasa con mamá" cuando el día siguiente
+     era de otra casa. Estaba mal: si hoy duerme con papá y mañana con
+     mamá, el cambio ocurre MAÑANA, no hoy. Y aunque se arreglara el texto,
+     el color de las celdas ya lo cuenta sin necesidad de una etiqueta que
+     se lee a medias. Fuera. */
   return h + '</div>';
 }
 
@@ -4973,13 +5072,26 @@ function destacados(){
     var f = addDays(state.data.hoy, i);
     eventosDe(f).forEach(function(o){
       if(vistos[o.ev.id]) return;
-      if(!CAT_DESTACADA[String(o.ev.tipo)] && !esLargo(o.ev)) return;
+      /* Con un filtro puesto manda el filtro: si estás mirando solo
+         "cumples", ver debajo un viaje destacado es ruido. Sin filtro,
+         se mantiene la selección de siempre. */
+      if(state.calCat){
+        if(String(o.ev.tipo) !== state.calCat) return;
+      } else if(!CAT_DESTACADA[String(o.ev.tipo)] && !esLargo(o.ev)) return;
       vistos[o.ev.id] = true;
       out.push(o);
     });
   }
-  if(!out.length) return '';
-  return '<div class="dest"><h3>Próximos eventos destacados</h3><div class="dest-g">' +
+  if(!out.length){
+    return state.calCat
+      ? '<div class="dest"><h3>Próximos eventos destacados</h3>' +
+        '<div class="dest-vac">Nada de esta categoría en los próximos meses.</div></div>'
+      : '';
+  }
+  var titulo = state.calCat
+    ? 'Próximos · ' + esc(tipoEvento(state.calCat).nombre)
+    : 'Próximos eventos destacados';
+  return '<div class="dest"><h3>'+titulo+'</h3><div class="dest-g">' +
     out.map(function(o){
       var t = tipoEvento(o.ev.tipo);
       var fin = fechaKey(o.ev.fecha_fin);
@@ -5093,10 +5205,27 @@ function pintarFormEvento(){
   }
   h += '<div class="f-lb">Recordatorio <span class="op">opcional</span></div>' +
     '<input class="inp" id="eAccion" type="text" value="'+esc(b.accion)+'" ' +
-      'placeholder="Hacer la mochila">' +
-    '<div class="aviso" style="background:var(--surface2);color:var(--t2)">' +
-    'Es un recado que hay que hacer: sale en el inicio y se puede marcar como ' +
-    'hecho. Para contar algo del evento sin que sea un recado, usa las notas.</div>';
+      'placeholder="Hacer la mochila">';
+
+  /* Marcarlo desde aquí ahorra volver a la portada. Se marca por
+     OCURRENCIA: la mochila del viaje de agosto no es la de diciembre, así
+     que hace falta saber de qué día hablamos. */
+  if(b.id && String(b.accion||'').trim()){
+    var fRec = b.fecha || state.data.hoy;
+    var yaHecho = recordatorioHecho(b.id, fRec);
+    h += '<button class="rec-tog'+(yaHecho?' on':'')+'" ' +
+      'data-rectog="'+esc(b.id)+'|'+fRec+'|'+(yaHecho?'0':'1')+'">' +
+      '<span class="rc-ok'+(yaHecho?' on':'')+'"></span>' +
+      '<span>'+(yaHecho ? 'Hecho el '+esc(fechaCorta(fRec))
+                        : 'Marcar como hecho')+'</span></button>' +
+      '<div class="plato-e">Marcarlo no lo borra: el recado sigue en el ' +
+      'evento y vuelve a salir la próxima vez que se repita.</div>';
+  }
+
+  h += '<div class="aviso" style="background:var(--surface2);color:var(--t2)">' +
+    'Es un recado que hay que hacer: sale en el inicio junto a su evento y se ' +
+    'puede marcar como hecho. Para contar algo del evento sin que sea un ' +
+    'recado, usa las notas. Para quitarlo, borra el texto.</div>';
 
   /* Las notas las escribe cualquiera de los dos, aunque el evento no sea
      suyo: una nota no cambia el evento, solo añade contexto. Por eso van
@@ -7041,6 +7170,14 @@ document.addEventListener('click', function(e){
   if(nc){ abrirComida('', nc.dataset.nuevacomida); return; }
   var ad = e.target.closest('[data-alidia]');
   if(ad){ state.aliDia = ad.dataset.alidia; pintarAlimentacion(); return; }
+  /* El check va ANTES que el evento que lo contiene: tocar el círculo
+     marca el recado, tocar el resto de la fila abre el evento. */
+  var rtg = e.target.closest('[data-rectog]');
+  if(rtg){
+    var pr = String(rtg.dataset.rectog).split('|');
+    marcarRecordatorio(pr[0]+'|'+pr[1], pr[2] === '1');
+    return;
+  }
   var rch = e.target.closest('[data-rechecho]');
   if(rch){ marcarRecordatorio(rch.dataset.rechecho, true); return; }
   if(e.target.closest('#btnNota')){ guardarNota(); return; }
@@ -7289,6 +7426,9 @@ document.addEventListener('error', function(ev){
   var el = ev.target;
   if(el.tagName !== 'IMG' || el.dataset.fb === undefined) return;
   if(el.classList.contains('ico-img')){
+    /* Se apunta el que falta para no volver a pedirlo en cada repintado. */
+    var src = el.getAttribute('src');
+    if(src) _iconosRotos[src] = 1;
     var sp = document.createElement('span');
     sp.className = 'ico-em';
     sp.textContent = el.dataset.fb;
