@@ -172,15 +172,27 @@ setTimeout(async ()=>{
      !otraFila || !otraFila.querySelector('.ev-ac'),
      otraFila && otraFila.textContent.replace(/\s+/g,' '));
 
-  console.log('\n--- TOCAR EL EVENTO LO ABRE ---');
+  console.log('\n--- TOCAR EL EVENTO ABRE SU RESUMEN ---');
+  /* Un resumen, no el formulario: para mirar a qué hora era no hace falta
+     tener delante la categoría, las repeticiones y las notas. */
   click(filaDentista);
+  const hj = () => (d.querySelector('#hojaC').textContent||'').replace(/\s+/g,' ');
   ok('se abre la hoja del evento', d.querySelector('#hoja').classList.contains('on'));
-  ok('y es el suyo', (d.querySelector('#eTit')||{}).value === 'Dentista',
+  ok('y es un resumen, no el formulario', !d.querySelector('#eTit'));
+  ok('con su título', hj().indexOf('Dentista') >= 0, hj().slice(0,90));
+  ok('cuándo y dónde', hj().indexOf('Clínica Sant Jordi') >= 0);
+  ok('el recado, con su check', !!d.querySelector('.rec-tog') &&
+     hj().indexOf('tarjeta sanitaria') >= 0);
+  ok('y un lápiz para editar', !!d.querySelector('[data-eveditar]'));
+
+  console.log('\n--- Y EL LÁPIZ LLEVA A LA EDICIÓN ---');
+  click(d.querySelector('[data-eveditar]'));
+  ok('ahora sí es el formulario', (d.querySelector('#eTit')||{}).value === 'Dentista',
      (d.querySelector('#eTit')||{}).value);
   ok('con su recado editable',
      (d.querySelector('#eAccion')||{}).value === 'Llevar la tarjeta sanitaria.',
      (d.querySelector('#eAccion')||{}).value);
-  ok('y se puede marcar desde ahí', !!d.querySelector('.rec-tog'));
+  ok('y ofrece borrarlo', !!d.querySelector('#evBorrar'));
   click(d.querySelector('#velo'));
 
   console.log('\n--- MARCARLO NO LO BORRA ---');

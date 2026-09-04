@@ -169,10 +169,16 @@ const VIAJE = { id:'v1', fecha:'2026-08-26', fecha_fin:'2026-08-30', titulo:'Via
     await espera(700);
     A.click(A.bandas()[0]);
     await espera(80);
-    ok('se abre ese viaje, no otra cosa',
-       A.w.borradorEvento && A.w.borradorEvento.titulo === 'Viaje Andorra',
+    /* Primero el resumen; al formulario se llega por el lápiz. */
+    const hj = () => (A.d.querySelector('#hojaC').textContent||'').replace(/\s+/g,' ');
+    ok('se abre ese viaje, no otra cosa', hj().indexOf('Viaje Andorra') >= 0, hj().slice(0,80));
+    ok('y es un resumen, no el formulario', !A.d.querySelector('#eTit'));
+    A.click(A.d.querySelector('[data-eveditar]'));
+    await espera(60);
+    ok('el lápiz lleva a su formulario, editable porque es mío',
+       A.w.borradorEvento && A.w.borradorEvento.titulo === 'Viaje Andorra' &&
+       !!A.d.querySelector('#evGuardar'),
        A.w.borradorEvento && A.w.borradorEvento.titulo);
-    ok('en su formulario, editable porque es mío', !!A.d.querySelector('#evGuardar'));
     ok('con la hora ya en formato del selector nativo',
        A.d.querySelector('#eHora').type === 'time' &&
        A.d.querySelector('#eHora').value === '10:00',

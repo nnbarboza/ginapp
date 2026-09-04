@@ -186,17 +186,16 @@ svg{display:block;flex-shrink:0}
 .ev-t b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.15px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev-t span{display:block;font-size:12.5px;color:var(--t2);margin-top:1px}
-/* El recado, colgando de su evento: mismo bloque, un escalón por debajo.
-   El borde de la izquierda es lo que dice "esto es de ahí arriba". */
-.ev-t .ev-ac{display:flex;align-items:center;gap:7px;margin-top:7px;
-  background:var(--cal-s);color:var(--cal-d);border-radius:10px;
-  padding:7px 10px 7px 8px;font-size:12.5px;font-weight:600;line-height:1.35}
+/* El recado, colgando de su evento: una línea más de la misma fila, sin
+   caja ni acento. Lo único que lo distingue del resto del subtítulo es el
+   círculo, que es lo que dice "esto se marca". */
+.ev-t .ev-ac{display:flex;align-items:center;gap:8px;margin-top:5px;
+  font-size:12.5px;color:var(--t2);line-height:1.35}
 .ev-t .ev-ac i{font-style:normal;min-width:0;flex:1}
-.ev-t .ev-ac svg{flex-shrink:0}
-.ev-t .ev-ac.ok{background:var(--surface2);color:var(--t3)}
-.ev-t .ev-ac.ok i{text-decoration:line-through}
-.ev-ac .rc-ok{width:20px;height:20px;border-width:1.5px;margin-top:0}
-.ev-ac.ok .rc-ok{border-color:var(--ali);background:var(--ali);color:#fff}
+.ev-t .ev-ac.ok i{color:var(--t3)}
+.ev-ac .rc-ok{width:15px;height:15px;border-width:1.5px;margin-top:0;
+  border-color:var(--t3);background:transparent}
+.ev-ac.ok .rc-ok{border-color:var(--ali);background:var(--ali)}
 .ev-h{font-size:13.5px;font-weight:700;color:var(--t2);font-variant-numeric:tabular-nums;
   padding-top:2px;flex-shrink:0}
 .hoy-vacio{padding:14px 16px 18px;font-size:13px;color:var(--t3)}
@@ -215,21 +214,26 @@ svg{display:block;flex-shrink:0}
 .rap b{font-size:12px;font-weight:600;color:var(--t2);letter-spacing:-.1px}
 
 /* ---------- TARJETAS DE SECCIÓN ---------- */
-.secs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.sec-c{border-radius:var(--r);padding:15px 14px 14px;box-shadow:var(--sh);display:flex;
-  flex-direction:column;min-height:172px}
-.sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:11px}
-.sec-hd .i{width:42px;height:42px;border-radius:15px}
-.sec-hd b{font-size:15.5px;font-weight:700;letter-spacing:-.3px}
+/* Tres tarjetas, una por fila. En rejilla de dos cada una medía 195px y
+   había que apretar el contenido; a ancho completo el icono y el título
+   van arriba y el dato debajo con sitio de sobra. */
+.secs{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.sec-c{border-radius:var(--r);padding:14px;box-shadow:var(--sh);display:block;
+  width:100%;text-align:left}
+.sec-c:active{transform:scale(.995)}
+.sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sec-hd .i{width:38px;height:38px;border-radius:13px;flex-shrink:0}
+.sec-hd b{font-size:15.5px;font-weight:700;letter-spacing:-.3px;flex:1;min-width:0}
+.sec-hd .cv{flex-shrink:0}
+.sec-cp{min-height:44px}
 .sec-l{font-size:12.5px;color:var(--t2)}
 .sec-v{font-size:16px;font-weight:700;letter-spacing:-.3px;margin-top:2px;line-height:1.25}
 .sec-s{font-size:12.5px;color:var(--t2);margin-top:2px;line-height:1.35}
-.sec-pie{margin-top:auto;border-radius:12px;padding:9px 11px;font-size:12.5px;font-weight:600;
-  display:flex;justify-content:space-between;align-items:center;gap:6px}
+.sec-pie{margin-top:10px;font-size:12.5px;font-weight:600;opacity:.75}
 .kpi{display:flex;align-items:baseline;gap:5px;margin-top:4px}
-.kpi b{font-size:30px;font-weight:700;letter-spacing:-1.4px;line-height:1}
+.kpi b{font-size:28px;font-weight:700;letter-spacing:-1.2px;line-height:1}
 .kpi span{font-size:12px;color:var(--t2);font-weight:500}
-.barra{height:8px;border-radius:99px;background:#fff;overflow:hidden;margin:9px 0 6px;
+.barra{height:8px;border-radius:99px;background:#fff;overflow:hidden;margin:9px 0 4px;
   box-shadow:inset 0 0 0 1px rgba(15,23,42,.05)}
 .barra i{display:block;height:100%;border-radius:99px}
 .chip-d{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;
@@ -536,6 +540,18 @@ svg{display:block;flex-shrink:0}
   display:flex;align-items:center;justify-content:center}
 .rc-ok:active{transform:scale(.92)}
 .rc-ok.on{border-color:var(--ali);background:var(--ali)}
+/* ---------- ficha del evento ---------- */
+.fe-hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+.fe-hd .i{width:44px;height:44px;border-radius:15px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.fe-hd .tx{flex:1;min-width:0}
+.fe-hd .tx h3{margin:1px 0 0;font-size:18px;font-weight:700;letter-spacing:-.4px}
+.fe-hd .tx p{margin:3px 0 0;font-size:12.5px;color:var(--t2)}
+.fe-ed{width:38px;height:38px;border-radius:50%;background:var(--surface2);color:var(--t2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.fe-ed:active{transform:scale(.94)}
+.fe-l{display:flex;flex-direction:column}
+
 .rec-tog{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;
   background:var(--cal-s);color:var(--cal-d);border-radius:var(--r-btn);
   padding:12px 14px;font-size:13.5px;font-weight:600;cursor:pointer;text-align:left}
@@ -747,7 +763,10 @@ svg{display:block;flex-shrink:0}
 .lg-u .av{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;font-size:25px;font-weight:700;overflow:hidden}
 .lg-u b{font-size:15px;font-weight:700}
-.lg-back{margin-top:20px;font-size:13px;font-weight:600;color:var(--t2);text-decoration:underline}
+/* Compuesta, no suelta: `.lg-entrar` a secas sería un nombre de
+   componente y podría pisar cualquier otro elemento que lo llevara. */
+.btn.lg-entrar{max-width:260px;margin-top:6px;background:var(--yo)}
+.lg-back{margin-top:16px;font-size:13px;font-weight:600;color:var(--t2);text-decoration:underline}
 .pin-p{display:flex;gap:11px;justify-content:center;margin:4px 0 22px}
 .pin-p i{width:15px;height:15px;border-radius:50%;background:var(--surface);
   box-shadow:inset 0 0 0 1.5px var(--border)}
@@ -1331,9 +1350,10 @@ svg{display:block;flex-shrink:0}
   <!-- ===================== INICIO ===================== -->
   <section id="s-inicio">
     <div class="aten" id="cardAten" hidden></div>
+    <!-- Hoy y la semana van juntos: son lo mismo a dos escalas. Antes
+         las tarjetas de sección se metían entre medias y partían en dos
+         lo que se lee de un tirón. -->
     <div class="hoy-card" id="cardHoy"></div>
-
-    <div class="secs" id="secs"></div>
 
     <div class="sem">
       <div class="sem-hd">
@@ -1347,6 +1367,8 @@ svg{display:block;flex-shrink:0}
       <div class="bandas" id="semBandas"></div>
       <div class="leg" id="semLeg"></div>
     </div>
+
+    <div class="secs" id="secs"></div>
 
     <div id="cardRec"></div>
     <div class="nov" id="cardNov" hidden></div>
@@ -1414,7 +1436,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.16';
+var APP_VERSION = '0.9.17';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -2310,18 +2332,21 @@ function pintarHoy(){
       var hora = esLargo(o.ev) ? '' : String(o.hora || '');
       var acc = String(o.ev.accion||'').trim();
       var hecho = acc && recordatorioHecho(o.ev.id, o.fecha);
-      return '<div class="ev" role="button" tabindex="0" data-calev="'+esc(o.ev.id)+'">' +
+      return '<div class="ev" role="button" tabindex="0" data-calev="'+esc(o.ev.id)+'" ' +
+        'data-evfecha="'+esc(o.fecha)+'">' +
         '<div class="ev-i" style="background:'+tp.color+'1F;color:'+tp.color+'">' +
           svg(icoEvento(tp.id), 20) + '</div>' +
         '<div class="ev-t"><b>'+esc(o.ev.titulo)+'</b><span>'+extra.join(' · ')+'</span>' +
+          /* Una línea más, sin fondo ni chincheta: el círculo ya dice que
+             es algo que se marca, y la chincheta al lado era decir lo
+             mismo dos veces. Hecho = el círculo se rellena y el texto se
+             apaga; tacharlo además era otra redundancia. */
           (acc
             ? '<span class="ev-ac'+(hecho?' ok':'')+'">' +
-              /* El check es un botón dentro de la fila: se marca sin abrir
-                 el evento, y marcarlo NO borra el recado. */
               '<button class="rc-ok'+(hecho?' on':'')+'" data-rectog="'+esc(o.ev.id) +
                 '|'+o.fecha+'|'+(hecho?'0':'1')+'" ' +
                 'aria-label="'+(hecho?'Desmarcar':'Marcar como hecho')+'"></button>' +
-              svg('pin',13) + '<i>'+esc(acc)+'</i></span>'
+              '<i>'+esc(acc)+'</i></span>'
             : '') +
         '</div>' +
         '<div class="ev-h">'+esc(hora)+'</div></div>';
@@ -2336,24 +2361,24 @@ function pintarHoy(){
 function tarjeta(c, ico, titulo, cuerpo, pie, ir){
   return '<button class="sec-c" data-ir="'+ir+'" style="background:var(--'+c+'-c)">' +
     '<div class="sec-hd"><span class="i" style="background:var(--'+c+'-s);color:var(--'+c+'-d)">' +
-      svg(ico,22) + '</span><b style="color:var(--'+c+'-d)">'+titulo+'</b></div>' +
-    cuerpo +
-    '<div class="sec-pie" style="background:var(--'+c+'-s);color:var(--'+c+'-d)">' +
-      '<span>'+pie+'</span>' + svg('chevron',14) + '</div></button>';
+      svg(ico,22) + '</span><b style="color:var(--'+c+'-d)">'+titulo+'</b>' +
+      svg('chevron',15,' class="cv" style="color:var(--'+c+'-d);opacity:.5"') + '</div>' +
+    '<div class="sec-cp">' + cuerpo + '</div>' +
+    '<div class="sec-pie" style="color:var(--'+c+'-d)">'+pie+'</div></button>';
 }
 
+/**
+ * Las tres tarjetas de sección de la portada.
+ *
+ * Ya no hay tarjeta de Calendario: arriba está la de hoy con los próximos
+ * eventos y debajo la semana entera. Una tercera que dijera "próximo
+ * evento" repetía por tercera vez lo mismo en la misma pantalla.
+ *
+ * Y al quedar tres, van en fila completa en vez de en rejilla de dos: una
+ * sola tarjeta suelta en la última fila quedaba coja.
+ */
 function pintarSecciones(){
   var out = [];
-
-  /* --- Calendario --- */
-  var prox = proximosEventos(1)[0];
-  out.push(tarjeta('cal','calendario','Calendario',
-    prox ? '<div class="sec-l">Próximo evento</div>' +
-           '<div class="sec-v">'+esc(prox.ev.titulo)+'</div>' +
-           '<div class="sec-s">'+cuandoEvento(prox) +
-           (esLargo(prox.ev)||!prox.hora ? '' : ' · '+esc(prox.hora))+'</div>'
-         : '<div class="vac"><b>Sin eventos</b>Añade el primero y aparecerá aquí.</div>',
-    'Ver semana completa','calendario'));
 
   /* --- Alimentación --- */
   var rs = resumenSemana(), ali;
@@ -2548,9 +2573,9 @@ function marcarRecordatorio(clave, hecho){
       cargando(false);
       /* Si se marcó desde el formulario del evento, la hoja sigue abierta:
          repintarla para que el check cambie ahí también. */
-      if(borradorEvento && $('#hoja').classList.contains('on') && $('#eAccion')){
-        leerFormEvento();
-        pintarFormEvento();
+      if($('#hoja').classList.contains('on')){
+        if($('#eAccion') && borradorEvento){ leerFormEvento(); pintarFormEvento(); }
+        else if(state._fichaEv){ hojaEvento(state._fichaEv.id, state._fichaEv.f); }
       }
       toast(hecho ? 'Hecho ✓' : 'Vuelve a estar pendiente');
     })
@@ -4382,19 +4407,32 @@ function pintarLogin(){
         '<button class="tecla" data-tecla="del">'+svg('chevronI',20)+'</button>' +
       '</div>' +
       '<div class="err">'+esc(lg.error)+'</div>' +
+      /* Botón explícito en vez de entrar solo al cuarto dígito. Dos
+         motivos: con el envío automático un dedazo en la última cifra
+         gastaba un intento de los cinco sin darte tiempo a nada, y no
+         quedaba claro que hubiera que esperar. */
+      '<button class="btn lg-entrar" id="lgEntrar"'+(lg.pin.length===4?'':' disabled')+'>' +
+        (lg.enviando ? 'Comprobando…' : 'Entrar')+'</button>' +
       '<button class="lg-back" data-lguser="">Cambiar de perfil</button>';
   }
   $('#lgCuerpo').innerHTML = h;
 }
 
 function entrar(){
+  if(lg.enviando) return;
+  /* En modo confianza no hay PIN que marcar: exigir cuatro cifras aquí
+     dejaba la app sin forma de entrar. */
+  var conPin = (state.data && state.data.modo) === 'pin';
+  if(conPin && lg.pin.length !== 4) return;
+  lg.enviando = true;
+  pintarLogin();
   cargando(true);
   llamar('login', { username: lg.username, pin: lg.pin })
     .then(function(d){
       localStorage.setItem(LS_TOKEN, d.token);
       localStorage.setItem(LS_USER, d.username);
       state.user = d.username;
-      lg = { username:'', pin:'', error:'' };
+      lg = { username:'', pin:'', error:'', enviando:false };
       /* Los datos NO viajan hasta que hay token: se piden ahora. */
       return llamar('getBootstrap', {});
     })
@@ -4409,13 +4447,12 @@ function entrar(){
     })
     .catch(function(err){
       cargando(false);
+      lg.enviando = false;
       lg.error = String(err.message || err);
       lg.pin = '';
+      /* El error se queda hasta que vuelvas a tocar una tecla. Antes se
+         borraba solo a los 1,4 s y era fácil no llegar a leerlo. */
       pintarLogin();
-      /* El bloqueo por intentos se queda en pantalla: no es un typo. */
-      if(err.code !== 'bloqueado'){
-        setTimeout(function(){ lg.error = ''; pintarLogin(); }, 1400);
-      }
     });
 }
 
@@ -5136,7 +5173,7 @@ function destacados(){
         ? { t:'Con '+nombreDe(r).toLowerCase(), bg:'var(--'+claveColor(r)+'-s)',
             fg:'var(--'+claveColor(r)+'-d)' }
         : { t:'Sin asignar', bg:'var(--surface2)', fg:'var(--t2)' };
-      return '<button class="dest-c" data-calev="'+esc(o.ev.id)+'">' +
+      return '<button class="dest-c" data-calev="'+esc(o.ev.id)+'" data-evfecha="'+esc(o.fecha)+'">' +
         '<span class="em">'+ico(t,17,'📌')+'</span>' +
         '<b>'+esc(o.ev.titulo)+'</b>' +
         '<p>'+esc(o.ev.lugar || t.nombre)+'</p>' +
@@ -5144,6 +5181,88 @@ function destacados(){
         '<span class="ch" style="background:'+chip.bg+';color:'+chip.fg+'">'+esc(chip.t)+'</span>' +
         '</button>';
     }).join('') + '</div></div>';
+}
+
+/* ---------- ficha del evento ----------
+   Tocar un evento abre un RESUMEN, no el formulario. El formulario tiene
+   categoría, repeticiones, recordatorio y notas: demasiado para cuando lo
+   único que quieres es mirar a qué hora era. Editar es un toque más, en
+   el lápiz. */
+
+function hojaEvento(id, fecha){
+  var ev = state.data.eventos.filter(function(x){ return String(x.id)===String(id); })[0];
+  if(!ev) return;
+  state._fichaEv = { id:String(id), f:String(fecha||'') };
+  var mio = esMio(ev);
+  var t = tipoEvento(ev.tipo);
+  var f = fechaKey(fecha || ev.fecha), fin = fechaKey(ev.fecha_fin);
+
+  var h = '<div class="fe-hd">' +
+    '<span class="i" style="background:'+t.color+'1F;color:'+t.color+'">' +
+      svg(icoEvento(t.id),22)+'</span>' +
+    '<div class="tx"><h3>'+esc(ev.titulo)+'</h3>' +
+      '<p>'+esc(t.nombre)+'</p></div>' +
+    (mio ? '<button class="fe-ed" data-eveditar="'+esc(ev.id)+'" ' +
+           'aria-label="Editar">'+svg('lapiz',17)+'</button>' : '') +
+    '</div>';
+
+  var lineas = [
+    ['Cuándo', fechaCorta(f) + (fin && fin > f ? ' – '+fechaCorta(fin) : '') +
+      (ev.hora ? ' · '+String(ev.hora) : '') +
+      (ev.hora_fin ? ' – '+String(ev.hora_fin) : '')],
+    ev.lugar ? ['Dónde', String(ev.lugar)] : null,
+    ev.responsable ? ['Se encarga', nombreDe(ev.responsable)] : null,
+    String(ev.repite||'no') !== 'no' ? ['Se repite', textoRepite(ev)] : null
+  ].filter(Boolean);
+
+  h += '<div class="fe-l">' + lineas.map(function(l){
+    return '<div class="ro-l"><span>'+esc(l[0])+'</span><b>'+esc(l[1])+'</b></div>';
+  }).join('') + '</div>';
+
+  /* El recado, con su check: es lo accionable de la ficha. */
+  var acc = String(ev.accion||'').trim();
+  if(acc){
+    var hecho = recordatorioHecho(ev.id, f);
+    h += '<div class="f-lb">Recordatorio</div>' +
+      '<button class="rec-tog'+(hecho?' on':'')+'" ' +
+        'data-rectog="'+esc(ev.id)+'|'+f+'|'+(hecho?'0':'1')+'">' +
+        '<span class="rc-ok'+(hecho?' on':'')+'"></span>' +
+        '<span>'+esc(acc)+'</span></button>';
+  }
+
+  var ns = comentariosDe('evento', ev.id);
+  if(ns.length){
+    h += '<div class="f-lb">Notas</div><div class="notas">' + ns.map(function(n){
+      return '<div class="nt"><span class="av" style="width:26px;height:26px;font-size:12px;' +
+        'background:var(--'+claveColor(n.autor)+'-s);color:var(--'+claveColor(n.autor)+'-d)">' +
+        esc(String(nombreDe(n.autor)).charAt(0))+'</span>' +
+        '<div style="flex:1;min-width:0"><b style="display:block;font-size:13px">' +
+        esc(n.texto)+'</b></div></div>';
+    }).join('') + '</div>';
+  }
+
+  if(!mio){
+    h += '<div class="ajeno">'+svg('escudo',17)+'<div>' +
+      '<b>Lo apuntó '+esc(nombreDe(ev.creado_por).toLowerCase())+'.</b> ' +
+      'Puedes verlo y añadirle notas, pero solo quien lo apuntó puede cambiarlo.' +
+      '</div></div>';
+  }
+  h += '<button class="btn sec" id="msgCerrar">Cerrar</button>';
+  abrirHoja(h);
+}
+
+/** "Cada semana, lunes y miércoles" — en una línea y en cristiano. */
+function textoRepite(ev){
+  var r = String(ev.repite||'no');
+  if(r === 'no') return '';
+  var dias = String(ev.repite_dias||'').split(',').filter(String).map(function(d){
+    var x = DIAS_SEM.filter(function(y){ return y.id === d; })[0];
+    return x ? x.n : d;
+  }).join(' ');
+  var base = r === 'semanal' ? 'Cada semana' : r === 'mensual' ? 'Cada mes'
+           : r === 'anual' ? 'Cada año' : r;
+  var hasta = fechaKey(ev.repite_hasta);
+  return base + (dias ? ' · '+dias : '') + (hasta ? ' · hasta '+fechaCorta(hasta) : '');
 }
 
 /* ---------- formulario de evento ---------- */
@@ -7085,13 +7204,14 @@ document.addEventListener('click', function(e){
   var tec = e.target.closest('[data-tecla]');
   if(tec){
     var t = tec.dataset.tecla;
+    if(lg.enviando) return;
     if(t === 'del') lg.pin = lg.pin.slice(0,-1);
     else if(lg.pin.length < 4) lg.pin += t;
     lg.error = '';
     pintarLogin();
-    if(lg.pin.length === 4) setTimeout(entrar, 120);
     return;
   }
+  if(e.target.closest('#lgEntrar')){ entrar(); return; }
   if(e.target.closest('#pfSalir')){ salir(); return; }
 
   var at = e.target.closest('[data-aten]');
@@ -7312,11 +7432,14 @@ document.addEventListener('click', function(e){
   var ccat = e.target.closest('[data-calcat]');
   if(ccat){ state.calCat = ccat.dataset.calcat; pintarCalendario(); return; }
   if(e.target.closest('#fabCal')){ formEvento(''); return; }
+  var eed = e.target.closest('[data-eveditar]');
+  if(eed){ formEvento(eed.dataset.eveditar); return; }
   var cev = e.target.closest('[data-calev]');
   if(cev){
     var evid = cev.dataset.calev;
     if(evid.indexOf('cita:') === 0){ formCita(evid.slice(5)); }
-    else formEvento(evid);
+    /* Resumen primero; a editar se llega por el lápiz. */
+    else hojaEvento(evid, cev.dataset.evfecha || '');
     return;
   }
   var ec = e.target.closest('[data-ecampo]');

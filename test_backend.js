@@ -125,6 +125,22 @@ ok('y se sigue pudiendo leer',
 handleSaveGinaFicha({ payload:{ id:ID2, secreto:'', actualizado_por:'papa' } });
 ok('mandarla vacía a propósito sí la borra', ficha(ID2).secreto === '');
 
+console.log('\n--- UN PIN QUE EMPIEZA POR CERO ---');
+/* Sheets guarda "0209" como el NÚMERO 209 si la celda no era texto cuando
+   se escribió. Al leerlo vuelven tres dígitos y la comparación nunca
+   cuadraba: metías el PIN correcto y no entrabas. */
+ok('209 y "0209" son el mismo PIN', _pinNorm(209) === _pinNorm('0209'),
+   _pinNorm(209) + ' vs ' + _pinNorm('0209'));
+ok('se rellena a cuatro cifras', _pinNorm(209) === '0209', _pinNorm(209));
+ok('un PIN normal no cambia', _pinNorm('1234') === '1234');
+ok('los ceros de en medio se respetan', _pinNorm('1004') === '1004');
+ok('todo ceros también', _pinNorm(0) === '0000', _pinNorm(0));
+ok('lo que no son cuatro dígitos se deja como está',
+   _pinNorm('abc') === 'abc' && _pinNorm('12345') === '12345');
+ok('vacío sigue vacío', _pinNorm('') === '' && _pinNorm(null) === '');
+ok('y NO cuela un PIN distinto por el padding',
+   _pinNorm('1234') !== _pinNorm('234'), _pinNorm('234'));
+
 console.log('\n--- CRECIMIENTO ---');
 res = r(handleSaveCrecimiento({ payload:{
   fecha:'2026-08-19', peso_kg:'26,4', talla_cm:'128', creado_por:'papa' } }));

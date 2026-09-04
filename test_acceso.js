@@ -335,18 +335,31 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
     ok('con teclado de 4 cifras', !!A.d.querySelector('.tecla-g') &&
        A.d.querySelectorAll('.pin-p i').length === 4);
 
+    /* Marcar ya no entra solo: hace falta pulsar Entrar. Con el envío
+       automático un dedazo en la última cifra gastaba un intento de los
+       cinco sin darte tiempo a corregir. */
     const marca = n => String(n).split('').forEach(x =>
       A.click(A.d.querySelector('[data-tecla="'+x+'"]')));
+    const entrar = () => A.click(A.d.querySelector('#lgEntrar'));
 
-    marca('9999');
+    ok('con el PIN a medias, Entrar está apagado',
+       (marca('99'), A.d.querySelector('#lgEntrar').disabled));
+    marca('99');
+    ok('y con las cuatro cifras se enciende', !A.d.querySelector('#lgEntrar').disabled);
+    entrar();
     await espera(200);
     ok('el PIN malo no entra', !A.d.querySelector('#login').hidden);
     ok('y lo dice', A.d.querySelector('#login .err').textContent.length > 0,
        A.d.querySelector('#login .err').textContent);
     ok('sin guardar ninguna sesión', !A.w.localStorage.getItem('ginapp_token'));
 
-    await espera(1500);
+    ok('el error se queda hasta que vuelvas a tocar una tecla',
+       A.d.querySelector('#login .err').textContent.length > 0);
+    A.click(A.d.querySelector('[data-tecla="1"]'));
+    ok('y al tocarla se va', !A.d.querySelector('#login .err').textContent);
+    A.click(A.d.querySelector('[data-tecla="del"]'));
     marca('1234');
+    entrar();
     await espera(300);
     ok('el PIN bueno sí entra', !!A.w.localStorage.getItem('ginapp_token'),
        A.w.localStorage.getItem('ginapp_token'));

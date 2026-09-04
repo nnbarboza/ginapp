@@ -1,4 +1,4 @@
-/* GINapp — Service Worker v0.9.16
+/* GINapp — Service Worker v0.9.17
  *
  * HTML: network-first  → los despliegues se ven sin trucos de caché.
  * Resto (iconos, manifest): stale-while-revalidate.
@@ -9,7 +9,7 @@
  *
  * Al subir una versión: cambiar CACHE y APP_VERSION en index.html a la vez.
  */
-const CACHE = 'ginapp-v0.9.16';
+const CACHE = 'ginapp-v0.9.17';
 
 self.addEventListener('install', function () { self.skipWaiting(); });
 

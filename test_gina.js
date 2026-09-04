@@ -30,7 +30,7 @@ const ICONOS = [
 ];
 
 const B = { ok:true, data:{
-  version:'0.9.16', hoy:HOY, modo:'confianza',
+  version:'0.9.17', hoy:HOY, modo:'confianza',
   config:{ nombre_hija:'Georgina', nombre_corto:'Gina', moneda:'€' },
   usuarios:[{ username:'papa', nombre:'Papá', rol:'progenitor', color:'#2878D4', activo:true },
             { username:'mama', nombre:'Mamá', rol:'progenitor', color:'#E4575B', activo:true },

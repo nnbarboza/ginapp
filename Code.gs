@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.16';
+const APP_VERSION = '0.9.17';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -777,6 +777,13 @@ function _limpiaIntentos(username) {
   try { CacheService.getScriptCache().remove(_claveIntentos(username)); } catch (e) {}
 }
 
+/** PIN comparable: cuatro cifras, con los ceros de delante que Sheets se come. */
+function _pinNorm(v) {
+  const s = String(v == null ? '' : v).trim();
+  if (!/^\d{1,4}$/.test(s)) return s;
+  return ('0000' + s).slice(-4);
+}
+
 function handleLogin(p) {
   const username = String(p.username || '').trim().toLowerCase();
   const pin = String(p.pin || '').trim();
@@ -796,14 +803,18 @@ function handleLogin(p) {
     return _json({ ok: false, error: 'Perfil o PIN incorrecto' });
   }
 
-  const suyo = String(u.pin || '').trim();
+  /* Un PIN que empieza por cero ("0209") lo guarda Sheets como el NÚMERO
+     209 si la celda no era texto cuando se escribió: al leerlo vuelven
+     tres dígitos y la comparación nunca cuadraba. Se rellenan los dos
+     lados a cuatro antes de comparar. */
+  const suyo = _pinNorm(u.pin);
   const modo = _hayPines() ? 'pin' : 'confianza';
   if (modo === 'pin') {
     if (!suyo) {
       return _json({ ok: false,
         error: 'Ese perfil aún no tiene PIN. Ponlo en la pestaña Usuarios.' });
     }
-    if (pin !== suyo) {
+    if (_pinNorm(pin) !== suyo) {
       _apuntaFallo(username);
       const quedan = LOGIN_MAX - _intentos(username);
       return _json({ ok: false, error: 'PIN incorrecto' +
