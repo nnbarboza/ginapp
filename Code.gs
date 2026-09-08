@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.19';
+const APP_VERSION = '0.9.20';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -1162,6 +1162,14 @@ function handleGetBootstrap(p) {
     menu_cole: _readSheet('Menu_Cole').filter(function (r) {
       const f = _fechaKey(r.fecha);
       return f >= _addDays(_hoy(), -14) && f <= _addDays(_hoy(), 60);
+      /* Ojo abajo: se filtraba por la fecha normalizada pero se mandaba la
+         cruda. Si la celda era texto ("8/9/26"), la app recibía eso y no
+         casaba con ninguna fecha suya. Va normalizada. */
+    }).map(function (r) {
+      const o = {};
+      for (const k in r) o[k] = r[k];
+      o.fecha = _fechaKey(r.fecha);
+      return o;
     })
   }});
 }
@@ -2673,15 +2681,29 @@ function _cellValue(v) {
   return v;
 }
 
-/** Cualquier fecha (Date, ISO, DD/MM/YYYY) → YYYY-MM-DD. */
+/**
+ * Cualquier fecha (Date, ISO, D/M/YYYY, D/M/YY) → YYYY-MM-DD.
+ *
+ * El año de dos cifras es obligatorio: pegando el menú del cole desde el PDF
+ * las fechas venían como "8/9/26" y aquí caían al `new Date(s)` de abajo, que
+ * lee a la americana (mes/día) y devolvía el 9 de AGOSTO. El menú estaba en el
+ * Sheet y la app decía que ese día no había.
+ *
+ * Con barras se lee SIEMPRE día/mes: es el formato de aquí, y "8/9" no se
+ * puede desambiguar solo. Se deja fuera el `new Date(s)` para esos casos.
+ */
 function _fechaKey(v) {
   if (!v) return '';
   if (v instanceof Date) return Utilities.formatDate(v, _tz(), 'yyyy-MM-dd');
   const s = String(v).trim();
-  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return m[1] + '-' + m[2] + '-' + m[3];
-  m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-  if (m) return m[3] + '-' + _pad(m[2]) + '-' + _pad(m[1]);
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return m[1] + '-' + _pad(m[2]) + '-' + _pad(m[3]);
+  m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/);
+  if (m) {
+    let a = m[3];
+    if (a.length === 2) a = (+a <= 79 ? '20' : '19') + a;
+    return a + '-' + _pad(m[2]) + '-' + _pad(m[1]);
+  }
   const d = new Date(s);
   if (!isNaN(d.getTime())) return Utilities.formatDate(d, _tz(), 'yyyy-MM-dd');
   return s;

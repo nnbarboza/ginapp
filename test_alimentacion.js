@@ -355,6 +355,35 @@ setTimeout(() => {
   ok('en casa no molesta con avisos del cole',
      hoja().indexOf('Menú del cole') < 0);
 
+  console.log('\n--- LA FECHA PEGADA A MANO ---');
+  /* Esto es lo que pasó de verdad: el menú estaba en el Sheet con las fechas
+     como "8/9/26" (texto, tal cual salían del PDF) y la app decía que ese día
+     no había menú. Con barras se lee día/mes; "8/9/26" NO es 9 de agosto. */
+  ok('"8/9/26" es el 8 de septiembre', w.fechaKey('8/9/26') === '2026-09-08',
+     w.fechaKey('8/9/26'));
+  ok('y no el 9 de agosto, que es como lo leía JavaScript',
+     w.fechaKey('8/9/26') !== '2026-08-09');
+  ok('con el año de cuatro cifras, igual',
+     w.fechaKey('8/9/2026') === '2026-09-08', w.fechaKey('8/9/2026'));
+  ok('el día 14 no se confunde con un mes',
+     w.fechaKey('14/9/26') === '2026-09-14', w.fechaKey('14/9/26'));
+  ok('los guiones y los puntos también valen',
+     w.fechaKey('8-9-26') === '2026-09-08' && w.fechaKey('8.9.26') === '2026-09-08');
+  ok('el ISO sigue intacto', w.fechaKey('2026-09-08') === '2026-09-08');
+  ok('el ISO sin ceros también', w.fechaKey('2026-9-8') === '2026-09-08',
+     w.fechaKey('2026-9-8'));
+  ok('lo que no es una fecha se deja como está', w.fechaKey('mañana') === 'mañana');
+  ok('vacío sigue vacío', w.fechaKey('') === '' && w.fechaKey(null) === '');
+
+  /* Y de punta a punta: menú pegado con la fecha cruda, la app lo encuentra. */
+  w.state.data.menu_cole = [
+    { fecha:'8/9/26', primero:'Espaguetis integrals', segundo:'Croquetes de pollastre' }
+  ];
+  w.abrirComida('', 'comida');
+  w.borrador.lugar = 'cole'; w.borrador.fecha = '2026-09-08'; w.pintarHojaComida();
+  ok('un menú pegado como "8/9/26" SÍ aparece el 8 de septiembre',
+     hoja().indexOf('Espaguetis integrals') >= 0, hoja().slice(0,240));
+
   console.log('\n--- LO DE ESTA COMIDA, ARRIBA ---');
   /* El pan es de desayuno y las lentejas de comer: una única lista de
      "más usados" las mezclaba y no valía para ninguna de las dos. */

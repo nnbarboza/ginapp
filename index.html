@@ -1480,7 +1480,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.19';
+var APP_VERSION = '0.9.20';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1599,11 +1599,22 @@ function icoEvento(tipoId){
 function pad(n){ return ('0'+n).slice(-2); }
 function fk(y,m,d){ return y+'-'+pad(m)+'-'+pad(d); }
 function hoyStr(){ var d=new Date(); return fk(d.getFullYear(), d.getMonth()+1, d.getDate()); }
+/* Con barras se lee día/mes, nunca mes/día: es el formato de aquí y "8/9" no
+   se puede desambiguar. Sin esto, un menú pegado como "8/9/26" no casaba con
+   ningún día y la app decía que no había menú. */
 function fechaKey(v){
   if(!v) return '';
-  var s=String(v).trim(), m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  return m ? m[1]+'-'+m[2]+'-'+m[3] : s;
+  var s=String(v).trim(), m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return m[1]+'-'+pad2(m[2])+'-'+pad2(m[3]);
+  m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/);
+  if(m){
+    var a = m[3];
+    if(a.length === 2) a = (+a <= 79 ? '20' : '19') + a;
+    return a+'-'+pad2(m[2])+'-'+pad2(m[1]);
+  }
+  return s;
 }
+function pad2(n){ return ('0'+n).slice(-2); }
 function dow(f){ var p=f.split('-'); return new Date(+p[0], +p[1]-1, +p[2]).getDay(); }
 function addDays(f,n){
   var p=f.split('-'), d=new Date(+p[0], +p[1]-1, +p[2]);

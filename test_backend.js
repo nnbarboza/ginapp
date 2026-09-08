@@ -141,6 +141,20 @@ ok('vacío sigue vacío', _pinNorm('') === '' && _pinNorm(null) === '');
 ok('y NO cuela un PIN distinto por el padding',
    _pinNorm('1234') !== _pinNorm('234'), _pinNorm('234'));
 
+console.log('\n--- FECHAS PEGADAS A MANO ---');
+/* El menú del cole se pegó desde el PDF con las fechas como "8/9/26". El
+   filtro del bootstrap las pasaba por _fechaKey, que no entendía el año de dos
+   cifras y caía a `new Date("8/9/26")` → 9 de AGOSTO. El menú estaba en el
+   Sheet y quedaba fuera de la ventana, o casaba con el día equivocado. */
+ok('"8/9/26" es el 8 de septiembre', _fechaKey('8/9/26') === '2026-09-08', _fechaKey('8/9/26'));
+ok('no el 9 de agosto', _fechaKey('8/9/26') !== '2026-08-09');
+ok('el día 14 sigue siendo día', _fechaKey('14/9/26') === '2026-09-14', _fechaKey('14/9/26'));
+ok('con año largo, igual', _fechaKey('8/9/2026') === '2026-09-08');
+ok('el ISO no se toca', _fechaKey('2026-09-08') === '2026-09-08');
+ok('el ISO sin ceros se rellena', _fechaKey('2026-9-8') === '2026-09-08', _fechaKey('2026-9-8'));
+ok('el front y el back leen la misma fecha igual',
+   _fechaKey('8/9/26') === '2026-09-08');
+
 console.log('\n--- CRECIMIENTO ---');
 res = r(handleSaveCrecimiento({ payload:{
   fecha:'2026-08-19', peso_kg:'26,4', talla_cm:'128', creado_por:'papa' } }));
