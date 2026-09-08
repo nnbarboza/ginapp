@@ -3,3 +3,7 @@ node_modules/
 ._*
 .AppleDouble
 Thumbs.db
+
+# temporales de Excel/Word al tener un fichero abierto
+~$*
+.DS_Store

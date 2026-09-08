@@ -440,6 +440,11 @@ svg{display:block;flex-shrink:0}
 .menu-c button:active{transform:scale(.97)}
 .menu-c.ok{background:var(--surface2)}
 .menu-c.ok .tt{color:var(--t3)}
+/* Puesto el menú, el panel deja de ser una llamada a la acción: pasa a ser
+   un recibo de lo que se ha rellenado, y quitarlo es un enlace, no un botón. */
+.menu-c .menu-n{margin-top:5px;font-size:12px;color:var(--t2);line-height:1.4}
+.menu-c button.lk{margin-top:7px;background:none;color:var(--t2);padding:0;
+  font-size:12px;font-weight:600;text-decoration:underline;border-radius:0}
 .aten-v{display:flex;gap:10px;align-items:flex-start;background:var(--cal-s);
   color:var(--cal-d);border-radius:var(--r-in);padding:12px 13px;margin-bottom:4px}
 .aten-v svg{flex-shrink:0;margin-top:1px}
@@ -1480,7 +1485,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.20';
+var APP_VERSION = '0.9.21';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -2851,8 +2856,102 @@ function menuColeDe(f){
   var k = fechaKey(f);
   var m = (state.data.menu_cole||[]).filter(function(r){ return fechaKey(r.fecha) === k; })[0];
   if(!m) return null;
-  if(!String(m.primero||'').trim() && !String(m.segundo||'').trim()) return null;
+  /* Un día sin platos (festivo) es una fila con solo la nota: no es menú. */
+  if(!menuPlato(m) && !menuAlimentos(m).length) return null;
   return m;
+}
+
+/* El nombre corto del plato. `primero`/`segundo` es el formato viejo, de
+   cuando se pegaba el menú del cole tal cual venía del PDF; se sigue
+   entendiendo para no romper lo que ya esté pegado en el Sheet. */
+function menuPlato(m){
+  var p = String((m && m.plato) || '').trim();
+  if(p) return p;
+  return [ (m&&m.primero)||'', (m&&m.segundo)||'' ]
+    .map(function(x){ return String(x).trim(); })
+    .filter(Boolean).join(' · ');
+}
+
+/**
+ * La columna `alimentos`: "Espaguetis:cereales, Tomate:verduras".
+ *
+ * Se separa por comas y cada trozo es nombre:grupo. Sin grupo cae en
+ * "otros" antes que perderse: es preferible un alimento mal clasificado
+ * y visible a uno que no aparece. El grupo pasa por objGrupo() para que
+ * un alias ("verdura", "carne_roja") valga igual que el nombre bueno.
+ */
+function menuAlimentos(m){
+  return String((m && m.alimentos) || '').split(/[,;]/)
+    .map(function(t){
+      var p = String(t).split(':');
+      var nom = String(p[0]||'').trim();
+      if(!nom) return null;
+      var g = String(p[1]||'').trim().toLowerCase().replace(/\s+/g,'_');
+      g = GRUPOS_ALIAS[g] || g;
+      /* Se valida contra la lista de grupos, no contra los objetivos de la
+         semana: un grupo puede ser válido sin que se le siga la pista. */
+      if(GRUPOS.indexOf(g) < 0) g = 'otros';
+      return { nombre:nom, grupo:g };
+    })
+    .filter(Boolean);
+}
+
+/**
+ * Vuelca el menú del cole en el borrador: nombre del plato y un check por
+ * alimento, todos marcados como comidos.
+ *
+ * Se presume que se lo come todo. Es lo que pasa casi siempre, y dejarlo
+ * en blanco obligaba a marcar cinco cosas cada día de cole para apuntar
+ * lo normal. Lo raro —que rechace algo— se quita con un toque.
+ *
+ * Los alimentos que no estén en la biblioteca van con `crear:true`: los
+ * da de alta el backend al guardar, en la misma llamada, para que un
+ * fallo a mitad no deje alimentos huérfanos.
+ */
+function aplicarMenu(mc){
+  if(!mc) return;
+  var b = borrador;
+  b.plato = menuPlato(mc);
+  b.platoTocado = true;
+  menuAlimentos(mc).forEach(function(x){
+    var a = alimentoPorNombre(x.nombre);
+    if(b.items.some(function(it){
+      return a ? String(it.alimento_id) === String(a.id)
+               : igualNombre(it.nombre, x.nombre); })) return;
+    b.items.push({
+      alimento_id: a ? String(a.id) : '',
+      nombre: a ? String(a.nombre) : x.nombre,
+      grupo: a ? String(a.grupo || x.grupo) : x.grupo,
+      estado_toma: 'comio',
+      emoji: a ? String(a.emoji||'') : String((objGrupo(x.grupo)||{}).emoji || ''),
+      crear: !a,
+      delMenu: true
+    });
+  });
+  b.menuPuesto = true;
+  b.menuQuitado = false;
+}
+
+/** Deshace aplicarMenu: quita lo que puso y nada más. */
+function quitarMenu(){
+  var b = borrador;
+  b.items = b.items.filter(function(it){ return !it.delMenu; });
+  if(b.plato === menuPlato(menuColeDe(b.fecha) || {})) b.plato = '';
+  b.menuPuesto = false;
+  b.menuQuitado = true;
+}
+
+/* Comparar nombres de alimentos: sin acentos, sin mayúsculas y sin el
+   plural más tonto. "Espaguetis" y "espagueti" son lo mismo. */
+function igualNombre(a, b){ return claveNombre(a) === claveNombre(b); }
+function claveNombre(s){
+  return String(s||'').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/s$/,'');
+}
+function alimentoPorNombre(n){
+  return state.data.alimentos.filter(function(a){
+    return igualNombre(a.nombre, n); })[0] || null;
 }
 
 /** Un tipo de comida por id, sin suponer nunca cuántos hay ni en qué orden. */
@@ -2906,6 +3005,20 @@ function cfgNum(clave, defecto){
   return v > 0 ? v : defecto;
 }
 function objetivosSemana(){ return state.data.objetivos_semana || []; }
+
+/* Los mismos grupos que valida el backend, y los mismos alias. Están aquí
+   duplicados a propósito: el menú del cole se lee y se reparte en checks
+   antes de mandar nada, así que la app tiene que saber cuáles valen. */
+var GRUPOS = ['verduras', 'fruta', 'legumbres', 'pescado', 'proteina_blanca',
+              'carnes_rojas', 'huevos', 'lacteos', 'frutos_secos', 'cereales',
+              'ultraprocesado', 'capricho', 'permitido', 'bebidas', 'otros'];
+var GRUPOS_ALIAS = { proteina:'proteina_blanca', libre:'permitido',
+  cereales_integrales:'cereales', verdura:'verduras', agua:'bebidas',
+  bebida:'bebidas', lacteo:'lacteos', carne_roja:'carnes_rojas',
+  huevo:'huevos', fruto_seco:'frutos_secos', frutosecos:'frutos_secos',
+  pasta:'cereales', arroz:'cereales', legumbre:'legumbres', tuberculos:'cereales',
+  carne_blanca:'proteina_blanca', carne:'proteina_blanca', dulce:'capricho',
+  frutas:'fruta', pescados:'pescado', cereal:'cereales' };
 
 /* ============================================================
    CRECIMIENTO
@@ -3731,6 +3844,19 @@ function abrirComida(grupoId, tipo){
 
 function pintarHojaComida(){
   var b = borrador;
+
+  /* El menú del cole se vuelca ANTES de construir nada. Hacerlo más abajo,
+     donde se pinta su panel, dejaba el campo del plato vacío en pantalla: ya
+     se había montado con el valor viejo. El dato estaba bien y solo se veía
+     mal, que es la peor versión del fallo.
+     Solo en una comida nueva y en blanco: editando una guardada, o si ya lo
+     quitó a mano, no se toca nada. */
+  if(b.lugar === 'cole' && b.tipo_comida === 'comida' &&
+     !b.menuPuesto && !b.menuQuitado && !b.grupo_id &&
+     !b.items.length && !String(b.plato||'').trim()){
+    aplicarMenu(menuColeDe(b.fecha));
+  }
+
   var h = '<h3>'+(b.grupo_id?'Editar comida':'Nueva comida')+'</h3>';
 
   h += '<div class="f-lb">Qué comida es</div><div class="chips" id="chTipo">' +
@@ -3794,12 +3920,19 @@ function pintarHojaComida(){
   if(b.lugar === 'cole' && b.tipo_comida === 'comida'){
     var mc = menuColeDe(b.fecha);
     if(mc){
-      var yaPuesto = String(b.plato||'').indexOf(String(mc.primero||'')) === 0;
-      h += '<div class="menu-c'+(yaPuesto?' ok':'')+'">' +
+      var n = menuAlimentos(mc).length;
+      h += '<div class="menu-c'+(b.menuPuesto?' ok':'')+'">' +
         '<div class="tt">'+svg('escudo',13)+' Menú del cole</div>' +
-        '<p>'+esc(mc.primero||'')+(mc.segundo?'<br>'+esc(mc.segundo):'') +
-          (mc.postre?'<br><i>'+esc(mc.postre)+'</i>':'')+'</p>' +
-        (yaPuesto ? '' : '<button id="usarMenu">Ponerlo como plato</button>') +
+        /* Puesto el menú, el nombre ya está en el campo de arriba: repetirlo
+           aquí era decir dos veces lo mismo en dos dedos de pantalla. */
+        (b.menuPuesto ? '' : '<p>'+esc(menuPlato(mc))+'</p>') +
+        (b.menuPuesto
+          ? '<div class="menu-n">' + (n
+              ? 'Puesto, con ' + n + (n===1?' alimento marcado':' alimentos marcados') +
+                '. Quita lo que no se haya comido.'
+              : 'Puesto como plato.') + '</div>' +
+            '<button id="quitarMenu" class="lk">Quitar el menú</button>'
+          : '<button id="usarMenu">Ponerlo como plato</button>') +
         '</div>';
     } else {
       /* Callarse aquí era el error: si el menú no estaba cargado, la app
@@ -7525,15 +7658,11 @@ document.addEventListener('click', function(e){
   var nb = e.target.closest('[data-notaborra]');
   if(nb){ borrarNota(nb.dataset.notaborra); return; }
   if(e.target.closest('#usarMenu')){
-    var mc = menuColeDe(borrador.fecha);
-    if(mc){
-      borrador.plato = [mc.primero, mc.segundo].filter(function(x){
-        return String(x||'').trim(); }).join(' · ');
-      borrador.platoTocado = true;
-      pintarHojaComida();
-    }
+    aplicarMenu(menuColeDe(borrador.fecha));
+    pintarHojaComida();
     return;
   }
+  if(e.target.closest('#quitarMenu')){ quitarMenu(); pintarHojaComida(); return; }
   if(e.target.closest('#btnPlato')){ interpretarPlato(); return; }
   var ab = e.target.closest('[data-abrir]');
   if(ab){ borrador.items[+ab.dataset.abrir].abierto = true; pintarHojaComida(); return; }

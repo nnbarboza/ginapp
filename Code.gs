@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.20';
+const APP_VERSION = '0.9.21';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -226,7 +226,11 @@ const HEADERS = {
   /* El menú del comedor del cole, un día por fila. No es una comida
      registrada: es lo que TOCA ese día, para no tener que teclearlo.
      Vacía = la app no ofrece nada y no pasa nada. */
-  'Menu_Cole': ['fecha', 'primero', 'segundo', 'postre', 'nota'],
+  /* `plato`     → nombre corto, el que se verá en la app ("Espaguetis y croquetas").
+     `alimentos` → "Nombre:grupo, Nombre:grupo". Los checks se marcan solos.
+     Las columnas viejas (primero/segundo/postre) se siguen leyendo si están,
+     para no romper lo que ya estuviera pegado. */
+  'Menu_Cole': ['fecha', 'plato', 'alimentos', 'nota'],
 
   /* ---------- DOCUMENTOS ---------- */
 
@@ -299,7 +303,10 @@ const GRUPOS_ALIAS = { 'proteina': 'proteina_blanca', 'libre': 'permitido',
                        'agua': 'bebidas', 'bebida': 'bebidas', 'lacteo': 'lacteos',
                        'carne_roja': 'carnes_rojas', 'huevo': 'huevos',
                        'tuberculos': 'cereales', 'pasta': 'cereales', 'arroz': 'cereales',
-                       'carne_blanca': 'proteina_blanca', 'dulce': 'capricho' };
+                       'carne_blanca': 'proteina_blanca', 'dulce': 'capricho',
+                       'fruto_seco': 'frutos_secos', 'frutosecos': 'frutos_secos',
+                       'legumbre': 'legumbres', 'carne': 'proteina_blanca',
+                       'frutas': 'fruta', 'pescados': 'pescado', 'cereal': 'cereales' };
 
 const ESTADOS_ALIMENTO = ['aceptado', 'aprendizaje', 'rechazado'];
 const ESTADOS_TOMA = ['comio', 'probo', 'rechazo'];
@@ -3344,6 +3351,27 @@ function completarCatalogos(aplicar) {
 }
 
 /**
+ * Lee la columna `alimentos` ("Espaguetis:cereales, Tomate:verduras").
+ * Devuelve la lista y, aparte, los grupos escritos mal, que es lo que hay
+ * que enseñar en el diagnóstico: un grupo inventado no rompe nada, cae en
+ * "otros", pero deja de contar para la variedad sin avisar.
+ */
+function _menuAlimentos(r) {
+  const out = [], otros = [];
+  String((r && r.alimentos) || '').split(/[,;]/).forEach(function (t) {
+    const p = String(t).split(':');
+    const nom = String(p[0] || '').trim();
+    if (!nom) return;
+    const crudo = String(p[1] || '').trim().toLowerCase().replace(/\s+/g, '_');
+    const g = _normGrupo(crudo);
+    if (crudo && g === 'otros' && crudo !== 'otros') otros.push(crudo);
+    out.push({ nombre: nom, grupo: g });
+  });
+  out.otros = otros;
+  return out;
+}
+
+/**
  * Qué sabe el backend del menú del comedor. Primer sitio donde mirar si en
  * la app no aparece.
  */
@@ -3368,11 +3396,19 @@ function verMenu(mes) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) { sinFecha++; return; }
     if (f.slice(0, 7) !== m) return;
     enMes++;
-    const hay = String(r.primero || '').trim() || String(r.segundo || '').trim();
-    if (!hay) vacias++;
+    const plato = String(r.plato || '').trim() ||
+      [String(r.primero || '').trim(), String(r.segundo || '').trim()]
+        .filter(String).join(' · ');
+    const als = _menuAlimentos(r);
+    if (!plato && !als.length) vacias++;
     Logger.log('  ' + f + (f === hoy ? '  ← HOY' : '') + '  ' +
-      (hay ? String(r.primero || '').slice(0, 45) : '(sin platos: ' +
-        (String(r.nota || '') || 'festivo') + ')'));
+      (plato || als.length
+        ? plato.slice(0, 40) + '   [' + als.length + ' alim.]' +
+          (als.length ? '  ' + als.map(function (a) { return a.nombre; }).join(', ') : '')
+        : '(sin platos: ' + (String(r.nota || '') || 'festivo') + ')'));
+    if (als.otros && als.otros.length) {
+      Logger.log('     ⚠️ grupos que no existen, van a "otros": ' + als.otros.join(', '));
+    }
   });
   Logger.log('---');
   Logger.log(enMes + ' días en ' + m + ', ' + vacias + ' sin platos.');

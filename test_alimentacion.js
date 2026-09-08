@@ -316,27 +316,93 @@ setTimeout(() => {
 
     console.log('\n--- EL MENÚ DEL COLE ---');
   w.state.data.menu_cole = [
-    { fecha:HOY, primero:'Arròs del Delta', segundo:'Truita de patata',
-      postre:'Fruita de temporada', nota:'' },
-    { fecha:'2026-08-21', primero:'', segundo:'', postre:'', nota:'La Diada' }
+    { fecha:HOY, plato:'Espaguetis y croquetas',
+      alimentos:'Espaguetis:cereales, Tomate:verduras, Croquetas de pollo:proteina_blanca',
+      nota:'' },
+    { fecha:'2026-08-21', plato:'', alimentos:'', nota:'La Diada' }
   ];
   w.abrirComida('', 'comida');
   w.borrador.lugar = 'cole'; w.pintarHojaComida();
   ok('sale el menú cuando come en el cole', hoja().indexOf('Menú del cole') >= 0,
      hoja().slice(0,180));
-  ok('con los dos platos', hoja().indexOf('Arròs del Delta') >= 0 &&
-     hoja().indexOf('Truita de patata') >= 0);
-  click(d.querySelector('#usarMenu'));
-  ok('ponerlo rellena el plato',
-     w.borrador.plato === 'Arròs del Delta · Truita de patata', w.borrador.plato);
-  ok('y deja de ofrecerlo', !d.querySelector('#usarMenu'));
 
+  /* Lo que pidió: que venga todo puesto. Marcar cinco alimentos cada día de
+     cole para apuntar lo de siempre no lo hacía nadie. */
+  ok('el plato se pone solo, sin tocar nada',
+     w.borrador.plato === 'Espaguetis y croquetas', w.borrador.plato);
+  ok('y los tres alimentos también', w.borrador.items.length === 3,
+     JSON.stringify(w.borrador.items.map(function(i){ return i.nombre; })));
+  ok('todos marcados como comidos: se presume que come todo',
+     w.borrador.items.every(function(i){ return i.estado_toma === 'comio'; }),
+     JSON.stringify(w.borrador.items.map(function(i){ return i.estado_toma; })));
+  ok('cada uno con su grupo',
+     w.borrador.items.filter(function(i){ return i.grupo === 'verduras'; }).length === 1 &&
+     w.borrador.items.filter(function(i){ return i.grupo === 'cereales'; }).length === 1,
+     JSON.stringify(w.borrador.items.map(function(i){ return i.grupo; })));
+
+  /* El tomate ya está en la biblioteca: se enlaza, no se duplica. */
+  var tom = w.borrador.items.filter(function(i){ return i.grupo === 'verduras'; })[0];
+  ok('un alimento que ya existe se enlaza por id, no se crea otro',
+     tom.alimento_id === 'al_tomate' && !tom.crear, JSON.stringify(tom));
+  var croq = w.borrador.items.filter(function(i){ return /Croquetas/.test(i.nombre); })[0];
+  ok('uno que no existe va marcado para crearlo al guardar',
+     croq.crear === true && !croq.alimento_id, JSON.stringify(croq));
+  ok('y sale con el distintivo de nuevo', hoja().indexOf('nuevo') >= 0);
+  ok('los nuevos vienen con los tres botones abiertos, para decir si lo probó',
+     d.querySelectorAll('#selItems [data-est="probo"]').length >= 1,
+     d.querySelectorAll('#selItems [data-est="probo"]').length);
+
+  ok('dice cuántos ha marcado', hoja().indexOf('3 alimentos marcados') >= 0,
+     hoja().slice(hoja().indexOf('Menú del cole'), hoja().indexOf('Menú del cole')+400));
+  /* El dato estaba bien y el campo salía vacío: se rellenaba a mitad del
+     pintado, cuando el input ya estaba montado con el valor viejo. */
+  ok('el campo del plato se ve relleno, no solo el dato',
+     (d.querySelector('#inPlato')||{}).value === 'Espaguetis y croquetas',
+     (d.querySelector('#inPlato')||{}).value);
+  ok('y el panel no repite el nombre que ya está en el campo',
+     hoja().split('Espaguetis y croquetas').length - 1 === 0,
+     hoja().slice(hoja().indexOf('MENÚ'), hoja().indexOf('MENÚ')+200));
+  ok('y ofrece quitarlo', !!d.querySelector('#quitarMenu'));
+  ok('ya no ofrece ponerlo: está puesto', !d.querySelector('#usarMenu'));
+
+  console.log('\n--- QUITAR EL MENÚ ---');
+  /* Si ese día llevó tupper, un toque lo deshace entero. */
+  w.borrador.items.push({ alimento_id:'al_manzana', nombre:'Manzana',
+    grupo:'fruta', estado_toma:'comio', emoji:'' });
+  click(d.querySelector('#quitarMenu'));
+  ok('quita los alimentos que puso el menú',
+     !w.borrador.items.some(function(i){ return i.delMenu; }));
+  ok('pero NO lo que habías añadido tú', w.borrador.items.length === 1 &&
+     w.borrador.items[0].nombre === 'Manzana',
+     JSON.stringify(w.borrador.items.map(function(i){ return i.nombre; })));
+  ok('y limpia el nombre del plato', !w.borrador.plato, w.borrador.plato);
+  ok('no se vuelve a poner solo después de quitarlo',
+     (w.pintarHojaComida(), w.borrador.items.length === 1),
+     JSON.stringify(w.borrador.items.map(function(i){ return i.nombre; })));
+  ok('vuelve a ofrecer ponerlo, por si te has arrepentido',
+     !!d.querySelector('#usarMenu'));
+  click(d.querySelector('#usarMenu'));
+  ok('y ponerlo otra vez funciona', w.borrador.items.length === 4,
+     JSON.stringify(w.borrador.items.map(function(i){ return i.nombre; })));
+
+  console.log('\n--- CUÁNDO NO SE PONE SOLO ---');
   w.borrador.lugar = 'casa'; w.pintarHojaComida();
   ok('en casa no se ofrece: ahí no come el menú del cole',
      hoja().indexOf('Menú del cole') < 0);
-  w.borrador.lugar = 'cole'; w.borrador.tipo_comida = 'merienda'; w.pintarHojaComida();
+  w.abrirComida('', 'merienda'); w.borrador.lugar = 'cole'; w.pintarHojaComida();
   ok('ni en la merienda: el comedor es al mediodía',
      hoja().indexOf('Menú del cole') < 0);
+  ok('y no toca el borrador', !w.borrador.items.length && !w.borrador.plato);
+
+  /* Editando una comida ya guardada NO se pisa lo que se apuntó en su día. */
+  w.abrirComida('', 'comida');
+  w.borrador.grupo_id = 'g_viejo';
+  w.borrador.plato = 'Lo que puse yo';
+  w.borrador.lugar = 'cole'; w.pintarHojaComida();
+  ok('editando una comida guardada no se pisa lo apuntado',
+     w.borrador.plato === 'Lo que puse yo' && !w.borrador.items.length,
+     w.borrador.plato);
+
   /* Callarse cuando no hay menú era el error: parecía que la función no
      existía. Ahora dice qué falta, y distingue los dos casos. */
   w.abrirComida('', 'comida');
@@ -344,6 +410,7 @@ setTimeout(() => {
   ok('un día festivo no ofrece platos', !d.querySelector('#usarMenu'));
   ok('pero dice que ese día no tiene menú, no se calla',
      hoja().indexOf('Este día no tiene menú') >= 0, hoja().slice(0,220));
+  ok('y no marca nada', !w.borrador.items.length);
 
   w.state.data.menu_cole = [];
   w.abrirComida('', 'comida'); w.borrador.lugar = 'cole'; w.pintarHojaComida();
@@ -351,9 +418,59 @@ setTimeout(() => {
      hoja().indexOf('No hay ningún menú cargado') >= 0 &&
      hoja().indexOf('Menu_Cole') >= 0, hoja().slice(0,220));
   ok('y el formulario sigue funcionando igual', hoja().indexOf('El plato') >= 0);
-  w.borrador.lugar = 'casa'; w.pintarHojaComida();
-  ok('en casa no molesta con avisos del cole',
-     hoja().indexOf('Menú del cole') < 0);
+
+  console.log('\n--- LA COLUMNA alimentos ---');
+  var al = w.menuAlimentos.bind(w);
+  ok('nombre:grupo, separado por comas',
+     al({alimentos:'Arroz:cereales, Merluza:pescado'}).length === 2);
+  ok('los espacios de más no molestan',
+     al({alimentos:'  Arroz : cereales ,Merluza:pescado '})[0].grupo === 'cereales',
+     JSON.stringify(al({alimentos:'  Arroz : cereales '})));
+  ok('el punto y coma también separa', al({alimentos:'Arroz:cereales; Pera:fruta'}).length === 2);
+  ok('un alias vale igual que el nombre bueno',
+     al({alimentos:'Macarrones:pasta'})[0].grupo === 'cereales',
+     al({alimentos:'Macarrones:pasta'})[0].grupo);
+  ok('un grupo inventado cae en otros, no se pierde el alimento',
+     al({alimentos:'Cosa:noexiste'})[0].grupo === 'otros');
+  ok('sin grupo, también', al({alimentos:'Cosa'})[0].grupo === 'otros');
+  ok('una columna vacía no da ningún alimento', al({alimentos:''}).length === 0);
+  ok('ni una que no está', al({}).length === 0);
+
+  console.log('\n--- EL FORMATO VIEJO SIGUE VALIENDO ---');
+  /* Lo que ya estuviera pegado con primero/segundo no deja de funcionar. */
+  w.state.data.menu_cole = [
+    { fecha:HOY, primero:'Arròs del Delta', segundo:'Truita de patata' } ];
+  w.abrirComida('', 'comida'); w.borrador.lugar = 'cole'; w.pintarHojaComida();
+  ok('un menú viejo sigue poniendo el plato',
+     w.borrador.plato === 'Arròs del Delta · Truita de patata', w.borrador.plato);
+  ok('sin alimentos, porque el formato viejo no los traía',
+     w.borrador.items.length === 0);
+  ok('y lo dice sin prometer checks que no hay',
+     hoja().indexOf('Puesto como plato') >= 0,
+     hoja().slice(hoja().indexOf('Menú del cole'), hoja().indexOf('Menú del cole')+300));
+
+  console.log('\n--- Y LO QUE VIAJA AL BACKEND ---');
+  /* El backend crea los alimentos nuevos en la MISMA llamada que guarda la
+     comida. Si `crear` no viaja, las croquetas se apuntan pero no entran en
+     la biblioteca, y la variedad de la semana siguiente no las conoce. */
+  w.state.data.menu_cole = [
+    { fecha:HOY, plato:'Espaguetis y croquetas',
+      alimentos:'Tomate:verduras, Croquetas de pollo:proteina_blanca' } ];
+  w.abrirComida('', 'comida');
+  w.borrador.lugar = 'cole'; w.pintarHojaComida();
+  posts.length = 0;
+  w.guardarComida();
+  var env = posts[0] && posts[0].payload;
+  ok('se manda el nombre corto como nota de la comida',
+     env && env.nota === 'Espaguetis y croquetas', env && env.nota);
+  var cro = env && env.items.filter(function(i){ return /Croquetas/.test(i.nombre); })[0];
+  ok('el alimento nuevo viaja con crear:true', cro && cro.crear === true,
+     JSON.stringify(cro));
+  ok('y con su grupo, para que no nazca en «otros»',
+     cro && cro.grupo === 'proteina_blanca', cro && cro.grupo);
+  var tm = env && env.items.filter(function(i){ return i.nombre === 'Tomate'; })[0];
+  ok('el que ya existía viaja por id y sin crear',
+     tm && tm.alimento_id === 'al_tomate' && !tm.crear, JSON.stringify(tm));
 
   console.log('\n--- LA FECHA PEGADA A MANO ---');
   /* Esto es lo que pasó de verdad: el menú estaba en el Sheet con las fechas
@@ -382,7 +499,9 @@ setTimeout(() => {
   w.abrirComida('', 'comida');
   w.borrador.lugar = 'cole'; w.borrador.fecha = '2026-09-08'; w.pintarHojaComida();
   ok('un menú pegado como "8/9/26" SÍ aparece el 8 de septiembre',
-     hoja().indexOf('Espaguetis integrals') >= 0, hoja().slice(0,240));
+     (d.querySelector('#inPlato')||{}).value ===
+       'Espaguetis integrals · Croquetes de pollastre',
+     (d.querySelector('#inPlato')||{}).value);
 
   console.log('\n--- LO DE ESTA COMIDA, ARRIBA ---');
   /* El pan es de desayuno y las lentejas de comer: una única lista de

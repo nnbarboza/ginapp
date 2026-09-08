@@ -16,6 +16,7 @@ manifest.json   PWA
 sw.js           service worker (network-first para el HTML)
 img/            iconos y fotos (ver IMAGENES.md para los nombres)
 test_*.js       la suite; se corre con `node test_algo.js`, sin instalar nada
+MENU_COLE.md    formato del menú del cole y el prompt para generarlo cada mes
 ```
 
 ## Cómo se trabaja
@@ -61,6 +62,7 @@ Subir siempre a la vez `APP_VERSION` (en `index.html` y `Code.gs`) y `CACHE`
 | `setup()` | Crea pestañas, añade columnas que falten y siembra los datos base. Idempotente. Normalmente no hace falta: `_alDia()` lo corre solo al cambiar de versión. |
 | `diagnosticar()` | Estado de cada pestaña: columnas que faltan o sobran, nº de filas. Primer sitio donde mirar. |
 | `verCustodia('2026-09')` | Imprime el mes día a día para comprobar el patrón y la fecha ancla. |
+| `verMenu('2026-09')` | Estado del menú del comedor: filas, fechas ilegibles, grupos mal escritos y cuántas llegan a la app. Ver `MENU_COLE.md`. |
 | `verificarIntegridad()` | Busca referencias rotas entre pestañas. Solo informa. |
 | `limpiarActividad(true)` | Recorta el feed de actividad. Sin `true` solo informa. |
 
