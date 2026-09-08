@@ -406,6 +406,41 @@ svg{display:block;flex-shrink:0}
 .ln-ult{margin-top:8px;font-size:12.5px;color:var(--t2)}
 .ln-ult b{color:var(--ali-d);font-weight:700}
 
+/* ---------- lista de recordatorios ---------- */
+.recs{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:14px}
+.recs h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.3px;
+  display:flex;align-items:center;gap:8px}
+.recs h3 .n{font-size:11.5px;font-weight:700;background:var(--cal-s);color:var(--cal-d);
+  border-radius:999px;padding:2px 8px}
+.recs .sub{margin:3px 0 12px;font-size:12.5px;color:var(--t2)}
+.rec-i{display:flex;align-items:center;gap:11px;padding:10px 0;
+  border-top:1px solid var(--border)}
+.rec-i:first-of-type{border-top:0}
+.rec-i .rc-ok{width:20px;height:20px;border-width:1.5px;margin-top:0;
+  border-color:var(--t3);background:transparent}
+.rec-i.ok .rc-ok{border-color:var(--ali);background:var(--ali)}
+.rec-i .tx{flex:1;min-width:0;text-align:left;cursor:pointer}
+.rec-i .tx b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.15px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-i .tx span{display:block;font-size:12px;color:var(--t2);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-i.ok .tx b{color:var(--t3);font-weight:500}
+.rec-i .pt{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.rec-i.ok .pt{opacity:.3}
+
+/* ---------- menú del cole ---------- */
+.menu-c{background:var(--cal-s);border-radius:var(--r-in);padding:11px 13px;margin-top:10px}
+.menu-c .tt{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+  letter-spacing:.4px;text-transform:uppercase;color:var(--cal-d)}
+.menu-c p{margin:6px 0 0;font-size:13px;color:var(--t1);line-height:1.45}
+.menu-c p i{font-style:normal;color:var(--t2);font-size:12.5px}
+.menu-c button{margin-top:9px;background:var(--cal-d);color:#fff;border-radius:999px;
+  padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer}
+.menu-c button:active{transform:scale(.97)}
+.menu-c.ok{background:var(--surface2)}
+.menu-c.ok .tt{color:var(--t3)}
+
 /* ---------- CRECIMIENTO ---------- */
 .crec{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
   margin-bottom:14px}
@@ -540,7 +575,6 @@ svg{display:block;flex-shrink:0}
   display:flex;align-items:center;justify-content:center}
 .rc-ok:active{transform:scale(.92)}
 .rc-ok.on{border-color:var(--ali);background:var(--ali)}
-/* ---------- ficha del evento ---------- */
 .fe-hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
 .fe-hd .i{width:44px;height:44px;border-radius:15px;display:flex;align-items:center;
   justify-content:center;flex-shrink:0}
@@ -1436,7 +1470,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.17';
+var APP_VERSION = '0.9.18';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1602,7 +1636,7 @@ var TABLAS = ['usuarios','patron','custodia','eventos','eventos_excepciones','ta
   'tipos_evento','comentarios','recordatorios','gastos','categorias_gasto','liquidaciones','cuenta','alimentos',
   'comidas','objetivos_semana','platos','citas','medicacion','dosis','episodios','vacunas',
   'crecimiento','documentos','mensajes','actividad','visitas',
-  'tipos_comida','iconos','gina'];
+  'tipos_comida','iconos','gina','menu_cole'];
 function normalizar(d){
   d = d || {};
   TABLAS.forEach(function(k){ if(!Array.isArray(d[k])) d[k]=[]; });
@@ -2318,7 +2352,10 @@ function pintarHoy(){
       '</div>' +
     '</div>';
 
-  var prox = proximosEventos(2);
+  /* Solo lo de HOY. Antes se colaban los dos próximos aunque fueran de
+     mañana, y para eso ya está la semana justo debajo: una tarjeta que se
+     llama "Hoy" y enseña algo de mañana miente. */
+  var prox = agendaDe(hoy).slice(0,4);
   if(prox.length){
     /* El recado va DENTRO de la fila de su evento, sangrado bajo el
        título. Antes se pintaba en un bloque aparte al final de los dos
@@ -2353,7 +2390,7 @@ function pintarHoy(){
     }).join('') + '</div>';
   } else {
     html += '<div class="hoy-sep"></div>' +
-            '<div class="hoy-vacio">No hay nada apuntado en los próximos días.</div>';
+            '<div class="hoy-vacio">Hoy no hay nada apuntado.</div>';
   }
   $('#cardHoy').innerHTML = html;
 }
@@ -2543,7 +2580,7 @@ function recordatorioHecho(evId, fecha){
 }
 
 function pintarRecordatorio(){
-  var yaVisibles = proximosEventos(2).map(function(o){ return o.ev.id + '@' + o.fecha; });
+  var yaVisibles = agendaDe(state.data.hoy).map(function(o){ return o.ev.id + '@' + o.fecha; });
   /* Un recado ya hecho deja de reclamar sitio: es lo que se pide de un
      recordatorio. Sigue en el evento, pero no en la portada. */
   var cand = proximosEventos(14).filter(function(o){
@@ -2761,6 +2798,15 @@ var TIPOS_COMIDA_FB = [
   {id:'cena',     nom:'Cena',     em:'🌙'}, {id:'otro',     nom:'Otra',     em:'🍴'}
 ].map(function(t){ t._icono = 'com_' + t.id + '.webp'; return t; });
 var TIPOS_COMIDA = TIPOS_COMIDA_FB;
+
+/** El menú del comedor de un día, si está cargado. */
+function menuColeDe(f){
+  var k = fechaKey(f);
+  var m = (state.data.menu_cole||[]).filter(function(r){ return fechaKey(r.fecha) === k; })[0];
+  if(!m) return null;
+  if(!String(m.primero||'').trim() && !String(m.segundo||'').trim()) return null;
+  return m;
+}
 
 /** Un tipo de comida por id, sin suponer nunca cuántos hay ni en qué orden. */
 function tipoComida(id){
@@ -3695,6 +3741,20 @@ function pintarHojaComida(){
       : 'Deducido de lo que ya conocíamos.') + '</div>';
   }
 
+  /* El menú del comedor de ese día. Solo cuando toca: en el cole y a la
+     hora de comer. Rellena el campo del plato; las categorías se repasan
+     igual que con cualquier otro. */
+  var mc = menuColeDe(b.fecha);
+  if(mc && b.lugar === 'cole' && b.tipo_comida === 'comida'){
+    var yaPuesto = String(b.plato||'').indexOf(String(mc.primero||'')) === 0;
+    h += '<div class="menu-c'+(yaPuesto?' ok':'')+'">' +
+      '<div class="tt">'+svg('escudo',13)+' Menú del cole</div>' +
+      '<p>'+esc(mc.primero||'')+(mc.segundo?'<br>'+esc(mc.segundo):'') +
+        (mc.postre?'<br><i>'+esc(mc.postre)+'</i>':'')+'</p>' +
+      (yaPuesto ? '' : '<button id="usarMenu">Ponerlo como plato</button>') +
+      '</div>';
+  }
+
   /* ---------- LO QUE LLEVA ----------
      Primero los alimentos concretos (que además marcan solos sus
      categorías), y solo al final las categorías para repasar. Es el orden
@@ -3933,7 +3993,15 @@ function recordarPlato(){
     .catch(function(){});      /* que no falle guardar la comida por esto */
 }
 
-function buscarAlimentos(q){
+/**
+ * Sin texto, los más usados: primero EN ESTA COMIDA, luego en general.
+ *
+ * Lo que se desayuna y lo que se cena no se parecen en nada, así que una
+ * única lista de "más usados" mezclaba el pan con las lentejas y no valía
+ * para ninguna de las dos. Ordenar en vez de filtrar deja arriba lo que
+ * toca sin esconder el resto.
+ */
+function buscarAlimentos(q, tipo){
   q = String(q||'').trim().toLowerCase();
   /* Sin texto no se listan los que ya tienen su fila de atajos arriba
      (bebidas y postres): repetirlos dos dedos más abajo es ruido.
@@ -3942,13 +4010,20 @@ function buscarAlimentos(q){
                 : state.data.alimentos.filter(function(a){
                     return String(a.grupo) !== 'bebidas' && !String(a.seccion||''); });
   if(!q){
-    /* Sin texto: los que más veces se han registrado, que es lo que se repite a diario */
-    var uso = {};
+    var uso = {}, usoTipo = {};
     state.data.comidas.forEach(function(c){
-      if(c.alimento_id) uso[String(c.alimento_id)] = (uso[String(c.alimento_id)]||0)+1;
+      if(!c.alimento_id) return;
+      var k = String(c.alimento_id);
+      uso[k] = (uso[k]||0) + 1;
+      if(tipo && String(c.tipo_comida) === String(tipo)) usoTipo[k] = (usoTipo[k]||0) + 1;
     });
+    /* Se ORDENA, no se filtra: lo de esta comida sube arriba y el resto
+       sigue estando debajo. Filtrar dejaría listas de dos elementos las
+       primeras semanas, y escondería el día que desayune algo nuevo. */
     return lista.slice().sort(function(a,b){
-      return (uso[String(b.id)]||0) - (uso[String(a.id)]||0);
+      var ka = String(a.id), kb = String(b.id);
+      var d = (usoTipo[kb]||0) - (usoTipo[ka]||0);
+      return d !== 0 ? d : (uso[kb]||0) - (uso[ka]||0);
     }).slice(0,8);
   }
   return lista.filter(function(a){
@@ -3957,7 +4032,7 @@ function buscarAlimentos(q){
 }
 function pintarBusqueda(){
   var q = ($('#inBusca')||{}).value || '';
-  var r = buscarAlimentos(q);
+  var r = buscarAlimentos(q, borrador && borrador.tipo_comida);
   var yaHay = {};
   borrador.items.forEach(function(it){ if(it.alimento_id) yaHay[it.alimento_id]=true; });
   var h = r.filter(function(a){ return !yaHay[String(a.id)]; }).map(function(a){
@@ -4998,6 +5073,7 @@ function pintarCalendario(){
     }).join('') + '</div>';
 
   out += destacados();
+  out += listaRecordatorios();
 
   $('#calCuerpo').innerHTML = out;
   var n = agendaDe(state.data.hoy).length;
@@ -5181,6 +5257,57 @@ function destacados(){
         '<span class="ch" style="background:'+chip.bg+';color:'+chip.fg+'">'+esc(chip.t)+'</span>' +
         '</button>';
     }).join('') + '</div></div>';
+}
+
+/**
+ * Los recados de los próximos 30 días, en un sitio.
+ *
+ * En la portada solo cabe el de hoy; aquí se ven todos de un vistazo, que
+ * es lo que hace falta el domingo por la noche. Un mes es el corte: más
+ * allá es una lista que nadie lee, y el recado de un viaje de marzo no
+ * ayuda en septiembre.
+ *
+ * Los hechos siguen saliendo, apagados: tacharlos de la lista escondería
+ * que ya se hizo, que también es información.
+ */
+function listaRecordatorios(){
+  var hoy = state.data.hoy, tope = addDays(hoy, 30);
+  var vistos = {}, out = [];
+  for(var i = 0; i <= 30; i++){
+    var f = addDays(hoy, i);
+    eventosDe(f).forEach(function(o){
+      var acc = String(o.ev.accion||'').trim();
+      if(!acc) return;
+      var k = o.ev.id + '@' + o.fecha;
+      if(vistos[k]) return;
+      vistos[k] = true;
+      out.push({ o:o, acc:acc, hecho:recordatorioHecho(o.ev.id, o.fecha) });
+    });
+  }
+  if(!out.length) return '';
+  /* Lo pendiente primero: es a lo que hay que hacer caso. */
+  out.sort(function(a,b){
+    if(a.hecho !== b.hecho) return a.hecho ? 1 : -1;
+    return a.o.fecha.localeCompare(b.o.fecha);
+  });
+  var pend = out.filter(function(x){ return !x.hecho; }).length;
+
+  return '<div class="recs"><h3>Recordatorios' +
+    (pend ? ' <span class="n">'+pend+'</span>' : '') + '</h3>' +
+    '<p class="sub">Los recados de los próximos 30 días.</p>' +
+    out.map(function(x){
+      var t = tipoEvento(x.o.ev.tipo);
+      return '<div class="rec-i'+(x.hecho?' ok':'')+'">' +
+        '<button class="rc-ok'+(x.hecho?' on':'')+'" data-rectog="'+esc(x.o.ev.id) +
+          '|'+x.o.fecha+'|'+(x.hecho?'0':'1')+'" ' +
+          'aria-label="'+(x.hecho?'Desmarcar':'Marcar como hecho')+'"></button>' +
+        '<button class="tx" data-calev="'+esc(x.o.ev.id)+'" ' +
+          'data-evfecha="'+esc(x.o.fecha)+'">' +
+          '<b>'+esc(x.acc)+'</b>' +
+          '<span>'+esc(x.o.ev.titulo)+' · '+esc(cuando(x.o.fecha).toLowerCase())+'</span>' +
+        '</button>' +
+        '<span class="pt" style="background:'+t.color+'"></span></div>';
+    }).join('') + '</div>';
 }
 
 /* ---------- ficha del evento ----------
@@ -7337,6 +7464,16 @@ document.addEventListener('click', function(e){
   if(e.target.closest('#btnNota')){ guardarNota(); return; }
   var nb = e.target.closest('[data-notaborra]');
   if(nb){ borrarNota(nb.dataset.notaborra); return; }
+  if(e.target.closest('#usarMenu')){
+    var mc = menuColeDe(borrador.fecha);
+    if(mc){
+      borrador.plato = [mc.primero, mc.segundo].filter(function(x){
+        return String(x||'').trim(); }).join(' · ');
+      borrador.platoTocado = true;
+      pintarHojaComida();
+    }
+    return;
+  }
   if(e.target.closest('#btnPlato')){ interpretarPlato(); return; }
   var ab = e.target.closest('[data-abrir]');
   if(ab){ borrador.items[+ab.dataset.abrir].abierto = true; pintarHojaComida(); return; }

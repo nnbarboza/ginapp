@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.17';
+const APP_VERSION = '0.9.18';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -222,6 +222,11 @@ const HEADERS = {
                     'creado_por', 'timestamp'],
 
   'Crecimiento': ['id', 'fecha', 'peso_kg', 'talla_cm', 'nota', 'creado_por', 'timestamp'],
+
+  /* El menú del comedor del cole, un día por fila. No es una comida
+     registrada: es lo que TOCA ese día, para no tener que teclearlo.
+     Vacía = la app no ofrece nada y no pasa nada. */
+  'Menu_Cole': ['fecha', 'primero', 'segundo', 'postre', 'nota'],
 
   /* ---------- DOCUMENTOS ---------- */
 
@@ -1150,7 +1155,14 @@ function handleGetBootstrap(p) {
       return String(r.fichero || '').trim() !== '';
     }),
 
-    gina: _readSheet('Gina_Fichas').map(_ginaPublica)
+    gina: _readSheet('Gina_Fichas').map(_ginaPublica),
+
+    /* Solo el tramo que se va a mirar: el curso entero serían 180 filas
+       viajando en cada arranque para enseñar una. */
+    menu_cole: _readSheet('Menu_Cole').filter(function (r) {
+      const f = _fechaKey(r.fecha);
+      return f >= _addDays(_hoy(), -14) && f <= _addDays(_hoy(), 60);
+    })
   }});
 }
 
@@ -3258,6 +3270,56 @@ function importarCustodia(pisarCambios) {
 
    La lista completa de nombres está en IMAGENES.md.
    ============================================================ */
+
+/**
+ * Añade las filas de catálogo que se hayan incorporado en una versión
+ * nueva y que tu Sheet todavía no tiene.
+ *
+ * `setup()` solo siembra pestañas VACÍAS, así que un grupo de comida o una
+ * categoría añadidos después nunca llegaban a quien ya tenía datos: la
+ * fila de "Frutos secos" existía en el código y no en su Sheet.
+ *
+ * Informa por defecto. Para que escriba de verdad: completarCatalogos(true).
+ * Solo añade lo que falta por su clave; nunca toca ni borra lo que ya hay,
+ * así que lo que hayas quitado a propósito se queda fuera si lo vuelves a
+ * quitar después de correrlo.
+ */
+function completarCatalogos(aplicar) {
+  const CATALOGOS = {
+    'Objetivos_Semana': 'grupo',
+    'Tipos_Evento': 'id',
+    'Categorias_Gasto': 'id',
+    'Tipos_Comida': 'id',
+    'Iconos': 'clave',
+    'Alimentos': 'id'
+  };
+  let total = 0;
+  Object.keys(CATALOGOS).forEach(function (tab) {
+    if (!SEED[tab]) return;
+    const sh = SS.getSheetByName(tab);
+    if (!sh) { Logger.log('· ' + tab + ': no existe, corre setup()'); return; }
+    const clave = CATALOGOS[tab];
+    const hay = {};
+    _readSheet(tab).forEach(function (r) {
+      hay[String(r[clave]).trim().toLowerCase()] = 1;
+    });
+    const faltan = [];
+    SEED[tab].forEach(function (arr) {
+      const obj = {};
+      HEADERS[tab].forEach(function (col, i) { obj[col] = arr[i]; });
+      const k = String(obj[clave]).trim().toLowerCase();
+      if (!hay[k]) faltan.push(obj);
+    });
+    if (!faltan.length) { Logger.log('✅ ' + tab + ': al día'); return; }
+    total += faltan.length;
+    Logger.log((aplicar ? '➕ ' : '· ') + tab + ': ' + faltan.length + ' → ' +
+      faltan.map(function (o) { return o[clave]; }).join(', '));
+    if (aplicar) faltan.forEach(function (o) { _append(sh, o); });
+  });
+  if (!total) Logger.log('✅ No falta nada.');
+  else if (aplicar) { _invalidar(); Logger.log('✅ ' + total + ' filas añadidas.'); }
+  else Logger.log('ℹ️ Nada escrito. Corre completarCatalogos(true) para añadirlas.');
+}
 
 /** Estado de todas las pestañas: columnas que faltan, columnas de más, nº de filas. */
 function diagnosticar() {

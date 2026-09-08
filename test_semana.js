@@ -123,17 +123,26 @@ const VIAJE = { id:'v1', fecha:'2026-08-26', fecha_fin:'2026-08-30', titulo:'Via
     A.dom.window.close();
   }
 
-  console.log('\n--- LA TARJETA DE HOY NO LO REPITE ---');
+  console.log('\n--- LA TARJETA DE HOY SOLO ENSEÑA HOY ---');
   {
+    /* Antes salían los dos próximos eventos aunque fueran de otro día.
+       Una tarjeta que se llama "Hoy" y enseña algo de la semana que viene
+       miente, y para eso está la semana justo debajo. */
     const A = abrir([VIAJE]);
     await espera(700);
     const t = (A.d.querySelector('#cardHoy').textContent||'').replace(/\s+/g,' ');
-    const veces = t.split('Viaje Andorra').length - 1;
-    ok('el viaje sale UNA vez, no una por día', veces === 1, veces + ' veces');
-    ok('con el tramo que ocupa, no con "mañana" a secas',
-       t.indexOf('30 ago') >= 0, t);
+    ok('un viaje que empieza el 30 no sale el 25',
+       t.indexOf('Viaje Andorra') < 0, t);
+    ok('y lo dice en presente, no "en los próximos días"',
+       t.indexOf('Hoy no hay nada apuntado') >= 0, t);
+
+    /* La garantía de no repetir un tramo sigue viva en proximosEventos,
+       que es lo que alimenta los destacados y los avisos. */
+    const px = A.w.proximosEventos(6);
+    const veces = px.filter(o => o.ev.id === 'v1').length;
+    ok('un tramo largo sigue contándose UNA vez', veces === 1, veces + ' veces');
     ok('y sin hora: un tramo de cinco días no tiene hora',
-       t.indexOf('10:00') < 0, t);
+       A.w.esLargo(px.find(o => o.ev.id === 'v1').ev));
     A.dom.window.close();
   }
 
@@ -156,8 +165,9 @@ const VIAJE = { id:'v1', fecha:'2026-08-26', fecha_fin:'2026-08-30', titulo:'Via
       tipo:'dentista', repite:'semanal', repite_dias:'mie,vie',
       repite_hasta:'2027-06-30', creado_por:'papa' }]);
     await espera(700);
-    const t = (A.d.querySelector('#cardHoy').textContent||'').replace(/\s+/g,' ');
-    ok('la clase semanal aparece dos veces (miércoles y viernes)',
+    /* Se mira en proximosEventos: la tarjeta de hoy ya solo enseña hoy. */
+    const t = A.w.proximosEventos(2).map(o => o.ev.titulo + '@' + o.fecha).join(' ');
+    ok('los dos próximos son las dos clases: miércoles y viernes',
        t.split('Natación').length - 1 === 2, t.split('Natación').length - 1);
     ok('y no se dibuja como banda', A.bandas().length === 0);
     A.dom.window.close();

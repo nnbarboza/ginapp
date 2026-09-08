@@ -314,7 +314,58 @@ setTimeout(() => {
     ok('una categoría repetida sale una sola vez',
        res.split('Verduras').length - 1 === 1, res);
 
-    console.log('\n--- ORDEN DE LA HOJA ---');
+    console.log('\n--- EL MENÚ DEL COLE ---');
+  w.state.data.menu_cole = [
+    { fecha:HOY, primero:'Arròs del Delta', segundo:'Truita de patata',
+      postre:'Fruita de temporada', nota:'' },
+    { fecha:'2026-08-21', primero:'', segundo:'', postre:'', nota:'La Diada' }
+  ];
+  w.abrirComida('', 'comida');
+  w.borrador.lugar = 'cole'; w.pintarHojaComida();
+  ok('sale el menú cuando come en el cole', hoja().indexOf('Menú del cole') >= 0,
+     hoja().slice(0,180));
+  ok('con los dos platos', hoja().indexOf('Arròs del Delta') >= 0 &&
+     hoja().indexOf('Truita de patata') >= 0);
+  click(d.querySelector('#usarMenu'));
+  ok('ponerlo rellena el plato',
+     w.borrador.plato === 'Arròs del Delta · Truita de patata', w.borrador.plato);
+  ok('y deja de ofrecerlo', !d.querySelector('#usarMenu'));
+
+  w.borrador.lugar = 'casa'; w.pintarHojaComida();
+  ok('en casa no se ofrece: ahí no come el menú del cole',
+     hoja().indexOf('Menú del cole') < 0);
+  w.borrador.lugar = 'cole'; w.borrador.tipo_comida = 'merienda'; w.pintarHojaComida();
+  ok('ni en la merienda: el comedor es al mediodía',
+     hoja().indexOf('Menú del cole') < 0);
+  w.abrirComida('', 'comida');
+  w.borrador.lugar = 'cole'; w.borrador.fecha = '2026-08-21'; w.pintarHojaComida();
+  ok('un día festivo sin platos no ofrece nada',
+     hoja().indexOf('Menú del cole') < 0, hoja().slice(0,150));
+  w.state.data.menu_cole = [];
+  w.abrirComida('', 'comida'); w.borrador.lugar = 'cole'; w.pintarHojaComida();
+  ok('y sin menú cargado, la app va como siempre',
+     hoja().indexOf('Menú del cole') < 0 && hoja().indexOf('El plato') >= 0);
+
+  console.log('\n--- LO DE ESTA COMIDA, ARRIBA ---');
+  /* El pan es de desayuno y las lentejas de comer: una única lista de
+     "más usados" las mezclaba y no valía para ninguna de las dos. */
+  const ids = t => w.buscarAlimentos('', t).map(a => a.id);
+  const des = ids('desayuno');
+  ok('en desayuno manda lo del desayuno',
+     des.indexOf('al_pan') < des.indexOf('al_lentejas') ||
+     des.indexOf('al_lentejas') < 0, des.join(','));
+  const com = ids('comida');
+  ok('en la comida, al revés',
+     com.indexOf('al_lentejas') < com.indexOf('al_pan') ||
+     com.indexOf('al_pan') < 0, com.join(','));
+  ok('pero el resto NO desaparece: se ordena, no se filtra',
+     des.length === com.length && des.length > 3, des.length + ' / ' + com.length);
+  ok('sin tipo, el orden es el global de siempre',
+     w.buscarAlimentos('').length > 3);
+  ok('un tipo sin histórico no deja la lista vacía',
+     ids('otro').length === des.length, ids('otro').length);
+
+  console.log('\n--- ORDEN DE LA HOJA ---');
     w.abrirComida('');
     const orden = ['Qué comida es','Hora','Dónde','A cargo de','El plato',
                    'Bebidas','Postres','Y además','Qué categorías cuenta'];

@@ -173,6 +173,46 @@ setTimeout(() => {
        return t.indexOf('Cambio de casa') < 0;
      })(), cuerpo().match(/Cambio de casa.{0,50}/));
 
+  console.log('\n--- LISTA DE RECORDATORIOS ---');
+  /* En la portada solo cabe el de hoy; aquí se ven todos los del mes,
+     que es lo que hace falta el domingo por la noche. */
+  const recs = () => (d.querySelector('.recs')||{}).textContent || '';
+  ok('hay lista de recordatorios', !!d.querySelector('.recs'));
+  ok('con el recado de la excursión del día 20',
+     recs().indexOf('autorización') >= 0, recs());
+  ok('y dice de qué evento es', recs().indexOf('Excursión al Montseny') >= 0);
+  ok('cuenta cuántos quedan pendientes',
+     (d.querySelector('.recs h3 .n')||{}).textContent === '1',
+     (d.querySelector('.recs h3 .n')||{}).textContent);
+  ok('un evento sin recado no entra', recs().indexOf('Logopedia') < 0);
+  ok('se puede marcar desde aquí', !!d.querySelector('.recs [data-rectog]'));
+  ok('y tocarlo abre el evento', !!d.querySelector('.recs [data-calev]'));
+
+  ok('lo de dentro de tres meses NO entra: la lista sería ilegible',
+     (function(){
+       const ev = w.state.data.eventos;
+       w.state.data.eventos = ev.concat([{ id:'lejos', fecha:'2026-12-20',
+         titulo:'Viaje de Navidad', tipo:'viajes', accion:'Sacar los billetes',
+         repite:'no', creado_por:'papa' }]);
+       w.pintarCalendario();
+       const r = recs().indexOf('billetes') < 0;
+       w.state.data.eventos = ev; w.pintarCalendario();
+       return r;
+     })());
+
+  ok('lo ya hecho sigue en la lista, apagado y al final',
+     (function(){
+       w.state.data.recordatorios = [{ id:'r9', evento_id:'e5', fecha:'2026-08-20',
+         hecho_por:'papa', timestamp:'2026-08-19T09:00:00.000Z' }];
+       w.pintarCalendario();
+       const fila = d.querySelector('.recs .rec-i');
+       const sigue = recs().indexOf('autorización') >= 0;
+       const apagado = fila && fila.classList.contains('ok');
+       const sinContador = !d.querySelector('.recs h3 .n');
+       w.state.data.recordatorios = []; w.pintarCalendario();
+       return sigue && apagado && sinContador;
+     })());
+
   console.log('\n--- DÍAS SIN COLE ---');
   /* Qué cuenta como festivo lo dice el Sheet (columna `festivo`), no una
      lista de ids clavada en el código. */
