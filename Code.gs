@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.18';
+const APP_VERSION = '0.9.19';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -3319,6 +3319,53 @@ function completarCatalogos(aplicar) {
   if (!total) Logger.log('✅ No falta nada.');
   else if (aplicar) { _invalidar(); Logger.log('✅ ' + total + ' filas añadidas.'); }
   else Logger.log('ℹ️ Nada escrito. Corre completarCatalogos(true) para añadirlas.');
+}
+
+/**
+ * Qué sabe el backend del menú del comedor. Primer sitio donde mirar si en
+ * la app no aparece.
+ */
+function verMenu(mes) {
+  const sh = SS.getSheetByName('Menu_Cole');
+  if (!sh) {
+    Logger.log('❌ No existe la pestaña Menu_Cole. Corre setup() y vuelve a mirar.');
+    return;
+  }
+  const filas = _readSheet('Menu_Cole');
+  Logger.log('Pestaña Menu_Cole: ' + filas.length + ' filas.');
+  if (!filas.length) {
+    Logger.log('⚠️ Está vacía. Pega ahí el menú: una fila por día, con la ' +
+               'fecha en la primera columna (AAAA-MM-DD).');
+    return;
+  }
+  const m = String(mes || _hoy().slice(0, 7));
+  const hoy = _hoy();
+  let enMes = 0, sinFecha = 0, vacias = 0;
+  filas.forEach(function (r) {
+    const f = _fechaKey(r.fecha);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) { sinFecha++; return; }
+    if (f.slice(0, 7) !== m) return;
+    enMes++;
+    const hay = String(r.primero || '').trim() || String(r.segundo || '').trim();
+    if (!hay) vacias++;
+    Logger.log('  ' + f + (f === hoy ? '  ← HOY' : '') + '  ' +
+      (hay ? String(r.primero || '').slice(0, 45) : '(sin platos: ' +
+        (String(r.nota || '') || 'festivo') + ')'));
+  });
+  Logger.log('---');
+  Logger.log(enMes + ' días en ' + m + ', ' + vacias + ' sin platos.');
+  if (sinFecha) {
+    Logger.log('⚠️ ' + sinFecha + ' filas con la fecha ilegible: la app no las verá. ' +
+               'Tiene que ser AAAA-MM-DD.');
+  }
+  /* Lo que de verdad llega al móvil pasa por este filtro. */
+  const viajan = filas.filter(function (r) {
+    const f = _fechaKey(r.fecha);
+    return f >= _addDays(hoy, -14) && f <= _addDays(hoy, 60);
+  }).length;
+  Logger.log('Llegan a la app ' + viajan + ' filas (de ' + _addDays(hoy, -14) +
+             ' a ' + _addDays(hoy, 60) + ').');
+  if (!viajan) Logger.log('⚠️ Ninguna cae en esa ventana: por eso no sale nada.');
 }
 
 /** Estado de todas las pestañas: columnas que faltan, columnas de más, nº de filas. */

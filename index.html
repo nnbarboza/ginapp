@@ -440,6 +440,16 @@ svg{display:block;flex-shrink:0}
 .menu-c button:active{transform:scale(.97)}
 .menu-c.ok{background:var(--surface2)}
 .menu-c.ok .tt{color:var(--t3)}
+.aten-v{display:flex;gap:10px;align-items:flex-start;background:var(--cal-s);
+  color:var(--cal-d);border-radius:var(--r-in);padding:12px 13px;margin-bottom:4px}
+.aten-v svg{flex-shrink:0;margin-top:1px}
+.aten-v b{display:block;font-size:13.5px;font-weight:700;letter-spacing:-.2px}
+.aten-v span{display:block;font-size:12px;margin-top:3px;line-height:1.45;opacity:.9}
+
+.menu-c.vacio{background:var(--surface2)}
+.menu-c.vacio .tt{color:var(--t3)}
+.menu-c.vacio p{color:var(--t2);font-size:12.5px}
+.menu-c.vacio p b{color:var(--t1);font-weight:600}
 
 /* ---------- CRECIMIENTO ---------- */
 .crec{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
@@ -1470,7 +1480,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.18';
+var APP_VERSION = '0.9.19';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1647,6 +1657,20 @@ function normalizar(d){
 }
 
 /** Lo que hay que rehacer cada vez que llegan datos nuevos. */
+/**
+ * El backend y la app son dos despliegues distintos: GitHub Pages se
+ * actualiza solo, Apps Script hay que publicarlo a mano. Cuando se olvida,
+ * lo nuevo del backend simplemente NO ESTÁ y la app calla — así se perdió
+ * media tarde buscando por qué no salía el menú del cole.
+ */
+function versionBackend(){
+  return String((state.data && state.data.version) || '').trim();
+}
+function hayDesfase(){
+  var b = versionBackend();
+  return !!b && b !== APP_VERSION;
+}
+
 function trasCargar(){
   nombrarIconos();
   tiposComidaDelSheet();
@@ -2709,10 +2733,22 @@ function pintarAtencion(){
   var n = atencion();
   state._aten = n;
   insignia(n.length);            /* también cuando es 0: si no, el icono se queda pillado */
-  if(!n.length){ $('#cardAten').hidden = true; $('#cardAten').innerHTML = ''; return; }
+
+  /* Aviso de despliegue a medias. Va arriba del todo porque explica por
+     qué algo "no funciona": lo que se acaba de añadir al backend no está
+     publicado, así que la app lo pide y no viene. */
+  var desf = hayDesfase()
+    ? '<div class="aten-v">'+svg('reloj',15)+'<div><b>Falta publicar el backend</b>' +
+      '<span>La app va por la ' + esc(APP_VERSION) + ' y el Apps Script por la ' +
+      esc(versionBackend()) + '. Publica versión nueva: Implementar › Gestionar ' +
+      'implementaciones › ✏️ › Versión: Nueva. Hasta entonces, lo último puede ' +
+      'no aparecer.</span></div></div>'
+    : '';
+
+  if(!n.length && !desf){ $('#cardAten').hidden = true; $('#cardAten').innerHTML = ''; return; }
   $('#cardAten').hidden = false;
-  $('#cardAten').innerHTML =
-    '<div class="aten-hd">'+svg('campana',14)+'Atención</div>' +
+  $('#cardAten').innerHTML = desf +
+    (n.length ? '<div class="aten-hd">'+svg('campana',14)+'Atención</div>' : '') +
     n.slice(0,5).map(function(a, i){
       return '<button class="aten-i" data-aten="'+i+'">' +
         '<span class="ic">'+svg(a.ico,17)+'</span>' +
@@ -3744,15 +3780,28 @@ function pintarHojaComida(){
   /* El menú del comedor de ese día. Solo cuando toca: en el cole y a la
      hora de comer. Rellena el campo del plato; las categorías se repasan
      igual que con cualquier otro. */
-  var mc = menuColeDe(b.fecha);
-  if(mc && b.lugar === 'cole' && b.tipo_comida === 'comida'){
-    var yaPuesto = String(b.plato||'').indexOf(String(mc.primero||'')) === 0;
-    h += '<div class="menu-c'+(yaPuesto?' ok':'')+'">' +
-      '<div class="tt">'+svg('escudo',13)+' Menú del cole</div>' +
-      '<p>'+esc(mc.primero||'')+(mc.segundo?'<br>'+esc(mc.segundo):'') +
-        (mc.postre?'<br><i>'+esc(mc.postre)+'</i>':'')+'</p>' +
-      (yaPuesto ? '' : '<button id="usarMenu">Ponerlo como plato</button>') +
-      '</div>';
+  if(b.lugar === 'cole' && b.tipo_comida === 'comida'){
+    var mc = menuColeDe(b.fecha);
+    if(mc){
+      var yaPuesto = String(b.plato||'').indexOf(String(mc.primero||'')) === 0;
+      h += '<div class="menu-c'+(yaPuesto?' ok':'')+'">' +
+        '<div class="tt">'+svg('escudo',13)+' Menú del cole</div>' +
+        '<p>'+esc(mc.primero||'')+(mc.segundo?'<br>'+esc(mc.segundo):'') +
+          (mc.postre?'<br><i>'+esc(mc.postre)+'</i>':'')+'</p>' +
+        (yaPuesto ? '' : '<button id="usarMenu">Ponerlo como plato</button>') +
+        '</div>';
+    } else {
+      /* Callarse aquí era el error: si el menú no estaba cargado, la app
+         no decía nada y parecía que la función no existía. Ahora dice qué
+         falta, y distingue "no hay nada cargado" de "ese día no toca". */
+      var hayAlguno = (state.data.menu_cole||[]).length > 0;
+      h += '<div class="menu-c vacio"><div class="tt">' +
+        svg('escudo',13)+' Menú del cole</div><p>' + (hayAlguno
+          ? 'Este día no tiene menú cargado. Puede ser festivo, o faltar en la ' +
+            'pestaña <b>Menu_Cole</b> del Sheet.'
+          : 'No hay ningún menú cargado. Se pega en la pestaña <b>Menu_Cole</b> ' +
+            'del Sheet, una fila por día.') + '</p></div>';
+    }
   }
 
   /* ---------- LO QUE LLEVA ----------

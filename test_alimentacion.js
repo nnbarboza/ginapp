@@ -337,14 +337,23 @@ setTimeout(() => {
   w.borrador.lugar = 'cole'; w.borrador.tipo_comida = 'merienda'; w.pintarHojaComida();
   ok('ni en la merienda: el comedor es al mediodía',
      hoja().indexOf('Menú del cole') < 0);
+  /* Callarse cuando no hay menú era el error: parecía que la función no
+     existía. Ahora dice qué falta, y distingue los dos casos. */
   w.abrirComida('', 'comida');
   w.borrador.lugar = 'cole'; w.borrador.fecha = '2026-08-21'; w.pintarHojaComida();
-  ok('un día festivo sin platos no ofrece nada',
-     hoja().indexOf('Menú del cole') < 0, hoja().slice(0,150));
+  ok('un día festivo no ofrece platos', !d.querySelector('#usarMenu'));
+  ok('pero dice que ese día no tiene menú, no se calla',
+     hoja().indexOf('Este día no tiene menú') >= 0, hoja().slice(0,220));
+
   w.state.data.menu_cole = [];
   w.abrirComida('', 'comida'); w.borrador.lugar = 'cole'; w.pintarHojaComida();
-  ok('y sin menú cargado, la app va como siempre',
-     hoja().indexOf('Menú del cole') < 0 && hoja().indexOf('El plato') >= 0);
+  ok('sin nada cargado, explica dónde se pega',
+     hoja().indexOf('No hay ningún menú cargado') >= 0 &&
+     hoja().indexOf('Menu_Cole') >= 0, hoja().slice(0,220));
+  ok('y el formulario sigue funcionando igual', hoja().indexOf('El plato') >= 0);
+  w.borrador.lugar = 'casa'; w.pintarHojaComida();
+  ok('en casa no molesta con avisos del cole',
+     hoja().indexOf('Menú del cole') < 0);
 
   console.log('\n--- LO DE ESTA COMIDA, ARRIBA ---');
   /* El pan es de desayuno y las lentejas de comer: una única lista de

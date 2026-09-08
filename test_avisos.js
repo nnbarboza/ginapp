@@ -11,6 +11,9 @@
    desde el registro de actividad. Por eso no se persiste nada.
    ============================================================ */
 const fs = require('fs'), path = require('path');
+
+const HTML_SRC = fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
+const APP_V = (HTML_SRC.match(/APP_VERSION = '([^']+)'/) || [])[1];
 const { JSDOM } = require('jsdom');
 
 let fallos = 0;
@@ -25,7 +28,9 @@ const d30 = '2026-09-30';   /* fuera: eso es agenda, no urgencia */
 
 function boot(extra){
   const base = {
-    version:'0.8.0', hoy:HOY, modo:'pin',
+    /* La misma versión que la app: si no cuadran, la portada avisa de que
+       falta publicar el backend, y eso se prueba aparte. */
+    version:APP_V, hoy:HOY, modo:'pin',
     config:{ nombre_hija:'Georgina', nombre_corto:'Gina', moneda:'€', dias_min_ich:'3' },
     usuarios:[
       { username:'papa', nombre:'Papá', color:'#2878D4', emoji:'👨', rol:'padre', activo:true },
@@ -199,6 +204,35 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
        Array.isArray(A.w.atencion()) && A.w.atencion().length === 1);
     ok('y no hay pestaña ni campo que la persista',
        A.w.state.data.avisos === undefined && A.w.state.data.notificaciones === undefined);
+    A.dom.window.close();
+  }
+
+  console.log('\n--- FALTA PUBLICAR EL BACKEND ---');
+  /* GitHub Pages se actualiza solo; Apps Script hay que publicarlo a mano.
+     Cuando se olvida, lo nuevo del backend NO ESTÁ y la app se callaba: la
+     función parecía rota en vez de sin desplegar. */
+  {
+    const A = abrir();
+    await espera(700);
+    ok('con las versiones a la par no molesta',
+       (A.d.querySelector('#cardAten').textContent||'').indexOf('publicar') < 0);
+    A.w.state.data.version = '0.0.1';
+    A.w.pintarAtencion();
+    const t = A.d.querySelector('#cardAten').textContent || '';
+    ok('con el backend viejo, avisa', t.indexOf('Falta publicar el backend') >= 0, t);
+    ok('y dice las dos versiones', t.indexOf('0.0.1') >= 0 && t.indexOf(APP_V) >= 0, t);
+    ok('con la receta para arreglarlo', t.indexOf('Versión: Nueva') >= 0);
+    ok('la tarjeta se ve aunque no haya nada más pendiente',
+       !A.d.querySelector('#cardAten').hidden);
+    A.w.state.data.version = APP_V;
+    A.w.pintarAtencion();
+    ok('y desaparece al publicar',
+       (A.d.querySelector('#cardAten').textContent||'').indexOf('publicar') < 0);
+    /* Un backend que no dice su versión no es motivo de alarma. */
+    A.w.state.data.version = '';
+    A.w.pintarAtencion();
+    ok('si el backend no dice versión, no se inventa un problema',
+       (A.d.querySelector('#cardAten').textContent||'').indexOf('publicar') < 0);
     A.dom.window.close();
   }
 
