@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.21';
+const APP_VERSION = '0.9.22';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -139,7 +139,7 @@ const HEADERS = {
    */
   'Gastos': ['id', 'fecha', 'categoria', 'descripcion', 'importe', 'pagado_por',
              'origen', 'compartido', 'comprobante', 'reembolso_id', 'nota',
-             'creado_por', 'timestamp'],
+             'recurrente_id', 'creado_por', 'timestamp'],
 
   /**
    * Movimientos de la cuenta común. ÚNICA fuente del saldo.
@@ -149,7 +149,24 @@ const HEADERS = {
    * Dos tablas para el mismo dato siempre acaban descuadrando.
    */
   'Cuenta_Comun': ['id', 'fecha', 'tipo', 'username', 'importe', 'gasto_id',
-                   'nota', 'creado_por', 'timestamp'],
+                   'nota', 'recurrente_id', 'creado_por', 'timestamp'],
+
+  /**
+   * Lo que se repite todos los meses: el cole, las extraescolares, el
+   * seguro, y también los aportes a la cuenta.
+   *
+   *   `clase`  : gasto | ingreso
+   *   `dia_mes`: 1-31. En un mes que no llega a ese día se usa el último.
+   *   `desde` / `hasta`: el tramo en que la regla vale. `hasta` vacío = sin fin.
+   *   `ultima_generada`: hasta qué fecha se han creado filas ya.
+   *
+   * Esa última NO es un dato derivado aunque lo parezca: si se borra a mano
+   * un recibo que no llegó a cobrarse, no hay forma de recalcularla, y sin
+   * ella el recibo volvería a aparecer solo en el siguiente arranque.
+   */
+  'Recurrentes': ['id', 'clase', 'descripcion', 'importe', 'categoria', 'origen',
+                  'username', 'compartido', 'dia_mes', 'desde', 'hasta',
+                  'ultima_generada', 'activo', 'creado_por', 'timestamp'],
 
   'Categorias_Gasto': ['id', 'nombre', 'emoji', 'color', 'orden', 'activo', 'icono'],
 
@@ -848,6 +865,9 @@ const MUTACIONES = {
   saveEventoExcepcion:1, deleteEventoExcepcion:1,
   saveGasto:1, deleteGasto:1, saveLiquidacion:1, deleteLiquidacion:1,
   saveMovimiento:1, deleteMovimiento:1,
+  /* Las reglas de lo recurrente son un acuerdo de los dos, como la
+     custodia: no van en PROPIEDAD. */
+  saveRecurrente:1, deleteRecurrente:1,
   saveAlimento:1, deleteAlimento:1, saveComida:1, deleteComida:1,
   saveCita:1, deleteCita:1, saveMedicacion:1, deleteMedicacion:1,
   saveDosis:1, deleteDosis:1, saveCrecimiento:1, deleteCrecimiento:1,
@@ -934,6 +954,8 @@ const HANDLERS = {
   'deleteLiquidacion': handleDeleteLiquidacion,
   'saveMovimiento': handleSaveMovimiento,
   'deleteMovimiento': handleDeleteMovimiento,
+  'saveRecurrente': handleSaveRecurrente,
+  'deleteRecurrente': handleDeleteRecurrente,
 
   'saveAlimento': handleSaveAlimento,
   'deleteAlimento': handleDeleteAlimento,
@@ -1090,6 +1112,10 @@ function handleGetLogin() {
 function handleGetBootstrap(p) {
   _alDia();                        /* pestañas y columnas nuevas, si las hay */
   _precargar();                    /* 26 pestañas en una llamada, si se puede */
+  /* Lo recurrente se fabrica aquí porque no hay disparadores de tiempo en
+     este proyecto. Es idempotente, así que llamarlo en cada arranque no
+     duplica nada; y si falla, la app tiene que abrir igual. */
+  try { _generarRecurrentes(true); } catch (err) { Logger.log('recurrentes: ' + err); }
   const desde = String(p.desde || '').trim() || _addDays(_hoy(), -400);
 
   const conf = {};
@@ -1131,6 +1157,7 @@ function handleGetBootstrap(p) {
     categorias_gasto: _activos(_readSheet('Categorias_Gasto')).sort(_porOrden),
     liquidaciones: _readSheet('Liquidaciones'),
     cuenta: _readSheet('Cuenta_Comun'),
+    recurrentes: _readSheet('Recurrentes'),
 
     alimentos: _activos(_readSheet('Alimentos')).sort(_porOrden),
     comidas: _readSheet('Comidas').filter(function (r) { return _fechaKey(r.fecha) >= desde; }),
@@ -3348,6 +3375,207 @@ function completarCatalogos(aplicar) {
   if (!total) Logger.log('✅ No falta nada.');
   else if (aplicar) { _invalidar(); Logger.log('✅ ' + total + ' filas añadidas.'); }
   else Logger.log('ℹ️ Nada escrito. Corre completarCatalogos(true) para añadirlas.');
+}
+
+
+/* ============================================================
+   RECURRENTES
+
+   Lo que se repite cada mes: el cole, las extraescolares, el seguro, los
+   aportes a la cuenta. La regla NO es el gasto: la regla FABRICA gastos
+   de verdad el día que toca, y a partir de ahí son filas normales que se
+   editan o se borran como cualquier otra.
+
+   Se generan al arrancar la app, no con un disparador de tiempo: este
+   proyecto no tiene ninguno y no va a empezar ahora. Es idempotente,
+   así que da igual cuántas veces se llame.
+   ============================================================ */
+
+/** Último día de un mes. Sirve para el recibo del 31 en febrero. */
+function _finDeMes(anio, mes) {
+  return new Date(anio, mes, 0).getDate();
+}
+
+/**
+ * La fecha en que toca una regla dentro de un mes. Un `dia_mes` de 31 en
+ * febrero cae el 28 (o el 29): adelantarlo al 1 de marzo lo metería en el
+ * mes que no es, y saltárselo perdería un recibo al año.
+ */
+function _fechaRecurrente(ym, diaMes) {
+  const p = String(ym).split('-');
+  const anio = +p[0], mes = +p[1];
+  const d = Math.min(Math.max(1, +diaMes || 1), _finDeMes(anio, mes));
+  return p[0] + '-' + _pad(mes) + '-' + _pad(d);
+}
+
+/** Suma meses a un 'AAAA-MM' sin salirse del calendario. */
+function _mesMas(ym, n) {
+  const p = String(ym).split('-');
+  const d = new Date(+p[0], +p[1] - 1 + n, 1);
+  return d.getFullYear() + '-' + _pad(d.getMonth() + 1);
+}
+
+/**
+ * Crea las filas que toquen de todas las reglas activas.
+ *
+ * `aplicar` a false solo informa: se puede correr a mano desde el editor
+ * para ver qué haría antes de que lo haga.
+ */
+function _generarRecurrentes(aplicar) {
+  const hace = aplicar !== false;
+  const hoy = _hoy();
+  const reglas = _readSheet('Recurrentes');
+  const hechas = [];
+  let n = 0;
+
+  reglas.forEach(function (r) {
+    if (!_truthy(r.activo)) return;
+    const clase = String(r.clase || 'gasto').trim().toLowerCase();
+    const importe = _n(r.importe);
+    if (!(importe > 0)) return;
+
+    const desde = _fechaKey(r.desde) || hoy;
+    const hasta = _fechaKey(r.hasta);
+    /* Sin marca previa se empieza el día ANTERIOR al `desde`, para que el
+       primer mes no se pierda. */
+    const ya = _fechaKey(r.ultima_generada) || _addDays(desde, -1);
+
+    let ym = _mesMas(ya.slice(0, 7), 0);
+    let ultima = ya;
+    /* 24 vueltas como mucho: una regla vieja que nunca se generó no puede
+       llenar la hoja de golpe ni dejar colgada la llamada. */
+    for (let i = 0; i < 24; i++) {
+      const f = _fechaRecurrente(ym, r.dia_mes);
+      if (f > hoy) break;
+      if (f > ya && f >= desde && (!hasta || f <= hasta)) {
+        if (hace) _crearDeRecurrente(r, clase, f, importe);
+        hechas.push(String(r.descripcion || r.id) + ' · ' + f);
+        n++;
+        ultima = f;
+      }
+      ym = _mesMas(ym, 1);
+      if (ym > hoy.slice(0, 7)) break;
+    }
+
+    if (hace && ultima !== ya) {
+      r.ultima_generada = ultima;
+      _upsert('Recurrentes', 'id', r);
+    }
+  });
+
+  if (n && hace) _invalidar();
+  return { n: n, detalle: hechas };
+}
+
+/** Una fila de verdad a partir de la regla. Desde aquí ya no es especial. */
+function _crearDeRecurrente(r, clase, fecha, importe) {
+  const ts = new Date().toISOString();
+  if (clase === 'ingreso') {
+    _upsert('Cuenta_Comun', 'id', {
+      id: Utilities.getUuid(), fecha: fecha, tipo: 'aporte',
+      username: String(r.username || ''), importe: importe, gasto_id: '',
+      nota: String(r.descripcion || ''), recurrente_id: String(r.id),
+      creado_por: String(r.creado_por || ''), timestamp: ts
+    });
+    return;
+  }
+  _upsert('Gastos', 'id', {
+    id: Utilities.getUuid(), fecha: fecha,
+    categoria: String(r.categoria || 'otro'),
+    descripcion: String(r.descripcion || ''), importe: importe,
+    pagado_por: String(r.origen || 'comun'), origen: String(r.origen || 'comun'),
+    compartido: _truthy(r.compartido == null || r.compartido === '' ? true : r.compartido),
+    comprobante: '', reembolso_id: '', nota: '', recurrente_id: String(r.id),
+    creado_por: String(r.creado_por || ''), timestamp: ts
+  });
+}
+
+/** Alta y edición de una regla. Igual que el resto: reescribe la fila entera. */
+function handleSaveRecurrente(p) {
+  const o = _parsePayload(p);
+  const id = String(o.id || '').trim();
+  const previo = id
+    ? _readSheet('Recurrentes').filter(function (x) { return String(x.id) === id; })[0]
+    : null;
+  if (id && !previo) return _json({ ok: false, error: 'Esa regla ya no existe' });
+
+  const v = function (campo, def) {
+    if (o[campo] !== undefined) return o[campo];
+    return previo ? previo[campo] : def;
+  };
+  const desc = String(v('descripcion', '')).trim();
+  const importe = _n(v('importe', 0));
+  if (!desc) return _json({ ok: false, error: 'Ponle un nombre' });
+  if (!(importe > 0)) return _json({ ok: false, error: 'El importe tiene que ser mayor que cero' });
+
+  const clase = String(v('clase', 'gasto')).trim().toLowerCase() === 'ingreso'
+    ? 'ingreso' : 'gasto';
+  const dia = Math.min(31, Math.max(1, parseInt(v('dia_mes', 1), 10) || 1));
+
+  const fila = {
+    id: id || Utilities.getUuid(),
+    clase: clase, descripcion: desc, importe: importe,
+    categoria: String(v('categoria', 'otro')),
+    origen: String(v('origen', 'comun')),
+    username: String(v('username', '')),
+    compartido: _truthy(v('compartido', true)),
+    dia_mes: dia,
+    desde: _fechaKey(v('desde', _hoy())) || _hoy(),
+    hasta: _fechaKey(v('hasta', '')),
+    /* Al crearla NO se rellena: así el primer recibo del mes en curso se
+       genera si ya ha pasado su día. Al editarla se respeta la que había,
+       para no volver a crear lo que ya está creado. */
+    ultima_generada: previo ? _fechaKey(previo.ultima_generada) : '',
+    activo: _truthy(v('activo', true)),
+    creado_por: String(v('creado_por', o._yo || '')),
+    timestamp: new Date().toISOString()
+  };
+  _upsert('Recurrentes', 'id', fila);
+  _invalidar();
+  _log(fila.creado_por, 'gastos', id ? 'edita_recurrente' : 'crea_recurrente', desc, fila.id);
+
+  /* Se generan en el acto: si la creas el día 12 con día 1, el recibo de
+     este mes tiene que estar ahí antes de que vuelvas a mirar. */
+  _generarRecurrentes(true);
+  return _json({ ok: true, data: fila });
+}
+
+/**
+ * Borrar una regla NO borra lo ya cobrado: esos gastos existieron.
+ * Solo deja de fabricar nuevos.
+ */
+function handleDeleteRecurrente(p) {
+  const id = String(p.id || '').trim();
+  if (!id) return _json({ ok: false, error: 'Falta el id' });
+  const r = _readSheet('Recurrentes').filter(function (x) { return String(x.id) === id; })[0];
+  if (!r) return _json({ ok: false, error: 'Esa regla ya no existe' });
+  r.activo = false;
+  _upsert('Recurrentes', 'id', r);
+  _invalidar();
+  _log(p._yo || '', 'gastos', 'borra_recurrente', String(r.descripcion || ''), id);
+  return _json({ ok: true, data: { id: id } });
+}
+
+/** Qué haría _generarRecurrentes sin hacerlo. Para mirar desde el editor. */
+function verRecurrentes() {
+  const reglas = _readSheet('Recurrentes');
+  Logger.log('Reglas: ' + reglas.length + ' (' +
+    reglas.filter(function (r) { return _truthy(r.activo); }).length + ' activas)');
+  reglas.forEach(function (r) {
+    Logger.log('  ' + (_truthy(r.activo) ? '●' : '○') + ' ' +
+      String(r.clase || 'gasto') + '  ' + String(r.descripcion || '') + '  ' +
+      _n(r.importe) + ' €  día ' + r.dia_mes +
+      '  desde ' + _fechaKey(r.desde) + (r.hasta ? ' hasta ' + _fechaKey(r.hasta) : '') +
+      '  última: ' + (_fechaKey(r.ultima_generada) || '(ninguna)'));
+  });
+  const p = _generarRecurrentes(false);
+  Logger.log('---');
+  if (!p.n) Logger.log('✅ No hay nada pendiente de generar.');
+  else {
+    Logger.log('⏳ ' + p.n + ' filas pendientes:');
+    p.detalle.forEach(function (d) { Logger.log('   ' + d); });
+    Logger.log('Se crean solas al abrir la app.');
+  }
 }
 
 /**

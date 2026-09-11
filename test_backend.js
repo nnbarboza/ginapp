@@ -141,6 +141,86 @@ ok('vacío sigue vacío', _pinNorm('') === '' && _pinNorm(null) === '');
 ok('y NO cuela un PIN distinto por el padding',
    _pinNorm('1234') !== _pinNorm('234'), _pinNorm('234'));
 
+console.log('\n--- RECURRENTES ---');
+/* El cole: 180 € el día 1 de cada mes desde junio. Hoy es 19 de agosto en
+   este test, así que tienen que existir junio, julio y agosto y ni uno más. */
+TABLAS['Recurrentes'] = []; TABLAS['Gastos'] = []; TABLAS['Cuenta_Comun'] = [];
+_hoy = function () { return '2026-08-19'; };
+
+res = r(handleSaveRecurrente({ payload: {
+  clase:'gasto', descripcion:'Cole', importe:'180', categoria:'cole',
+  origen:'comun', dia_mes:1, desde:'2026-06-01', creado_por:'papa' } }));
+ok('se crea la regla', res.ok === true, res.error);
+const REC = res.data.id;
+let gs = () => TABLAS['Gastos'].filter(g => g.recurrente_id === REC);
+ok('fabrica los tres meses pasados', gs().length === 3,
+   gs().map(g => g.fecha).join(' '));
+ok('cada uno el día que toca',
+   gs().map(g => g.fecha).sort().join(' ') === '2026-06-01 2026-07-01 2026-08-01',
+   gs().map(g => g.fecha).sort().join(' '));
+ok('con su importe', gs().every(g => g.importe === 180), gs().map(g => g.importe).join());
+ok('y marcados con la regla que los hizo', gs().every(g => g.recurrente_id === REC));
+
+/* Lo que de verdad importa: volver a arrancar NO duplica nada. */
+_generarRecurrentes(true); _generarRecurrentes(true);
+ok('arrancar otra vez no duplica', gs().length === 3, gs().length);
+
+/* Septiembre aún no ha llegado. */
+ok('no adelanta el mes que viene',
+   !gs().some(g => g.fecha > '2026-08-19'), gs().map(g => g.fecha).join(' '));
+
+/* Borrar un recibo que no se cobró NO lo resucita. */
+TABLAS['Gastos'] = TABLAS['Gastos'].filter(g => g.fecha !== '2026-07-01');
+_generarRecurrentes(true);
+ok('un recibo borrado a mano no vuelve solo', gs().length === 2,
+   gs().map(g => g.fecha).join(' '));
+
+console.log('\n--- EL DÍA 31 EN FEBRERO ---');
+ok('cae el 28, no se salta el mes', _fechaRecurrente('2026-02', 31) === '2026-02-28',
+   _fechaRecurrente('2026-02', 31));
+ok('y en enero sí es el 31', _fechaRecurrente('2026-01', 31) === '2026-01-31');
+ok('el día 1 es el día 1', _fechaRecurrente('2026-02', 1) === '2026-02-01');
+ok('un día imposible se acota', _fechaRecurrente('2026-03', 99) === '2026-03-31',
+   _fechaRecurrente('2026-03', 99));
+
+console.log('\n--- UN INGRESO RECURRENTE ---');
+res = r(handleSaveRecurrente({ payload: {
+  clase:'ingreso', descripcion:'Aporte mensual', importe:'300',
+  username:'mama', dia_mes:5, desde:'2026-07-01', creado_por:'mama' } }));
+const REC2 = res.data.id;
+const movs = TABLAS['Cuenta_Comun'].filter(m => m.recurrente_id === REC2);
+ok('va a la cuenta, no a gastos', movs.length === 2, movs.map(m => m.fecha).join(' '));
+ok('como aporte', movs.every(m => m.tipo === 'aporte'));
+ok('y a nombre de quien lo pone', movs.every(m => m.username === 'mama'));
+
+console.log('\n--- APAGAR UNA REGLA ---');
+handleDeleteRecurrente({ id:REC, _yo:'papa' });
+_hoy = function () { return '2026-09-19'; };
+_generarRecurrentes(true);
+ok('apagada deja de fabricar', gs().length === 2, gs().map(g => g.fecha).join(' '));
+ok('pero lo ya cobrado sigue ahí: esos gastos existieron', gs().length === 2);
+ok('la regla no se borra, se desactiva',
+   TABLAS['Recurrentes'].some(x => x.id === REC && !_truthy(x.activo)));
+
+console.log('\n--- HASTA CUÁNDO ---');
+TABLAS['Gastos'] = [];
+res = r(handleSaveRecurrente({ payload: {
+  clase:'gasto', descripcion:'Extraescolar', importe:'40', dia_mes:10,
+  desde:'2026-06-01', hasta:'2026-07-31', creado_por:'papa' } }));
+const REC3 = res.data.id;
+const ex = TABLAS['Gastos'].filter(g => g.recurrente_id === REC3);
+ok('no pasa de la fecha de fin', ex.length === 2, ex.map(g => g.fecha).join(' '));
+ok('ni uno de agosto', !ex.some(g => g.fecha >= '2026-08-01'));
+
+console.log('\n--- LO QUE NO SE GUARDA ---');
+ok('sin nombre no se crea',
+   r(handleSaveRecurrente({ payload:{ importe:'10' } })).ok === false);
+ok('con importe cero tampoco',
+   r(handleSaveRecurrente({ payload:{ descripcion:'X', importe:'0' } })).ok === false);
+ok('la coma decimal se entiende',
+   r(handleSaveRecurrente({ payload:{ descripcion:'Y', importe:'12,50',
+     desde:'2026-09-01', dia_mes:28, creado_por:'papa' } })).data.importe === 12.5);
+
 console.log('\n--- FECHAS PEGADAS A MANO ---');
 /* El menú del cole se pegó desde el PDF con las fechas como "8/9/26". El
    filtro del bootstrap las pasaba por _fechaKey, que no entendía el año de dos

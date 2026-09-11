@@ -30,7 +30,7 @@ const ICONOS = [
 ];
 
 const B = { ok:true, data:{
-  version:'0.9.21', hoy:HOY, modo:'confianza',
+  version:'0.9.22', hoy:HOY, modo:'confianza',
   config:{ nombre_hija:'Georgina', nombre_corto:'Gina', moneda:'€' },
   usuarios:[{ username:'papa', nombre:'Papá', rol:'progenitor', color:'#2878D4', activo:true },
             { username:'mama', nombre:'Mamá', rol:'progenitor', color:'#E4575B', activo:true },
@@ -394,6 +394,33 @@ const hoja = () => (d.querySelector('#hojaC').textContent||'').replace(/\s+/g,' 
   });
   ok('ningún modificador coincide con el nombre de un componente',
      choques.length === 0, choques.join(' · '));
+
+  /* ============================================================
+     La otra mitad del mismo problema, que el test de arriba NO veía: dos
+     componentes distintos con el MISMO nombre de clase. No hace falta que
+     se mezclen en un class="a b": basta con que existan dos reglas `.x{}`
+     sueltas, y la de abajo le gana a la de arriba.
+
+     Así estaba `.cm`: la fila de comida y la línea de tiempo del día. La
+     segunda le quitaba el align-items:center a la primera.
+
+     Solo se miran las que declaran `display`, que es lo que convierte una
+     clase en la raíz de un componente. Los retoques sueltos (un padding,
+     un gap dentro de un @media) pueden repetir nombre sin consecuencias.
+     ============================================================ */
+  console.log('\n--- NINGÚN COMPONENTE SE DEFINE DOS VECES ---');
+  const veces = {};
+  css.replace(/\/\*[\s\S]*?\*\//g,'').split('}').forEach(bloque => {
+    const p = bloque.split('{');
+    if(p.length < 2 || !/(^|;)\s*display\s*:/.test(p[1])) return;
+    p[0].split(',').forEach(x => {
+      const t = x.trim();
+      if(/^\.[a-z][a-z0-9-]*$/.test(t)) veces[t] = (veces[t]||0) + 1;
+    });
+  });
+  const dobles = Object.keys(veces).filter(k => veces[k] > 1);
+  ok('cada nombre de clase es un solo componente', dobles.length === 0,
+     dobles.join(' · '));
 
   console.log('\n' + (fallos ? ('❌ ' + fallos + ' fallos') : '✅ TODOS LOS TESTS PASAN'));
   process.exit(fallos ? 1 : 0);

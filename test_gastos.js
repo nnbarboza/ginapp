@@ -34,7 +34,26 @@ const GASTOS = [
     timestamp:'2026-08-05T10:00:00.000Z' },
   { id:'g6', fecha:'2026-07-20', categoria:'ropa', descripcion:'Bañador',
     importe:22, origen:'comun', compartido:true, reembolso_id:'', creado_por:'papa',
-    timestamp:'2026-07-20T10:00:00.000Z' }
+    timestamp:'2026-07-20T10:00:00.000Z' },
+  /* Agosto del año pasado, para el año a año: 200 € contra los 248,50 de este. */
+  /* Lo pagó papá de lo suyo: así no toca el saldo de la cuenta ni la lista
+     de pendientes, que se prueban aparte. */
+  { id:'g0', fecha:'2025-08-14', categoria:'ropa', descripcion:'Uniforme',
+    importe:200, origen:'papa', compartido:false, reembolso_id:'', creado_por:'papa',
+    timestamp:'2025-08-14T10:00:00.000Z' }
+];
+/* Una regla activa: el comedor, 180 € el día 1. */
+const RECURRENTES = [
+  { id:'r1', clase:'gasto', descripcion:'Comedor del cole', importe:180,
+    categoria:'educacion', origen:'comun', compartido:true, dia_mes:1,
+    desde:'2026-06-01', hasta:'', ultima_generada:'2026-08-01', activo:true,
+    creado_por:'papa' },
+  { id:'r2', clase:'ingreso', descripcion:'Aporte de papá', importe:250,
+    username:'papa', dia_mes:1, desde:'2026-06-01', hasta:'',
+    ultima_generada:'2026-08-01', activo:true, creado_por:'papa' },
+  { id:'r3', clase:'gasto', descripcion:'Natación (acabada)', importe:30,
+    categoria:'actividades', origen:'comun', dia_mes:5, desde:'2026-01-01',
+    hasta:'2026-06-30', ultima_generada:'2026-06-05', activo:false, creado_por:'mama' }
 ];
 const CUENTA = [
   { id:'mv1', fecha:'2026-08-01', tipo:'aporte', username:'papa', importe:250,
@@ -53,6 +72,7 @@ const BOOT = { ok:true, data:{
            dom:'alterno',hora_cambio:'18:00',ancla_fecha:'2026-08-21',ancla_usuario:'papa'}],
   custodia:[], eventos:[], eventos_excepciones:[], tipos_evento:[],
   gastos:GASTOS, cuenta:CUENTA, liquidaciones:[], categorias_gasto:CATS,
+  recurrentes:RECURRENTES,
   alimentos:[], comidas:[], objetivos_semana:[],
   citas:[], medicacion:[], dosis:[], episodios:[], vacunas:[], crecimiento:[], documentos:[],
   actividad:[], visitas:[]
@@ -98,7 +118,12 @@ setTimeout(() => {
   ok('lo muestra en pantalla', cuerpo().indexOf('313,00 €') >= 0, cuerpo().slice(0,200));
   ok('los gastos adelantados NO restan del saldo',
      w.saldoComun() !== 313 - 45 - 80);
-  ok('muestra el último movimiento', cuerpo().indexOf('aporte de mamá') >= 0);
+  /* La línea de "último movimiento" se quitó: repetía en letra pequeña algo
+     que ya se ve en el número y en la lista. La tarjeta se queda con el saldo. */
+  ok('no repite el último movimiento en letra pequeña',
+     cuerpo().indexOf('aporte de mamá') < 0);
+  ok('y tampoco pinta un donut ahí: el saldo y lo pendiente no forman un todo',
+     !d.querySelector('.cc svg.donut'));
 
   console.log('\n--- PENDIENTES DE DEVOLVER ---');
   const pr = w.pendientesReembolso();
@@ -112,7 +137,10 @@ setTimeout(() => {
   console.log('\n--- APORTES DEL MES ---');
   ok('papá ha aportado 250', w.aportadoEnMes('papa', MES) === 250);
   ok('mamá ha aportado 190', w.aportadoEnMes('mama', MES) === 190);
-  ok('papá sale al día', cuerpo().indexOf('Al día') >= 0);
+  /* El chip "Al día" no decía nada que no dijeran ya las dos cifras de
+     arriba (acordado 250, aportado 250). Solo se avisa de lo que falta. */
+  ok('a quien está al día no se le pone una medalla',
+     cuerpo().indexOf('Al día') < 0);
   ok('a mamá le faltan 60,00 €', cuerpo().indexOf('Faltan 60,00 €') >= 0,
      cuerpo().match(/Faltan.{0,20}/));
   ok('la cuota se lee de Config, no está en el código',
@@ -122,8 +150,87 @@ setTimeout(() => {
   console.log('\n--- ESTADO DE LA CUENTA ---');
   const est = w.estadoCuenta(MES);
   ok('con un aporte pendiente el estado lo refleja', est.t === 'Falta un aporte', est.t);
+  /* Con \\b: sin eso, /mal/ hacía match dentro de "normal" y el test
+     saltaba por una palabra que no tiene nada que ver. */
   ok('no usa palabras que repartan culpa',
-     !/sana|enferma|mal|fatal|culpa/i.test(cuerpo()));
+     !/\b(sana|enferma|mal|fatal|culpa)\b/i.test(cuerpo()),
+     (cuerpo().match(/\b(sana|enferma|mal|fatal|culpa)\b/i)||[])[0]);
+
+  console.log('\n--- EVOLUCIÓN DEL GASTO ---');
+  /* Agosto 248,50 · julio 22 · agosto del año pasado 200. */
+  const ev = w.evolucion(MES);
+  ok('el total del mes', ev.total === 248.5, ev.total);
+  ok('compara con el mes anterior', ev.mes && ev.mes.ym === '2026-07', ev.mes);
+  ok('y con el mismo mes del año pasado', ev.anio && ev.anio.ym === '2025-08', ev.anio);
+  ok('el año a año sale en porcentaje: +24 %', ev.anio.pct === 24, ev.anio.pct);
+  ok('se ve en pantalla', cuerpo().indexOf('+24 %') >= 0,
+     cuerpo().match(/.{0,40}ago 2025.{0,20}/));
+  ok('con la flecha Y la palabra, no solo el color',
+     cuerpo().indexOf('▲') >= 0 && cuerpo().indexOf('más que') >= 0);
+
+  /* Contra julio la subida es del 1030 %: un número que no dice nada. */
+  ok('un porcentaje disparado se cambia por los euros de diferencia',
+     cuerpo().indexOf('1030') < 0 && cuerpo().indexOf('+226,50 €') >= 0,
+     cuerpo().match(/.{0,30}que jul.{0,20}/));
+
+  /* Lo importante: un mes sin datos NO es un mes a cero. */
+  ok('sin un mes con el que comparar no se inventa una cifra',
+     w.evolucion('2026-01').mes === null && w.evolucion('2026-01').anio === null,
+     JSON.stringify(w.evolucion('2026-01')));
+  w.state.gasMes = '2026-01'; w.pintarGastos();
+  ok('y lo dice en vez de pintar −100 %',
+     cuerpo().indexOf('-100') < 0 && cuerpo().indexOf('−100') < 0);
+  w.state.gasMes = MES; w.pintarGastos();
+
+  ok('las barras de los últimos meses se dibujan',
+     d.querySelectorAll('#gasCuerpo .spk-b').length === 6,
+     d.querySelectorAll('#gasCuerpo .spk-b').length);
+  ok('y solo el mes que se mira va resaltado',
+     d.querySelectorAll('#gasCuerpo .spk-b.on').length === 1);
+  ok('una sola serie no lleva leyenda: el título ya dice qué es',
+     !d.querySelector('#gasCuerpo .spk .leg-g'));
+
+  console.log('\n--- ORDEN DE LA PANTALLA ---');
+  /* Lo primero es en qué se ha ido el dinero este mes. La cuenta común se
+     consulta, no se vigila: va después. */
+  const html = d.querySelector('#gasCuerpo').innerHTML;
+  ok('los gastos del mes van antes que la cuenta común',
+     html.indexOf('Gastos de agosto') < html.indexOf('Cuenta común'),
+     html.indexOf('Gastos de agosto') + ' vs ' + html.indexOf('Cuenta común'));
+  ok('y lo que se repite cada mes, al final',
+     html.indexOf('Cuenta común') < html.indexOf('Cada mes'));
+
+  console.log('\n--- LO QUE SE REPITE CADA MES ---');
+  ok('salen las dos reglas activas',
+     d.querySelectorAll('#gasCuerpo [data-rec]').length === 2,
+     d.querySelectorAll('#gasCuerpo [data-rec]').length);
+  ok('la apagada no sale', cuerpo().indexOf('Natación') < 0);
+  ok('el comedor con su importe', cuerpo().indexOf('Comedor del cole') >= 0 &&
+     cuerpo().indexOf('180,00 €') >= 0);
+  ok('un ingreso se distingue de un gasto por el signo',
+     cuerpo().indexOf('+250,00 €') >= 0 && cuerpo().indexOf('−180,00 €') >= 0,
+     cuerpo().match(/.{0,14}250,00.{0,4}/));
+  ok('y se suman aparte los fijos de cada tipo',
+     w.totalRecurrente('gasto') === 180 && w.totalRecurrente('ingreso') === 250,
+     w.totalRecurrente('gasto') + ' / ' + w.totalRecurrente('ingreso'));
+  ok('tocar una regla abre su ficha',
+     (click(d.querySelector('[data-rec="r1"]')),
+      d.querySelector('#rDesc') && d.querySelector('#rDesc').value === 'Comedor del cole'),
+     d.querySelector('#rDesc') && d.querySelector('#rDesc').value);
+  ok('y dice que lo ya apuntado se queda',
+     d.querySelector('#hoja').textContent.indexOf('esos gastos existieron') >= 0);
+  w.cerrarHoja();
+
+  console.log('\n--- UN GASTO QUE VINO DE UNA REGLA ---');
+  w.state.data.gastos.push({ id:'gr', fecha:'2026-08-01', categoria:'educacion',
+    descripcion:'Comedor del cole', importe:180, origen:'comun', compartido:true,
+    recurrente_id:'r1', creado_por:'papa', timestamp:'2026-08-01T08:00:00.000Z' });
+  w.state.gasTodos = true; w.pintarGastos();
+  ok('se marca que se repite cada mes', cuerpo().indexOf('cada mes') >= 0);
+  ok('pero cuenta como un gasto normal del mes',
+     w.totalMes(MES) === 428.5, w.totalMes(MES));
+  w.state.data.gastos = w.state.data.gastos.filter(g => g.id !== 'gr');
+  w.state.gasTodos = false; w.pintarGastos();
 
   console.log('\n--- GASTOS DEL MES ---');
   const gs = w.gastosDeMes(MES);
@@ -131,7 +238,9 @@ setTimeout(() => {
   // 65 + 45 + 40 + 80 + 18,50
   ok('total 248,50 €', cuerpo().indexOf('248,50 €') >= 0, cuerpo().match(/Total gastado.{0,30}/));
   ok('ordenados de más reciente a más antiguo', gs[0].id === 'g1' && gs[4].id === 'g5');
-  ok('el donut se dibuja sin librerías', d.querySelectorAll('#gasCuerpo svg.donut').length >= 2);
+  ok('el donut de categorías se dibuja sin librerías',
+     d.querySelectorAll('#gasCuerpo svg.donut').length === 1,
+     d.querySelectorAll('#gasCuerpo svg.donut').length);
   ok('la leyenda lleva importes y porcentajes',
      cuerpo().indexOf('26%') >= 0 || cuerpo().indexOf('32%') >= 0, cuerpo().match(/Ropa.{0,24}/));
 

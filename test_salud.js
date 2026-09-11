@@ -134,6 +134,35 @@ setTimeout(() => {
   click(d.querySelector('[data-salcat="lesion"]'));
   ok('al volver a tocar se quita el filtro', !w.state.salCat);
 
+  /* Había DOS botones que hacían lo mismo: uno escrito a mano ("Todos") y
+     otro de la lista de categorías ("Todo"). Los dos mandaban salcat="". */
+  ok('solo hay un botón para quitar el filtro',
+     d.querySelectorAll('[data-salcat=""]').length === 1,
+     d.querySelectorAll('[data-salcat=""]').length);
+  ok('y no queda ningún «Todo» suelto al lado del «Todos»',
+     [...d.querySelectorAll('[data-salcat]')]
+       .filter(b => b.textContent.trim() === 'Todo').length === 0);
+
+  /* "Medicación" devolvía vacunas y enfermedades: enseñaba algo que no era
+     lo que ponía en el botón. La medicación ni siquiera entra en esta lista. */
+  ok('ya no hay un filtro de medicación que mienta',
+     !d.querySelector('[data-salcat="medicacion"]'),
+     [...d.querySelectorAll('[data-salcat]')].map(b=>b.dataset.salcat+':'+b.textContent.trim()).join(' | '));
+  ok('las vacunas se filtran por lo que son',
+     w.historialSalud('vacuna').every(r => r.k === 'vacuna'));
+  ok('y el peso y la talla también',
+     w.historialSalud('medida').every(r => r.k === 'medida'));
+
+  console.log('\n--- QUÉ SON «ÚLTIMOS REGISTROS» ---');
+  /* No son solo citas pasadas: es todo lo apuntado. Si algún día se
+     renombra a "citas pasadas", esto salta. */
+  const tipos = [...new Set(w.historialSalud('').map(r => r.k))].sort();
+  ok('caen episodios, citas, vacunas y medidas, no solo citas',
+     tipos.length >= 2 && tipos.indexOf('episodio') >= 0, tipos.join(','));
+  ok('las citas futuras NO entran: esas van arriba',
+     w.historialSalud('').every(r => r.fecha <= w.state.data.hoy),
+     w.historialSalud('').map(r => r.fecha).join(' '));
+
   console.log('\n--- NO HAY NAVEGADOR SEMANAL ---');
   ok('la sección no tiene selector de semana',
      !d.querySelector('#s-salud .ali-nav') && cuerpo().indexOf('Esta semana') < 0);

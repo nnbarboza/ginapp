@@ -63,6 +63,7 @@ Subir siempre a la vez `APP_VERSION` (en `index.html` y `Code.gs`) y `CACHE`
 | `diagnosticar()` | Estado de cada pestaña: columnas que faltan o sobran, nº de filas. Primer sitio donde mirar. |
 | `verCustodia('2026-09')` | Imprime el mes día a día para comprobar el patrón y la fecha ancla. |
 | `verMenu('2026-09')` | Estado del menú del comedor: filas, fechas ilegibles, grupos mal escritos y cuántas llegan a la app. Ver `MENU_COLE.md`. |
+| `verRecurrentes()` | Las reglas de lo que se repite cada mes y qué filas están pendientes de crearse. Solo informa. |
 | `verificarIntegridad()` | Busca referencias rotas entre pestañas. Solo informa. |
 | `limpiarActividad(true)` | Recorta el feed de actividad. Sin `true` solo informa. |
 
@@ -70,7 +71,10 @@ Subir siempre a la vez `APP_VERSION` (en `index.html` y `Code.gs`) y `CACHE`
 
 1. Se lee y se escribe **siempre por el nombre real de la cabecera**, nunca por posición.
 2. **Nada derivado se persiste**: balances, exposiciones, variedad y días de custodia
-   se calculan al vuelo desde los registros.
+   se calculan al vuelo desde los registros. La excepción es
+   `Recurrentes.ultima_generada`, que no es un cálculo sino la marca de hasta
+   dónde se ha llegado: sin ella, un recibo borrado a mano volvería a aparecer
+   en el siguiente arranque.
 3. Todo lo configurable vive en una pestaña del Sheet. **Una tabla vacía hace
    desaparecer la feature, no la rompe.**
 4. Los inputs numéricos son `type="text" inputmode="decimal"` y se normaliza la coma en JS.
