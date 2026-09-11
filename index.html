@@ -771,15 +771,18 @@ svg{display:block;flex-shrink:0}
 .comidas{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
   margin-bottom:14px}
 .comidas h3{margin:0 0 4px;font-size:16px;font-weight:700;letter-spacing:-.3px}
-.cm{display:flex;gap:12px;padding:11px 0;align-items:flex-start;position:relative}
-.cm .pt{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:6px;z-index:1;
+/* La línea de tiempo del día. Se llamaba .cm igual que la fila de comida
+   de la lista, y como esta va después le ganaba: las filas de arriba
+   perdían su align-items:center sin que nadie lo hubiera pedido. */
+.cmt{display:flex;gap:12px;padding:11px 0;align-items:flex-start;position:relative}
+.cmt .pt{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:6px;z-index:1;
   box-shadow:0 0 0 3px var(--surface)}
-.cm .ln{position:absolute;left:6.5px;top:24px;bottom:-11px;width:1.5px;background:var(--border)}
-.cm:last-of-type .ln{display:none}
-.cm .tx{flex:1;min-width:0}
-.cm .tx b{font-size:14.5px;font-weight:600;letter-spacing:-.2px}
-.cm .tx p{margin:2px 0 0;font-size:12.5px;color:var(--t2);line-height:1.4}
-.cm .hr{font-size:12.5px;color:var(--t3);font-weight:600;font-variant-numeric:tabular-nums}
+.cmt .ln{position:absolute;left:6.5px;top:24px;bottom:-11px;width:1.5px;background:var(--border)}
+.cmt:last-of-type .ln{display:none}
+.cmt .tx{flex:1;min-width:0}
+.cmt .tx b{font-size:14.5px;font-weight:600;letter-spacing:-.2px}
+.cmt .tx p{margin:2px 0 0;font-size:12.5px;color:var(--t2);line-height:1.4}
+.cmt .hr{font-size:12.5px;color:var(--t3);font-weight:600;font-variant-numeric:tabular-nums}
 .cm .ed{width:32px;height:32px;border-radius:50%;background:var(--surface2);color:var(--ali-d);
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .add-c{width:100%;margin-top:8px;border:1.5px dashed var(--border);border-radius:var(--r-btn);
@@ -980,8 +983,12 @@ svg{display:block;flex-shrink:0}
 .cd .nu{font-size:13.5px;font-weight:600;line-height:1;height:20px;
   display:flex;align-items:center;justify-content:center;position:relative}
 .cd.hoy .nu{font-weight:800}
-.cd.hoy .nu::after{content:'';position:absolute;bottom:-3px;left:50%;margin-left:-2px;
-  width:4px;height:4px;border-radius:50%;background:currentColor}
+/* Hoy se marca con una BARRITA, no con un punto. Justo debajo van los puntos
+   de los eventos, del mismo tamaño y redondos: pegados uno encima de otro
+   parecían dos eventos, o un fallo de pintado. Son dos cosas distintas y
+   ahora tienen forma distinta. */
+.cd.hoy .nu::after{content:'';position:absolute;bottom:-2px;left:50%;margin-left:-5px;
+  width:10px;height:2px;border-radius:2px;background:currentColor}
 .cd.papa.hoy .nu{color:var(--papa-d)}
 .cd.mama.hoy .nu{color:var(--mama-d)}
 .cd.avis.hoy .nu{color:var(--avis-d)}
@@ -1083,14 +1090,11 @@ svg{display:block;flex-shrink:0}
 .cc{background:var(--gas-c);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
   margin-bottom:12px}
 .cc h3{margin:0 0 13px;font-size:16px;font-weight:700;letter-spacing:-.3px}
-.cc-top{display:flex;gap:15px;align-items:center}
-.cc-tx{flex:1;min-width:0}
-.cc-tx .lb{font-size:12px;color:var(--t2)}
-.cc-tx .vl{font-size:29px;font-weight:700;letter-spacing:-1.4px;line-height:1.1;margin-top:2px;
+/* Sin donut y sin chip: el saldo es UN número, y un número no necesita
+   un círculo al lado para entenderse. */
+.cc-sal .lb{font-size:12px;color:var(--t2)}
+.cc-sal .vl{font-size:31px;font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-top:2px;
   white-space:nowrap}
-.cc-tx .est-chip{margin-top:7px}
-.cc-tx .sb{font-size:12.5px;color:var(--t2);margin-top:6px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cc-est{display:flex;flex-direction:column;gap:9px;flex-shrink:0;align-items:flex-end;
   text-align:right}
 .est-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px;
@@ -1114,7 +1118,9 @@ svg{display:block;flex-shrink:0}
 .ap-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .ap-hd b{font-size:16px;font-weight:700;letter-spacing:-.3px}
 .ap-hd button{font-size:12.5px;font-weight:600;color:var(--gas-d);display:flex;align-items:center;gap:4px}
-.ap-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* Sin el chip de "Al día", la tarjeta de quien va al corriente es más corta.
+   Estirarla dejaba un hueco de color vacío que parecía un fallo de pintado. */
+.ap-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 .ap-c{border-radius:var(--r);padding:13px 12px;display:flex;flex-direction:column}
 .ap-c .who{display:flex;align-items:center;gap:8px;margin-bottom:11px}
 .ap-c .who .av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
@@ -1138,11 +1144,65 @@ svg{display:block;flex-shrink:0}
 .gm-hd b{font-size:16px;font-weight:700;letter-spacing:-.3px}
 .gm-hd button{font-size:12.5px;font-weight:600;color:var(--gas-d);display:flex;align-items:center;gap:4px}
 .gm-top{display:flex;gap:14px;align-items:center;justify-content:space-between}
-.gm-tot{background:var(--gas-c);border-radius:var(--r);padding:14px 16px;flex:1;min-width:0}
-.gm-tot .lb{font-size:11.5px;color:var(--t2)}
-.gm-tot .vl{font-size:23px;font-weight:700;letter-spacing:-1px;margin-top:3px;line-height:1.1}
-.gm-tot .n{font-size:11.5px;color:var(--t2);margin-top:3px}
 .donut{flex-shrink:0}
+
+/* ---------- evolución del gasto ----------
+   Una cifra grande y dos comparaciones. Cada comparación lleva flecha Y
+   texto: el color no puede ser lo único que diga si se ha subido o bajado,
+   porque hay quien no distingue el verde del naranja. */
+.evo{background:var(--gas-c);border-radius:var(--r);padding:15px 16px 13px;margin-bottom:14px}
+.evo-hero .lb{font-size:11.5px;color:var(--t2)}
+.evo-hero .vl{font-size:31px;font-weight:700;letter-spacing:-1.5px;line-height:1.05;
+  margin-top:2px;color:var(--gas-d)}
+.evo-hero .n{font-size:11.5px;color:var(--t2);margin-top:3px}
+.evo-cs{display:flex;gap:8px;margin-top:13px}
+.evo-c{flex:1;min-width:0;background:var(--surface);border-radius:13px;padding:9px 11px}
+.evo-c b{display:block;font-size:14px;font-weight:700;letter-spacing:-.3px}
+.evo-c span{display:block;font-size:10.5px;color:var(--t2);margin-top:2px;line-height:1.35}
+.evo-c.up b{color:var(--gas-d)}
+.evo-c.dn b{color:var(--ali-d)}
+.evo-c.ig b, .evo-c.vacio b{color:var(--t3)}
+.evo-c.vacio span{color:var(--t3)}
+
+/* Una sola serie, así que sin leyenda: el mes que se mira va en el color de
+   la sección y el resto en gris. Eso solo ya se lee de un vistazo. */
+.spk{display:flex;align-items:flex-end;gap:5px;height:92px;margin-top:14px;
+  border-top:1px solid var(--border);padding-top:14px}
+.spk-b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  height:100%;gap:4px;min-width:0}
+/* Sobre el crema de la tarjeta, var(--border) desaparecía: las barras de los
+   meses anteriores no se veían y el gráfico parecía roto. */
+.spk-b i{display:block;width:100%;max-width:26px;background:var(--t3);opacity:.28;
+  border-radius:4px 4px 0 0;min-height:3px}
+.spk-b span{font-size:9.5px;color:var(--t3);line-height:1}
+.spk-b.on i{background:var(--gas-d);opacity:1}
+.spk-b.on span{color:var(--gas-d);font-weight:700}
+
+/* ---------- lo que se repite cada mes ---------- */
+.fijos{background:var(--surface);border-radius:var(--r-l);padding:16px;box-shadow:var(--sh);
+  margin-bottom:12px}
+.fijos-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fijos-hd b{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.fijos-hd button{display:flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;
+  color:var(--gas-d);cursor:pointer}
+.fijos-v{font-size:12.5px;color:var(--t2);line-height:1.5}
+.fijos-l{display:flex;flex-direction:column;gap:2px}
+.fijos-i{display:flex;align-items:center;gap:11px;width:100%;padding:9px 2px;text-align:left;
+  cursor:pointer}
+.fijos-i .ic{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.fijos-i .tx{flex:1;min-width:0}
+.fijos-i .tx b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fijos-i .tx span{display:block;font-size:11.5px;color:var(--t2);margin-top:1px}
+.fijos-i .im{font-size:14px;font-weight:700;flex-shrink:0}
+.fijos-t{display:flex;gap:14px;margin-top:11px;border-top:1px solid var(--border);
+  padding-top:11px;font-size:11.5px;color:var(--t2)}
+.fijos-t b{color:var(--t1);font-weight:700}
+/* Distintivo del gasto que nació de una regla. */
+.tg-r{display:inline-flex;align-items:center;gap:3px;background:var(--surface2);
+  color:var(--t2);border-radius:999px;padding:1px 7px 1px 5px;font-size:9.5px;
+  font-weight:700;margin-left:6px;vertical-align:middle}
 .leg-g{display:flex;flex-direction:column;gap:8px;margin-top:14px;
   border-top:1px solid var(--border);padding-top:13px}
 .leg-g .li{display:flex;align-items:center;gap:9px;font-size:13px}
@@ -1159,8 +1219,14 @@ svg{display:block;flex-shrink:0}
 .gi .ic{width:40px;height:40px;border-radius:14px;display:flex;align-items:center;
   justify-content:center;flex-shrink:0;font-size:18px}
 .gi .tx{flex:1;min-width:0}
-.gi .tx b{display:block;font-size:14px;font-weight:600;letter-spacing:-.2px;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis}
+/* El título recorta con puntos suspensivos, así que un distintivo dentro de
+   él se lo comía el recorte. Ahora el <b> es una fila: el texto recorta y la
+   etiqueta se queda entera al lado. */
+.gi .tx b{display:flex;align-items:center;gap:0;min-width:0;
+  font-size:14px;font-weight:600;letter-spacing:-.2px}
+.gi .tx b > span{flex-shrink:0}
+.gi .tx b::before{content:'';display:none}
+.gi .tx .nb{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .gi .tx p{margin:1px 0 0;font-size:12px;color:var(--t3)}
 .gi .tx .qn{font-size:12px;font-weight:600;margin-top:2px}
 .gi .im{font-size:15px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums;
@@ -1485,7 +1551,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.21';
+var APP_VERSION = '0.9.22';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1653,8 +1719,12 @@ function truthy(v){
   var s=String(v).trim().toLowerCase();
   return s==='true'||s==='1'||s==='si'||s==='sí'||s==='x';
 }
+/* El guion que mete toLocaleString es un HYPHEN-MINUS, más corto y más fino
+   que el signo menos de verdad: junto a cifras grandes casi no se ve, y no
+   casa con el − que usa el resto de la app. */
 function eur(n){
-  return n.toLocaleString('es-ES',{minimumFractionDigits:2, maximumFractionDigits:2})+' €';
+  return String(n.toLocaleString('es-ES',{minimumFractionDigits:2, maximumFractionDigits:2}))
+    .replace(/^-/, '−') + ' €';
 }
 
 /* ---------- blindaje de la carga ---------- */
@@ -1662,7 +1732,7 @@ var TABLAS = ['usuarios','patron','custodia','eventos','eventos_excepciones','ta
   'tipos_evento','comentarios','recordatorios','gastos','categorias_gasto','liquidaciones','cuenta','alimentos',
   'comidas','objetivos_semana','platos','citas','medicacion','dosis','episodios','vacunas',
   'crecimiento','documentos','mensajes','actividad','visitas',
-  'tipos_comida','iconos','gina','menu_cole'];
+  'tipos_comida','iconos','gina','menu_cole','recurrentes'];
 function normalizar(d){
   d = d || {};
   TABLAS.forEach(function(k){ if(!Array.isArray(d[k])) d[k]=[]; });
@@ -3788,7 +3858,7 @@ function listaComidas(f){
       var e = String(it.estado_toma);
       return esc(it.nombre || '') + (e==='probo' ? ' (lo probó)' : e==='rechazo' ? ' (lo rechazó)' : '');
     }).filter(String).join(' · ');
-    return '<div class="cm" data-comida="'+esc(c.grupo_id)+'"><div class="ln"></div>' +
+    return '<div class="cmt" data-comida="'+esc(c.grupo_id)+'"><div class="ln"></div>' +
       '<span class="pt" style="background:'+colorComida(c.items)+'"></span>' +
       '<div class="tx"><b>'+esc(t.nom)+'</b><p>'+(nombres||'—')+'</p></div>' +
       '<span class="hr">'+esc(c.hora||'')+'</span>' +
@@ -5991,6 +6061,111 @@ function estadoCuenta(ym){
   return { t:'Al día', c:'ali', ico:'escudo' };
 }
 
+
+/* ---------- evolución del gasto ---------- */
+
+/** Lo gastado en un mes. Sin guardar nada: se suma cada vez. */
+function totalMes(ym){
+  return Math.round(gastosDeMes(ym).reduce(function(a,g){
+    return a + num(g.importe); }, 0) * 100) / 100;
+}
+
+/**
+ * Comparación de un mes contra el anterior y contra el mismo mes del año
+ * pasado.
+ *
+ * `null` cuando no hay con qué comparar, y eso NO es lo mismo que 0: el
+ * mes pasado sin gastos apuntados no significa que no se gastara nada, y
+ * pintar "−100 %" sería inventarse una caída. Si no hay dato, no hay cifra.
+ */
+function evolucion(ym){
+  var hoy = totalMes(ym);
+  function contra(otro){
+    if(!hayGastosEn(otro)) return null;
+    var t = totalMes(otro);
+    if(!(t > 0)) return null;
+    return { ym:otro, total:t, dif:Math.round((hoy-t)*100)/100,
+             pct:Math.round((hoy-t)/t*100) };
+  }
+  return { total:hoy, mes:contra(mesAnterior(ym,-1)), anio:contra(mesAnterior(ym,-12)) };
+}
+
+/** ¿Ese mes llegó a usarse? Un mes sin una sola fila no es un mes a cero. */
+function hayGastosEn(ym){
+  return state.data.gastos.some(function(g){ return mesDe(fechaKey(g.fecha))===ym; });
+}
+
+/** Los últimos n meses hasta `ym`, del más viejo al más nuevo. */
+function mesesHasta(ym, n){
+  var out = [];
+  for(var i = n-1; i >= 0; i--){
+    var m = mesAnterior(ym, -i);
+    out.push({ ym:m, v:totalMes(m), hay:hayGastosEn(m) });
+  }
+  return out;
+}
+
+/**
+ * Barritas de los últimos meses. Una sola serie, así que no lleva leyenda:
+ * el título ya dice qué es. El mes que se está mirando va en el color de
+ * la sección y el resto en gris, que es lo que hace que se lea de un
+ * vistazo sin tener que etiquetar cada barra.
+ */
+function sparkGastos(ym, n){
+  var ms = mesesHasta(ym, n || 6);
+  var max = Math.max.apply(null, ms.map(function(m){ return m.v; }).concat([1]));
+  var usados = ms.filter(function(m){ return m.hay; });
+  if(usados.length < 2) return '';
+  return '<div class="spk" role="img" aria-label="Gasto de los últimos ' +
+    ms.length + ' meses">' + ms.map(function(m){
+      var act = m.ym === ym;
+      var alto = m.v > 0 ? Math.max(3, Math.round(m.v/max*100)) : 2;
+      return '<div class="spk-b'+(act?' on':'')+'" title="' +
+        esc(MESES_C[+m.ym.split('-')[1]-1]+' · '+(m.hay?eur(m.v):'sin datos')) + '">' +
+        '<i style="height:'+alto+'%"></i>' +
+        '<span>'+esc(MESES_C[+m.ym.split('-')[1]-1])+'</span></div>';
+    }).join('') + '</div>';
+}
+
+/**
+ * Una comparación en palabras. Lleva flecha Y texto: el color solo no
+ * puede ser lo único que diga si se ha subido o bajado.
+ */
+function chipEvo(e, etiqueta){
+  if(!e) return '<div class="evo-c vacio"><b>—</b><span>Sin ' + esc(etiqueta) +
+    ' con qué comparar</span></div>';
+  var sube = e.dif > 0, igual = Math.abs(e.dif) < 0.005;
+  var k = igual ? 'ig' : sube ? 'up' : 'dn';
+  var flecha = igual ? '=' : sube ? '▲' : '▼';
+  /* Contra un mes casi vacío el porcentaje se dispara y no dice nada:
+     "+1030 %" sobre 22 € es ruido. A partir de ahí, la diferencia en euros. */
+  var cifra = igual ? '0 %'
+    : Math.abs(e.pct) >= 300 ? (sube?'+':'−')+eur(Math.abs(e.dif))
+    : (sube?'+':'−')+Math.abs(e.pct)+' %';
+  return '<div class="evo-c '+k+'"><b>'+flecha+' '+cifra+'</b>' +
+    '<span>'+(igual ? 'Igual que' : (sube?'más que':'menos que'))+' ' +
+    esc(etiqueta)+' · '+eur(e.total)+'</span></div>';
+}
+
+/* ---------- recurrentes ---------- */
+
+function recurrentesActivos(){
+  return (state.data.recurrentes||[]).filter(function(r){ return truthy(r.activo); })
+    .sort(function(a,b){ return (+a.dia_mes||1) - (+b.dia_mes||1); });
+}
+/** Lo que sumarían al mes las reglas de gasto activas. */
+function totalRecurrente(clase){
+  return Math.round(recurrentesActivos().filter(function(r){
+    return String(r.clase||'gasto') === clase;
+  }).reduce(function(a,r){ return a + num(r.importe); }, 0) * 100) / 100;
+}
+/** ¿Este gasto lo fabricó una regla? Para decirlo en su ficha. */
+function reglaDe(g){
+  if(!g || !g.recurrente_id) return null;
+  return (state.data.recurrentes||[]).filter(function(r){
+    return String(r.id) === String(g.recurrente_id); })[0] || null;
+}
+
 /** Donut hecho a mano: cero librerías, cero peso, y testable con jsdom. */
 function donut(partes, px){
   var total = partes.reduce(function(a,p){ return a + p.v; }, 0);
@@ -6023,21 +6198,77 @@ function pintarGastos(){
   $('#gasRango').innerHTML = svg('calendario',17)+'<span>'+mesNom+' '+ym.split('-')[0]+'</span>';
 
   var out = '';
-  var saldo = saldoComun(), est = estadoCuenta(ym), um = ultimoMovimiento();
-  var pend = pendientesReembolso();
+  var gs = gastosDeMes(ym);
+  var total = gs.reduce(function(a,g){ return a + num(g.importe); }, 0);
+  var porCat = {};
+  gs.forEach(function(g){
+    var k = String(g.categoria||'otro');
+    porCat[k] = (porCat[k]||0) + num(g.importe);
+  });
+  var cats = Object.keys(porCat).map(function(k){
+    var c = categoriaGasto(k);
+    return { id:k, nom:c.nombre, col:c.color, v:porCat[k] };
+  }).sort(function(a,b){ return b.v - a.v; });
 
-  out += '<div class="cc"><h3>Cuenta común</h3><div class="cc-top">' +
-    donut([{ v:Math.max(0,saldo), col:'var(--gas)' },
-           { v:Math.max(0,pend.papa+pend.mama), col:'var(--cal)' }], 96) +
-    /* El chip de estado va debajo del importe, no al lado: con cuatro
-       cifras y el símbolo del euro se quedaba sin ancho y el "€" caía
-       a una segunda línea. */
-    '<div class="cc-tx"><div class="lb">Saldo disponible</div>' +
-      '<div class="vl" style="color:'+(saldo<0?'var(--err)':'var(--gas-d)')+'">'+eur(saldo)+'</div>' +
-      '<span class="est-chip" style="background:var(--'+est.c+'-s);' +
-        'color:var(--'+est.c+'-d)">'+svg(est.ico,13)+esc(est.t)+'</span>' +
-      (um ? '<div class="sb">Último: '+esc(textoMovimiento(um))+'</div>' : '') +
-    '</div></div>';
+  /* ---------- 1 · el mes ----------
+     Primero en qué se ha ido el dinero este mes, que es a lo que se entra.
+     El estado de la cuenta común va después: se consulta, no se vigila. */
+  out += '<div class="gm"><div class="gm-hd"><b>Gastos de '+mesNom+'</b>' +
+    (gs.length>5 ? '<button id="gasTodos">'+(state.gasTodos?'Ver menos':'Ver todos') +
+      ' '+svg('chevron',13)+'</button>' : '') + '</div>';
+
+  if(!gs.length){
+    out += '<div style="font-size:13px;color:var(--t3);padding:4px 0 8px">' +
+      'Ningún gasto apuntado este mes.</div>';
+  } else {
+    var evo = evolucion(ym);
+    out += '<div class="evo"><div class="evo-hero"><div class="lb">Total gastado</div>' +
+      '<div class="vl">'+eur(total)+'</div>' +
+      '<div class="n">'+gs.length+(gs.length===1?' gasto':' gastos')+'</div></div>' +
+      '<div class="evo-cs">' +
+        chipEvo(evo.mes, MESES_C[+mesAnterior(ym,-1).split('-')[1]-1]) +
+        chipEvo(evo.anio, MESES_C[+ym.split('-')[1]-1]+' '+(+ym.split('-')[0]-1)) +
+      '</div>' + sparkGastos(ym, 6) + '</div>';
+
+    out += '<div class="gm-top">' + donut(cats, 104) +
+      '<div class="leg-g">' + cats.slice(0,6).map(function(c){
+        return '<div class="li"><i style="background:'+c.col+'"></i>' +
+          '<span class="nm">'+esc(c.nom)+'</span><span class="im">'+eur(c.v)+'</span>' +
+          '<span class="pc">'+Math.round(c.v/total*100)+'%</span></div>';
+      }).join('') + '</div></div>';
+
+    out += '<div class="gl"><h4>Últimos gastos</h4>' +
+      gs.slice(0, state.gasTodos ? 60 : 5).map(function(g){
+        var c = categoriaGasto(g.categoria), o = String(g.origen||'comun');
+        var quien = o==='comun' ? 'Desde la cuenta común' : 'Lo pagó '+nombreDe(o).toLowerCase();
+        var col = o==='comun' ? 'var(--gas-d)' : colorDe(o);
+        var pendiente = o!=='comun' && truthy(g.compartido) && !g.reembolso_id;
+        return '<button class="gi" data-gasto="'+esc(g.id)+'">' +
+          '<span class="ic" style="background:'+c.color+'1F">'+ico(c,19,'🧾')+'</span>' +
+          '<span class="tx"><b><span class="nb">' +
+            esc(g.descripcion || c.nombre)+'</span>' +
+            (g.recurrente_id?'<span class="tg-r">'+svg('reloj',10)+'cada mes</span>':'') +
+            (truthy(g.compartido)?'':'<span class="solo-mio">solo suyo</span>')+'</b>' +
+            '<span class="qn" style="color:'+col+'">'+esc(quien)+'</span>' +
+            '<p>'+fechaCorta(fechaKey(g.fecha))+'</p></span>' +
+          '<span class="im">'+eur(num(g.importe)) +
+            (pendiente?'<small>por devolver</small>':'')+'</span>' +
+          svg('chevron',15,' style="color:var(--t3)"')+'</button>';
+      }).join('') + '</div>';
+  }
+  out += '<button class="add-g" id="gasNuevo">'+svg('mas',17)+' Añadir gasto</button></div>';
+
+  /* ---------- 2 · la cuenta común ----------
+     Sin donut: eran dos cifras que no forman un todo (el saldo no se
+     reparte entre lo pendiente), así que el círculo no significaba nada.
+     Sin chip de estado ni "último movimiento": decían algo que ya se ve
+     mirando el número y la lista. */
+  var saldo = saldoComun();
+  var pend = pendientesReembolso();
+  out += '<div class="cc"><h3>Cuenta común</h3>' +
+    '<div class="cc-sal"><div class="lb">Saldo disponible</div>' +
+      '<div class="vl" style="color:'+(saldo<0?'var(--err)':'var(--gas-d)')+'">' +
+      eur(saldo)+'</div></div>';
   if(pend.n){
     var frases = [];
     if(pend.papa>0) frases.push('<b>'+eur(pend.papa)+'</b> a papá');
@@ -6045,12 +6276,8 @@ function pintarGastos(){
     out += '<div class="cc-pend">Pendiente de devolver desde la cuenta común: ' +
       frases.join(' y ')+' · '+pend.n+(pend.n===1?' gasto adelantado':' gastos adelantados')+'</div>';
   }
-  /* Este par va siempre: si no hay cuota mensual configurada la tarjeta de
-     aportes no se pinta, y sin esto no habría forma de meter ni el saldo
-     de partida ni un ingreso suelto. */
   out += '<div class="cc-acc">' +
     '<button class="cc-pie" id="gasAporteCC">'+svg('mas',14)+' Ingresar</button>' +
-    '<button class="cc-pie" id="gasMovs">Movimientos '+svg('chevron',14)+'</button>' +
     '</div></div>';
 
   var cuota = cfgNum('cuota_mensual', 0);
@@ -6069,61 +6296,40 @@ function pintarGastos(){
             '<div class="vl">'+eur(cuota)+'</div></div>' +
             '<div><div class="lb">Aportado</div><div class="vl" style="color:' +
             (ok?'var(--ali-d)':'var(--cal-d)')+'">'+eur(puesto)+'</div></div></div>' +
-          '<div class="ap-est" style="background:var(--'+(ok?'ali':'cal')+'-s);color:var(--' +
-            (ok?'ali':'cal')+'-d)">'+svg(ok?'escudo':'reloj',14) +
-            (ok ? 'Al día' : 'Faltan '+eur(falta))+'</div></div>';
+          (ok ? '' : '<div class="ap-est" style="background:var(--cal-s);color:var(--cal-d)">' +
+            svg('reloj',14)+'Faltan '+eur(falta)+'</div>') + '</div>';
       }).join('') + '</div>' +
       '<div class="ap-nota"><span class="i">'+svg('escudo',16)+'</span>' +
       '<div><b>Aportes acordados: '+eur(cuota)+' cada uno</b>' +
       '<span>Es la cifra que pactasteis vosotros, no un cálculo de la app.</span></div></div></div>';
   }
 
-  var gs = gastosDeMes(ym);
-  var total = gs.reduce(function(a,g){ return a + num(g.importe); }, 0);
-  var porCat = {};
-  gs.forEach(function(g){
-    var k = String(g.categoria||'otro');
-    porCat[k] = (porCat[k]||0) + num(g.importe);
-  });
-  var cats = Object.keys(porCat).map(function(k){
-    var c = categoriaGasto(k);
-    return { id:k, nom:c.nombre, col:c.color, v:porCat[k] };
-  }).sort(function(a,b){ return b.v - a.v; });
-
-  out += '<div class="gm"><div class="gm-hd"><b>Gastos de '+mesNom+'</b>' +
-    (gs.length>5 ? '<button id="gasTodos">'+(state.gasTodos?'Ver menos':'Ver todos') +
-      ' '+svg('chevron',13)+'</button>' : '') + '</div>';
-  if(!gs.length){
-    out += '<div style="font-size:13px;color:var(--t3);padding:4px 0 8px">' +
-      'Ningún gasto apuntado este mes.</div>';
+  /* ---------- 3 · lo que se repite ---------- */
+  var recs = recurrentesActivos();
+  out += '<div class="fijos"><div class="fijos-hd"><b>Cada mes</b>' +
+    '<button id="recNuevo">Añadir '+svg('mas',13)+'</button></div>';
+  if(!recs.length){
+    out += '<div class="fijos-v">El cole, las extraescolares, el seguro, tu aporte a la ' +
+      'cuenta… Lo que apuntes aquí se crea solo el día que toca, y desde ese momento ' +
+      'es un gasto normal que puedes editar o borrar.</div>';
   } else {
-    out += '<div class="gm-top"><div class="gm-tot"><div class="lb">Total gastado</div>' +
-      '<div class="vl" style="color:var(--gas-d)">'+eur(total)+'</div>' +
-      '<div class="n">'+gs.length+(gs.length===1?' gasto':' gastos')+'</div></div>' +
-      donut(cats, 104) + '</div>' +
-      '<div class="leg-g">' + cats.slice(0,6).map(function(c){
-        return '<div class="li"><i style="background:'+c.col+'"></i>' +
-          '<span class="nm">'+esc(c.nom)+'</span><span class="im">'+eur(c.v)+'</span>' +
-          '<span class="pc">'+Math.round(c.v/total*100)+'%</span></div>';
-      }).join('') + '</div>';
-    out += '<div class="gl"><h4>Últimos gastos</h4>' +
-      gs.slice(0, state.gasTodos ? 60 : 5).map(function(g){
-        var c = categoriaGasto(g.categoria), o = String(g.origen||'comun');
-        var quien = o==='comun' ? 'Desde la cuenta común' : 'Lo pagó '+nombreDe(o).toLowerCase();
-        var col = o==='comun' ? 'var(--gas-d)' : colorDe(o);
-        var pendiente = o!=='comun' && truthy(g.compartido) && !g.reembolso_id;
-        return '<button class="gi" data-gasto="'+esc(g.id)+'">' +
-          '<span class="ic" style="background:'+c.color+'1F">'+ico(c,19,'🧾')+'</span>' +
-          '<span class="tx"><b>'+esc(g.descripcion || c.nombre) +
-            (truthy(g.compartido)?'':'<span class="solo-mio">solo suyo</span>')+'</b>' +
-            '<span class="qn" style="color:'+col+'">'+esc(quien)+'</span>' +
-            '<p>'+fechaCorta(fechaKey(g.fecha))+'</p></span>' +
-          '<span class="im">'+eur(num(g.importe)) +
-            (pendiente?'<small>por devolver</small>':'')+'</span>' +
-          svg('chevron',15,' style="color:var(--t3)"')+'</button>';
-      }).join('') + '</div>';
+    var tg = totalRecurrente('gasto'), ti = totalRecurrente('ingreso');
+    out += '<div class="fijos-l">' + recs.map(function(r){
+      var ing = String(r.clase||'gasto')==='ingreso';
+      var c = categoriaGasto(r.categoria);
+      return '<button class="fijos-i" data-rec="'+esc(r.id)+'">' +
+        '<span class="ic" style="background:'+(ing?'var(--ali-s)':c.color+'1F')+'">' +
+          (ing ? svg('mas',17,' style="color:var(--ali-d)"') : ico(c,17,'🧾'))+'</span>' +
+        '<span class="tx"><b>'+esc(r.descripcion||'')+'</b>' +
+          '<span>'+(ing?'Ingreso':'Gasto')+' · día '+(+r.dia_mes||1) +
+          (r.hasta ? ' · hasta '+fechaCorta(fechaKey(r.hasta)) : '')+'</span></span>' +
+        '<span class="im" style="color:'+(ing?'var(--ali-d)':'var(--gas-d)')+'">' +
+          (ing?'+':'−')+eur(num(r.importe))+'</span></button>';
+    }).join('') + '</div>' +
+    '<div class="fijos-t">' + (tg>0 ? '<span>Gastos fijos <b>'+eur(tg)+'</b></span>' : '') +
+      (ti>0 ? '<span>Ingresos fijos <b>'+eur(ti)+'</b></span>' : '') + '</div>';
   }
-  out += '<button class="add-g" id="gasNuevo">'+svg('mas',17)+' Añadir gasto</button></div>';
+  out += '</div>';
 
   $('#gasCuerpo').innerHTML = out;
   $('#gasSub').textContent = gs.length ? eur(total)+' en '+mesNom
@@ -6312,6 +6518,137 @@ function guardarGasto(){
       if(btn){ btn.disabled = false; btn.textContent = 'Guardar gasto'; }
     });
 }
+
+/* ---------- lo que se repite cada mes ---------- */
+
+var borradorRec = null;
+
+function formRecurrente(id){
+  var r = id ? (state.data.recurrentes||[]).filter(function(x){
+    return String(x.id)===String(id); })[0] : null;
+  borradorRec = r
+    ? { id:String(r.id), clase:String(r.clase||'gasto'),
+        descripcion:String(r.descripcion||''), importe:String(r.importe||''),
+        categoria:String(r.categoria||'otro'), origen:String(r.origen||'comun'),
+        username:String(r.username||''), compartido:truthy(r.compartido),
+        dia_mes:String(+r.dia_mes||1), hasta:fechaKey(r.hasta) }
+    : { id:'', clase:'gasto', descripcion:'', importe:'', categoria:'',
+        origen:'comun', username:state.user, compartido:true,
+        dia_mes:'1', hasta:'' };
+  pintarFormRec();
+}
+
+function pintarFormRec(){
+  var b = borradorRec, ing = b.clase === 'ingreso';
+  var h = '<h3>'+(b.id?'Editar lo que se repite':'Algo que se repite cada mes')+'</h3>';
+
+  h += '<div class="f-lb">Qué es</div><div class="chips">' +
+    [{id:'gasto',n:'Un gasto'},{id:'ingreso',n:'Un ingreso a la cuenta'}].map(function(o){
+      var on = b.clase===o.id;
+      return '<button class="chip'+(on?' on':'')+'" style="' +
+        (on?'background:var(--'+(o.id==='ingreso'?'ali':'gas')+')':'')+'" ' +
+        'data-rcampo="clase" data-val="'+o.id+'">'+esc(o.n)+'</button>';
+    }).join('') + '</div>';
+
+  h += '<div class="f-lb">Concepto</div>' +
+    '<input class="inp" id="rDesc" type="text" value="'+esc(b.descripcion)+'" ' +
+      'placeholder="'+(ing?'Mi aporte mensual':'Comedor del cole')+'">';
+
+  /* type="text" + inputmode, como en el resto: un input numérico se come la
+     coma decimal en español y guardaría 0 sin decir nada. */
+  h += '<div class="f-lb">Importe y día del mes</div><div class="fila2">' +
+    '<input class="inp" id="rImp" type="text" inputmode="decimal" style="width:118px" ' +
+      'value="'+esc(b.importe)+'" placeholder="180,00">' +
+    '<select class="inp" id="rDia">' + [].concat.apply([],
+      Array.apply(null,{length:31}).map(function(_,i){
+        var d = i+1;
+        return '<option value="'+d+'"'+(String(d)===String(b.dia_mes)?' selected':'')+'>' +
+          'día '+d+'</option>';
+      })).join('') + '</select></div>';
+  if(+b.dia_mes > 28){
+    h += '<div class="aviso">En los meses que no llegan al '+(+b.dia_mes) +
+      ' se apunta el último día del mes.</div>';
+  }
+
+  if(ing){
+    h += '<div class="f-lb">Quién lo pone</div><div class="chips">' +
+      state.data.usuarios.filter(esPerfil).map(function(u){
+        var un = String(u.username), on = b.username===un;
+        return '<button class="chip'+(on?' on':'')+'" style="' +
+          (on?'background:var(--'+claveColor(un)+')':'')+'" ' +
+          'data-rcampo="username" data-val="'+esc(un)+'">'+esc(u.nombre)+'</button>';
+      }).join('') + '</div>';
+  } else {
+    h += '<div class="f-lb">Categoría</div><div class="chips">' +
+      state.data.categorias_gasto.map(function(c){
+        var on = b.categoria===String(c.id);
+        return '<button class="chip'+(on?' on':'')+'" style="'+(on?'background:'+c.color:'')+'" ' +
+          'data-rcampo="categoria" data-val="'+esc(c.id)+'">'+ico(c,15,'')+' ' +
+          esc(c.nombre)+'</button>';
+      }).join('') + '</div>' +
+      '<div class="f-lb">De dónde sale el dinero</div><div class="chips">' +
+        ORIGENES.map(function(o){
+          var on = b.origen===o.id;
+          return '<button class="chip'+(on?' on':'')+'" style="' +
+            (on?'background:var(--'+(o.id==='comun'?'gas':claveColor(o.id))+')':'')+'" ' +
+            'data-rcampo="origen" data-val="'+esc(o.id)+'">'+esc(o.nom)+'</button>';
+        }).join('') + '</div>';
+  }
+
+  h += '<div class="f-lb">Hasta cuándo <span class="op">opcional</span></div>' +
+    '<input class="inp" id="rHasta" type="date" value="'+esc(b.hasta||'')+'">' +
+    '<div class="aviso">Déjalo vacío si no tiene fin. El curso del cole, por ejemplo, ' +
+    'suele acabar en junio.</div>';
+
+  h += '<div class="aviso">Esto no es el gasto: es la regla que lo crea. El día que ' +
+    'toque aparecerá apuntado solo, y a partir de ahí lo puedes editar o borrar como ' +
+    'cualquier otro.</div>';
+
+  h += '<button class="btn" style="background:var(--'+(ing?'ali':'gas')+')" id="recGuardar">' +
+    (b.id?'Guardar cambios':'Guardar')+'</button>';
+  if(b.id){
+    h += '<button class="btn del" id="recBorrar">Dejar de repetirlo</button>' +
+      '<div class="aviso">Lo ya apuntado se queda: esos gastos existieron. Solo deja ' +
+      'de crear nuevos.</div>';
+  }
+  abrirHoja(h);
+}
+
+function leerFormRec(){
+  var b = borradorRec;
+  function v(id){ var e = $('#'+id); return e ? String(e.value||'').trim() : ''; }
+  if($('#rDesc'))  b.descripcion = v('rDesc');
+  if($('#rImp'))   b.importe = v('rImp');
+  if($('#rDia'))   b.dia_mes = v('rDia') || b.dia_mes;
+  if($('#rHasta')) b.hasta = v('rHasta');
+}
+
+function guardarRecurrente(){
+  leerFormRec();
+  var b = borradorRec;
+  if(!b.descripcion){ toast('Ponle un nombre', true); return; }
+  if(num(b.importe) <= 0){ toast('Pon un importe mayor que 0', true); return; }
+  var btn = $('#recGuardar');
+  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  llamarPost({ action:'saveRecurrente', payload:{
+      id:b.id, clase:b.clase, descripcion:b.descripcion, importe:num(b.importe),
+      categoria:b.categoria || 'otro', origen:b.origen, username:b.username,
+      compartido:b.compartido ? 'TRUE' : 'FALSE', dia_mes:b.dia_mes,
+      desde:b.id ? undefined : state.data.hoy, hasta:b.hasta || '',
+      creado_por:state.user } })
+    .then(function(){ cerrarHoja(); toast('Guardado'); return recargar(); })
+    .catch(function(err){
+      toast(String(err.message||err), true);
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
+    });
+}
+
+function borrarRecurrente(){
+  llamarPost({ action:'deleteRecurrente', id:borradorRec.id, creado_por:state.user })
+    .then(function(){ cerrarHoja(); toast('Ya no se repetirá'); return recargar(); })
+    .catch(function(err){ toast(String(err.message||err), true); });
+}
+
 function borrarGasto(){
   llamarPost({ action:'deleteGasto', id:borradorGasto.id, creado_por:state.user })
     .then(function(){ cerrarHoja(); toast('Gasto borrado'); return recargar(); })
@@ -6410,13 +6747,15 @@ var TIPOS_EPISODIO = [
   {id:'lesion',     nom:'Lesión',     ico:'tirita'},
   {id:'enfermedad', nom:'Enfermedad', ico:'pastilla'}
 ];
+/* El botón "Todos" se pinta aparte, escrito a mano. Tener aquí además un
+   {id:'', nom:'Todo'} dibujaba DOS botones que hacían lo mismo. */
 var CATS_SALUD = [
-  {id:'',           nom:'Todo',        ico:'salud'},
   {id:'pediatra',   nom:'Pediatra',    ico:'pediatra'},
   {id:'dentista',   nom:'Dentista',    ico:'diente'},
-  {id:'medicacion', nom:'Medicación',  ico:'pastilla'},
   {id:'enfermedad', nom:'Enfermedades',ico:'termometro'},
-  {id:'lesion',     nom:'Lesiones',    ico:'tirita'}
+  {id:'lesion',     nom:'Lesiones',    ico:'tirita'},
+  {id:'vacuna',     nom:'Vacunas',     ico:'vacuna'},
+  {id:'medida',     nom:'Peso y talla',ico:'regla'}
 ];
 
 function icoCita(t){
@@ -6490,9 +6829,13 @@ function historialSalud(filtro){
 
   if(filtro){
     out = out.filter(function(r){
-      if(filtro==='medicacion') return r.k==='vacuna' || r.tipo==='enfermedad';
+      /* "Medicación" devolvía vacunas y enfermedades. La medicación vive en
+         otra tabla y ni siquiera entra en esta lista, así que el filtro
+         enseñaba cosas que no eran lo que decía. Fuera. */
       if(filtro==='enfermedad') return r.tipo==='fiebre' || r.tipo==='enfermedad' || r.tipo==='sintoma';
       if(filtro==='lesion')     return r.tipo==='lesion';
+      if(filtro==='vacuna')     return r.k==='vacuna';
+      if(filtro==='medida')     return r.k==='medida';
       return r.tipo === filtro;
     });
   }
@@ -6578,8 +6921,11 @@ function pintarSalud(){
       (pendiente.v!=='' ? '<div class="vl" style="color:var(--'+pendiente.c+'-d)">' +
         pendiente.v+'</div>' : '') +
       '<div class="lb">'+esc(pendiente.l)+'</div></button>' +
-    '<button style="background:var(--gina-s)" data-salcat="medicacion">' +
-      '<div class="top"><span class="i" style="color:var(--gina-d)">'+svg('pastilla',22)+'</span>' +
+    /* Ponía "Vacunas", llevaba el icono de una pastilla y filtraba por
+       "medicacion", que devolvía vacunas Y enfermedades. Tres cosas
+       distintas en un botón. Ahora dice, hace y parece lo mismo. */
+    '<button style="background:var(--gina-s)" data-salcat="vacuna">' +
+      '<div class="top"><span class="i" style="color:var(--gina-d)">'+svg('vacuna',22)+'</span>' +
       '<b style="color:var(--gina-d)">Vacunas</b></div>' +
       '<div class="vl" style="color:var(--gina-d)">'+state.data.vacunas.length+'</div>' +
       '<div class="lb">registradas</div></button>' +
@@ -7808,6 +8154,19 @@ document.addEventListener('click', function(e){
       : (borradorGasto[cn]===vl && cn==='categoria') ? '' : vl;
     pintarFormGasto(); return;
   }
+  var rc = e.target.closest('[data-rcampo]');
+  if(rc){
+    leerFormRec();
+    var rn = rc.dataset.rcampo, rv = rc.dataset.val;
+    borradorRec[rn] = (borradorRec[rn]===rv && rn==='categoria') ? '' : rv;
+    pintarFormRec(); return;
+  }
+  if(e.target.closest('#recNuevo')){ formRecurrente(''); return; }
+  var rItem = e.target.closest('[data-rec]');
+  if(rItem){ formRecurrente(rItem.dataset.rec); return; }
+  if(e.target.closest('#recGuardar')){ guardarRecurrente(); return; }
+  if(e.target.closest('#recBorrar')){ borrarRecurrente(); return; }
+
   var ac = e.target.closest('[data-acampo]');
   if(ac){ leerFormAporte();
     var an = ac.dataset.acampo;
