@@ -172,6 +172,121 @@ setTimeout(async () => {
   w.localStorage.setItem = set;
   ok('no explota, simplemente no guarda', !reventó);
 
+  console.log('\n--- GUARDAR SIN ESPERAR ---');
+  /* Guardar eran DOS viajes: el POST y después un recargar() que releía las
+     34 pestañas para enterarse de la fila recién escrita. Los dos sobran. */
+  const espera = ms => new Promise(r => setTimeout(r, ms));
+  w.state.data.gastos = [];
+  w.state.seccion = 'gastos';
+
+  let vistos = [];
+  w.fetch = (u, o) => {
+    if(o && o.method === 'POST'){
+      const b = JSON.parse(o.body);
+      vistos.push(b);
+      return espera(60).then(() => texto(JSON.stringify(
+        { ok:true, data:{ id:'real_1', fecha:b.payload.fecha, importe:b.payload.importe,
+                          descripcion:b.payload.descripcion, categoria:b.payload.categoria,
+                          origen:b.payload.origen, compartido:true, creado_por:'papa' } })));
+    }
+    return texto(JSON.stringify(BOOT));
+  };
+
+  const prom = w.guardarOptimista({
+    tabla:'gastos',
+    provisional:{ fecha:'2026-09-13', importe:42, descripcion:'Libros',
+                  categoria:'educacion', origen:'comun', compartido:true },
+    accion:'saveGasto',
+    payload:{ fecha:'2026-09-13', importe:42, descripcion:'Libros',
+              categoria:'educacion', origen:'comun', creado_por:'papa' },
+    mensaje:'Gasto guardado' });
+
+  /* Lo que importa: la fila está ANTES de que el servidor conteste. */
+  ok('el gasto se ve al instante, sin esperar al servidor',
+     w.state.data.gastos.length === 1, w.state.data.gastos.length);
+  ok('con un id provisional', String(w.state.data.gastos[0].id).indexOf('tmp_') === 0,
+     w.state.data.gastos[0].id);
+  ok('y el id provisional NO viaja al backend',
+     vistos[0] && vistos[0].payload.id === undefined,
+     vistos[0] && JSON.stringify(vistos[0].payload).slice(0,80));
+
+  await prom;
+  ok('al contestar, el id provisional se cambia por el de verdad',
+     w.state.data.gastos.length === 1 && w.state.data.gastos[0].id === 'real_1',
+     w.state.data.gastos.map(g => g.id).join(','));
+  ok('y no se recarga el bootstrap entero por una fila',
+     vistos.length === 1, vistos.length);
+
+  console.log('\n--- SI EL ENVÍO FALLA, SE DESHACE ---');
+  w.state.data.gastos = [];
+  w.fetch = (u, o) => (o && o.method === 'POST')
+    ? espera(40).then(() => texto('<!DOCTYPE html><title>Error</title>'))
+    : texto(JSON.stringify(BOOT));
+  let fallo = null;
+  const p2 = w.guardarOptimista({
+    tabla:'gastos', provisional:{ importe:9, descripcion:'Se va a caer' },
+    accion:'saveGasto', payload:{ importe:9 }, mensaje:'Gasto guardado',
+    reintentar:function(){} }).catch(e => { fallo = e; });
+  ok('mientras va, el gasto está en la lista', w.state.data.gastos.length === 1);
+  await p2;
+  ok('al fallar desaparece: no llegó a existir', w.state.data.gastos.length === 0,
+     w.state.data.gastos.length);
+  ok('y avisa', !d2.querySelector('#fallo').hidden);
+  ok('con un mensaje que se entiende, no con la comilla angular',
+     !/Unexpected token/i.test(d2.querySelector('#fallo').textContent),
+     d2.querySelector('#fallo').textContent);
+  ok('y con un botón para reintentar', !!d2.querySelector('#falloRe'));
+
+  /* Un toast se va solo a los dos segundos y te deja creyendo que el gasto
+     está apuntado. Este se queda hasta que lo cierras. */
+  await espera(2600);
+  ok('el aviso NO se va solo a los dos segundos', !d2.querySelector('#fallo').hidden);
+  w.cerrarFallo();
+  ok('se cierra a mano', d2.querySelector('#fallo').hidden);
+
+  console.log('\n--- EDITAR ALGO Y QUE FALLE ---');
+  /* Lo que había antes tiene que volver: si no, una edición fallida borra
+     el dato bueno de la pantalla. */
+  w.state.data.gastos = [{ id:'g9', importe:100, descripcion:'Original' }];
+  const p3 = w.guardarOptimista({
+    tabla:'gastos', provisional:{ id:'g9', importe:55, descripcion:'Cambiado' },
+    accion:'saveGasto', payload:{ id:'g9', importe:55 } }).catch(()=>{});
+  ok('se ve el cambio ya', w.state.data.gastos[0].descripcion === 'Cambiado');
+  await p3;
+  ok('al fallar vuelve lo que había, no se queda a medias',
+     w.state.data.gastos.length === 1 && w.state.data.gastos[0].descripcion === 'Original' &&
+     w.state.data.gastos[0].importe === 100,
+     JSON.stringify(w.state.data.gastos));
+  w.cerrarFallo();
+
+  console.log('\n--- BORRAR ---');
+  w.state.data.gastos = [{ id:'g1', importe:10 }, { id:'g2', importe:20 }];
+  w.fetch = (u, o) => (o && o.method === 'POST')
+    ? espera(40).then(() => texto(JSON.stringify({ ok:true, data:{ borradas:1 } })))
+    : texto(JSON.stringify(BOOT));
+  const p4 = w.borrarOptimista({ tabla:'gastos', id:'g1', accion:'deleteGasto' });
+  ok('se va de la lista al instante', w.state.data.gastos.length === 1);
+  await p4;
+  ok('y sigue fuera', w.state.data.gastos.map(g=>g.id).join(',') === 'g2');
+
+  w.fetch = (u, o) => (o && o.method === 'POST')
+    ? espera(40).then(() => texto(JSON.stringify({ ok:false, error:'No se pudo' })))
+    : texto(JSON.stringify(BOOT));
+  await w.borrarOptimista({ tabla:'gastos', id:'g2', accion:'deleteGasto' }).catch(()=>{});
+  ok('un borrado que falla devuelve la fila', w.state.data.gastos.length === 1,
+     JSON.stringify(w.state.data.gastos));
+  w.cerrarFallo();
+
+  console.log('\n--- EL PUNTITO DE ENVIANDO ---');
+  w.fetch = (u, o) => (o && o.method === 'POST')
+    ? espera(120).then(() => texto(JSON.stringify({ ok:true, data:{ id:'z' } })))
+    : texto(JSON.stringify(BOOT));
+  const p5 = w.guardarOptimista({ tabla:'gastos', provisional:{ importe:1 },
+    accion:'saveGasto', payload:{ importe:1 } });
+  ok('mientras hay algo en vuelo, se ve', !d2.querySelector('#enviando').hidden);
+  await p5;
+  ok('y al terminar desaparece', d2.querySelector('#enviando').hidden);
+
   console.log('\n' + (fallos ? ('❌ ' + fallos + ' fallos') : '✅ TODOS LOS TESTS PASAN'));
   process.exit(fallos ? 1 : 0);
 }, 900);

@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.23';
+const APP_VERSION = '0.9.24';
 
 /* ============================================================
    ESQUEMA DE TABLAS

@@ -215,7 +215,15 @@ setTimeout(async ()=>{
   ok('que dice a qué evento y día pertenece',
      chk && chk.dataset.rectog.indexOf('e1|2026-08-19') === 0, chk && chk.dataset.rectog);
   const antesR = posts.length;
+  w.state.data.recordatorios = [];
   click(chk);
+  /* SIN esperar: el check tiene que estar puesto ya. Antes se mandaba el
+     POST, se esperaba, y encima se releían las 34 pestañas para pintar una
+     palomita: cinco segundos por un toque. */
+  ok('el recado queda marcado al instante, sin esperar al servidor',
+     w.state.data.recordatorios.length === 1 &&
+     w.state.data.recordatorios[0].evento_id === 'e1',
+     JSON.stringify(w.state.data.recordatorios));
   await espera(60);
   ok('marcarlo manda marcarRecordatorio',
      posts.length === antesR + 1 && posts[antesR].action === 'marcarRecordatorio',

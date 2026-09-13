@@ -1423,6 +1423,26 @@ svg{display:block;flex-shrink:0}
 .pie #pieDbg button{color:var(--t3);text-decoration:underline}
 /* Barra fina arriba mientras se traen datos. Guardar en Apps Script
    tarda un par de segundos y sin señal parece que no ha pasado nada. */
+/* Un punto girando abajo a la derecha: hay algo yéndose al Sheet. No tapa
+   nada ni bloquea: la app ya te dejó seguir. */
+#enviando{position:fixed;right:14px;bottom:calc(96px + var(--safe-b));z-index:55;
+  width:26px;height:26px;border-radius:50%;background:var(--surface);
+  box-shadow:var(--sh);display:flex;align-items:center;justify-content:center}
+#enviando i{width:12px;height:12px;border:2px solid var(--border);
+  border-top-color:var(--gas-d);border-radius:50%;animation:gira .7s linear infinite}
+
+/* Esto sí pide atención: algo que creías guardado no lo está. */
+#fallo{position:fixed;left:12px;right:12px;bottom:calc(92px + var(--safe-b));z-index:70;
+  display:flex;align-items:center;gap:10px;background:var(--err);color:#fff;
+  border-radius:var(--r);padding:12px 12px 12px 14px;box-shadow:0 8px 26px rgba(0,0,0,.22)}
+#fallo .tx{flex:1;min-width:0}
+#fallo b{display:block;font-size:13.5px;font-weight:700;letter-spacing:-.2px}
+#fallo span{display:block;font-size:11.5px;opacity:.92;margin-top:2px;line-height:1.35}
+#fallo button{flex-shrink:0;background:rgba(255,255,255,.2);color:#fff;border-radius:999px;
+  padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer}
+#fallo button.x{padding:0;width:28px;height:28px;display:flex;align-items:center;
+  justify-content:center;background:none}
+
 /* La cinta de «esto es de antes». Va pegada arriba, por encima de todo, y
    es deliberadamente discreta: informa, no alarma. */
 #desfase{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;
@@ -1471,6 +1491,14 @@ svg{display:block;flex-shrink:0}
 <!-- Lo que se ve es de la última vez y los frescos vienen de camino. Se
      quita solo cuando llegan. -->
 <div id="desfase" hidden></div>
+
+<!-- Algo se está enviando por detrás. Discreto a propósito: no es una
+     espera, es información. -->
+<div id="enviando" hidden><i></i></div>
+
+<!-- Algo NO se guardó. Se queda hasta que lo cierras: un toast que
+     desaparece solo te dejaría creyendo que el gasto está apuntado. -->
+<div id="fallo" hidden></div>
 
 <div class="wrap">
 
@@ -1577,7 +1605,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.23';
+var APP_VERSION = '0.9.24';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -2398,6 +2426,175 @@ function llamarPost(body){
   }).catch(function(err){ sesionCaida(err); throw err; });
 }
 
+
+/* ============================================================
+   GUARDAR SIN ESPERAR
+
+   Guardar un gasto eran DOS viajes al servidor: el POST que escribe, y
+   después un recargar() que releía las 34 pestañas enteras para enterarse
+   de la única fila que acabas de escribir. Con el arranque en frío de Apps
+   Script eso son varios segundos mirando un botón verde.
+
+   Los dos sobran:
+
+   · El backend YA devuelve la fila guardada. Se mete en su sitio y se
+     repinta. Cero lecturas.
+   · Y no hace falta esperarle: la fila se pinta en cuanto tocas Guardar,
+     con un id provisional, y el envío va por detrás. Si falla, se deshace
+     y se avisa con un botón para reintentar.
+
+   Lo que NO se hace: dar por bueno un error del backend. Si contesta «falta
+   el título», la fila se va de la pantalla. Optimista con la red, no con
+   las reglas.
+   ============================================================ */
+
+var _pendientes = 0;
+
+/** Mete o reemplaza una fila en una tabla del estado local, por id. */
+function ponerFila(tabla, fila){
+  var t = state.data[tabla];
+  if(!Array.isArray(t) || !fila || !fila.id) return;
+  var i = t.findIndex(function(x){ return String(x.id) === String(fila.id); });
+  if(i >= 0) t[i] = fila; else t.push(fila);
+}
+function quitarFila(tabla, id){
+  var t = state.data[tabla];
+  if(!Array.isArray(t)) return;
+  var i = t.findIndex(function(x){ return String(x.id) === String(id); });
+  if(i >= 0) t.splice(i, 1);
+}
+function filaDe(tabla, id){
+  var t = state.data[tabla] || [];
+  return t.filter(function(x){ return String(x.id) === String(id); })[0] || null;
+}
+
+/**
+ * Repinta lo que esté a la vista. Sin recargar nada: los datos ya están
+ * en memoria, solo hay que volver a dibujarlos.
+ */
+function repintar(){
+  pintarTodo();
+  if(state.seccion === 'alimentacion') pintarAlimentacion();
+  if(state.seccion === 'salud') pintarSalud();
+  if(state.seccion === 'gastos') pintarGastos();
+  if(state.seccion === 'calendario') pintarCalendario();
+  if(state.seccion === 'perfil') pintarPerfil();
+  pintarPieHora();
+}
+
+/** El puntito de «se está enviando algo» del pie. */
+function pintarEnvios(){
+  var el = $('#enviando');
+  if(!el) return;
+  el.hidden = _pendientes === 0;
+}
+
+/**
+ * Guarda optimista.
+ *
+ *   tabla     nombre de la tabla en state.data ('gastos', 'eventos'…)
+ *   provisional  la fila que se pinta YA. Sin id se le pone uno temporal.
+ *   accion / payload  lo que se manda
+ *   mensaje   el toast al tocar Guardar
+ *   reintentar  función que vuelve a lanzar lo mismo (para el aviso de fallo)
+ */
+function guardarOptimista(o){
+  var tabla = o.tabla;
+  var fila = o.provisional || {};
+  var esNueva = !fila.id;
+  if(esNueva) fila.id = 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  var previa = esNueva ? null : filaDe(tabla, fila.id);
+  var copiaPrevia = previa ? JSON.parse(JSON.stringify(previa)) : null;
+
+  ponerFila(tabla, fila);
+  if(o.cerrar !== false) cerrarHoja();
+  repintar();
+  if(o.mensaje) toast(o.mensaje);
+
+  _pendientes++; pintarEnvios();
+  var payload = o.payload || {};
+  /* Un id provisional no puede viajar: el backend lo tomaría por un id real
+     y crearía una fila con «tmp_…» en la columna. */
+  if(esNueva && payload.id !== undefined) delete payload.id;
+
+  return llamarPost({ action:o.accion, payload:payload })
+    .then(function(d){
+      /* Lo que devuelve el backend manda: trae el id de verdad, la marca de
+         tiempo y lo que haya normalizado por el camino. */
+      if(d && d.id){
+        quitarFila(tabla, fila.id);
+        ponerFila(tabla, d);
+      }
+      if(o.despues) o.despues(d);
+      repintar();
+      return d;
+    })
+    .catch(function(err){
+      /* Se deshace: lo que se pintó no llegó a existir. */
+      if(esNueva) quitarFila(tabla, fila.id);
+      else if(copiaPrevia) ponerFila(tabla, copiaPrevia);
+      repintar();
+      avisoFallo(String(err && (err.message||err)), o.reintentar);
+      throw err;
+    })
+    .finally(function(){ _pendientes--; pintarEnvios(); });
+}
+
+/** Borrado optimista: la fila se va ya y vuelve sola si el borrado falla. */
+function borrarOptimista(o){
+  var previa = filaDe(o.tabla, o.id);
+  var copia = previa ? JSON.parse(JSON.stringify(previa)) : null;
+  quitarFila(o.tabla, o.id);
+  if(o.cerrar !== false) cerrarHoja();
+  repintar();
+  if(o.mensaje) toast(o.mensaje);
+
+  _pendientes++; pintarEnvios();
+  return llamarPost({ action:o.accion, id:o.id, creado_por:state.user })
+    .then(function(d){ if(o.despues) o.despues(d); repintar(); return d; })
+    .catch(function(err){
+      if(copia) ponerFila(o.tabla, copia);
+      repintar();
+      avisoFallo(String(err && (err.message||err)), o.reintentar);
+      throw err;
+    })
+    .finally(function(){ _pendientes--; pintarEnvios(); });
+}
+
+/**
+ * El aviso de que algo NO se guardó.
+ *
+ * Un toast de dos segundos no vale aquí: si desaparece mientras miras otra
+ * cosa, te quedas creyendo que el gasto está apuntado. Este se queda hasta
+ * que lo cierras, y trae el botón de reintentar.
+ */
+function avisoFallo(txt, reintentar){
+  var el = $('#fallo');
+  if(!el) return;
+  el.hidden = false;
+  el.innerHTML = '<div class="tx"><b>No se ha guardado</b><span>'+esc(txt)+'</span></div>' +
+    (reintentar ? '<button id="falloRe">Reintentar</button>' : '') +
+    '<button class="x" id="falloX">'+svg('cerrar',15)+'</button>';
+  el._reintentar = reintentar || null;
+}
+function cerrarFallo(){
+  var el = $('#fallo');
+  if(el){ el.hidden = true; el.innerHTML = ''; el._reintentar = null; }
+}
+
+/**
+ * Recarga sin barra ni espera. Para cuando el backend ha hecho algo que la
+ * app no puede adivinar: expandir un evento que se repite en varias filas,
+ * o fabricar los gastos de una regla recién creada.
+ */
+function recargarEnSilencio(){
+  return llamar('getBootstrap', {}).then(function(d){
+    guardarCache(d);
+    state.data = normalizar(d); trasCargar();
+    repintar();
+  }).catch(function(){ /* si falla, lo que hay en pantalla sigue valiendo */ });
+}
+
 /** Recarga los datos del Sheet y repinta. Nada se guarda en local. */
 var _cargas = 0;
 function cargando(on){
@@ -2855,23 +3052,43 @@ function pintarRecordatorio(){
       svg('chevron',16)+'</span></div>';
 }
 
+/**
+ * Marcar un recado hecho es UN toque. Esperar a que el Sheet conteste y
+ * después releer las 34 pestañas para pintar una palomita era lo más
+ * desproporcionado de la app: el check se pinta ya y el envío va detrás.
+ */
 function marcarRecordatorio(clave, hecho){
   var p = String(clave).split('|');
-  cargando(true);
+  var ev = p[0], fecha = p[1];
+  var antes = state.data.recordatorios.slice();
+
+  state.data.recordatorios = state.data.recordatorios.filter(function(r){
+    return !(String(r.evento_id) === ev && fechaKey(r.fecha) === fecha); });
+  if(hecho){
+    state.data.recordatorios.push({ id:'tmp_'+Date.now(), evento_id:ev, fecha:fecha,
+      hecho:true, hecho_por:state.user, timestamp:new Date().toISOString() });
+  }
+  repintarRecordatorio();
+  toast(hecho ? 'Hecho ✓' : 'Vuelve a estar pendiente');
+
+  _pendientes++; pintarEnvios();
   llamarPost({ action:'marcarRecordatorio', payload:{
-    evento_id:p[0], fecha:p[1], hecho:hecho, creado_por:state.user } })
-    .then(function(){ return recargar(); })
-    .then(function(){
-      cargando(false);
-      /* Si se marcó desde el formulario del evento, la hoja sigue abierta:
-         repintarla para que el check cambie ahí también. */
-      if($('#hoja').classList.contains('on')){
-        if($('#eAccion') && borradorEvento){ leerFormEvento(); pintarFormEvento(); }
-        else if(state._fichaEv){ hojaEvento(state._fichaEv.id, state._fichaEv.f); }
-      }
-      toast(hecho ? 'Hecho ✓' : 'Vuelve a estar pendiente');
+    evento_id:ev, fecha:fecha, hecho:hecho, creado_por:state.user } })
+    .catch(function(err){
+      state.data.recordatorios = antes;
+      repintarRecordatorio();
+      avisoFallo(String(err && (err.message||err)), null);
     })
-    .catch(function(err){ cargando(false); toast(String(err.message||err), true); });
+    .finally(function(){ _pendientes--; pintarEnvios(); });
+}
+
+/* Repinta la pantalla y, si la hoja del evento sigue abierta, también ella. */
+function repintarRecordatorio(){
+  repintar();
+  if($('#hoja').classList.contains('on')){
+    if($('#eAccion') && borradorEvento){ leerFormEvento(); pintarFormEvento(); }
+    else if(state._fichaEv){ hojaEvento(state._fichaEv.id, state._fichaEv.f); }
+  }
 }
 
 function pintarNovedades(){
@@ -4777,35 +4994,53 @@ function modoGrupos(){
     '<button class="btn" id="mgOk">Hecho</button>');
 }
 
+/**
+ * Una comida son N filas de `Comidas` con el mismo `grupo_id`, así que no
+ * vale el guardado optimista de una fila: se sustituye el grupo entero.
+ *
+ * Al volver la respuesta se recarga en silencio, porque el backend puede
+ * haber creado alimentos nuevos y sus ids no se pueden adivinar desde aquí.
+ */
 function guardarComida(){
   var b = borrador;
   if(!b.items.length) return;
-  var btn = $('#guardarComida');
-  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
 
-  /* El backend crea los alimentos nuevos y devuelve la comida ya con
-     sus ids. Solo entonces se puede recordar de qué se compone el
-     plato: antes no existen los ids que habría que guardar. */
-  llamarPost({
-    action:'saveComida',
-    payload:{
-      grupo_id:b.grupo_id || '', fecha:b.fecha, hora:b.hora, nota:b.plato || '',
-      tipo_comida:b.tipo_comida, lugar:b.lugar, con:b.con, creado_por:state.user,
-      items: b.items.map(function(it){
-        return { alimento_id:it.alimento_id||'', nombre:it.nombre, grupo:it.grupo,
-                 emoji:it.emoji||'', estado_toma:it.estado_toma, crear: !!it.crear };
-      })
-    }
-  }).then(function(){
-    return recordarPlato();
-  }).then(function(){
-    cerrarHoja();
-    toast('Comida guardada');
-    return recargar();
-  }).catch(function(err){
-    toast(String(err.message||err), true);
-    if(btn){ btn.disabled = false; btn.textContent = 'Guardar comida'; }
-  });
+  var payload = {
+    grupo_id:b.grupo_id || '', fecha:b.fecha, hora:b.hora, nota:b.plato || '',
+    tipo_comida:b.tipo_comida, lugar:b.lugar, con:b.con, creado_por:state.user,
+    items: b.items.map(function(it){
+      return { alimento_id:it.alimento_id||'', nombre:it.nombre, grupo:it.grupo,
+               emoji:it.emoji||'', estado_toma:it.estado_toma, crear: !!it.crear };
+    })
+  };
+
+  var gid = b.grupo_id || ('tmp_' + Date.now());
+  var antes = state.data.comidas.slice();
+  var ts = new Date().toISOString();
+  state.data.comidas = state.data.comidas
+    .filter(function(c){ return String(c.grupo_id) !== String(b.grupo_id || '\u0000'); })
+    .concat(b.items.map(function(it, i){
+      return { id:gid+'_'+i, grupo_id:gid, fecha:b.fecha, hora:b.hora,
+               tipo_comida:b.tipo_comida, lugar:b.lugar, con:b.con,
+               alimento_id:it.alimento_id||'', nombre:it.nombre, grupo:it.grupo,
+               estado_toma:it.estado_toma, nota:b.plato||'',
+               creado_por:state.user, timestamp:ts };
+    }));
+
+  cerrarHoja();
+  repintar();
+  toast('Comida guardada');
+
+  _pendientes++; pintarEnvios();
+  llamarPost({ action:'saveComida', payload:payload })
+    .then(function(){ return recordarPlato(); })
+    .then(function(){ return recargarEnSilencio(); })
+    .catch(function(err){
+      state.data.comidas = antes;
+      repintar();
+      avisoFallo(String(err && (err.message||err)), guardarComida);
+    })
+    .finally(function(){ _pendientes--; pintarEnvios(); });
 }
 
 function crearAlimento(){
@@ -4834,10 +5069,20 @@ function crearAlimento(){
 }
 
 function borrarComida(){
-  if(!borrador.grupo_id) return;
-  llamarPost({ action:'deleteComida', grupo_id:borrador.grupo_id, creado_por:state.user })
-    .then(function(){ cerrarHoja(); toast('Comida borrada'); return recargar(); })
-    .catch(function(err){ toast(String(err.message||err), true); });
+  var gid = borrador.grupo_id;
+  if(!gid) return;
+  var antes = state.data.comidas.slice();
+  state.data.comidas = state.data.comidas.filter(function(c){
+    return String(c.grupo_id) !== String(gid); });
+  cerrarHoja(); repintar(); toast('Comida borrada');
+
+  _pendientes++; pintarEnvios();
+  llamarPost({ action:'deleteComida', grupo_id:gid, creado_por:state.user })
+    .catch(function(err){
+      state.data.comidas = antes; repintar();
+      avisoFallo(String(err && (err.message||err)), null);
+    })
+    .finally(function(){ _pendientes--; pintarEnvios(); });
 }
 
 /* ============================================================
@@ -6091,24 +6336,28 @@ function guardarEvento(){
   if(b.fecha_fin && b.fecha_fin < b.fecha){
     toast('El último día no puede ser anterior al primero', true); return;
   }
-  var btn = $('#evGuardar');
-  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
-  llamarPost({ action:'saveEvento', payload:{
-      id:b.id, titulo:b.titulo, tipo:b.tipo || 'otros', fecha:b.fecha, fecha_fin:b.fecha_fin,
-      hora:b.hora, hora_fin:b.hora_fin, lugar:b.lugar,
-      responsable:b.responsable, accion:b.accion,
-      repite:b.repite, repite_dias:b.repite_dias, repite_hasta:b.repite_hasta,
-      creado_por:state.user } })
-    .then(function(){ cerrarHoja(); toast('Evento guardado'); return recargar(); })
-    .catch(function(err){
-      toast(String(err.message||err), true);
-      if(btn){ btn.disabled = false; btn.textContent = 'Guardar evento'; }
-    });
+  var payload = {
+    id:b.id, titulo:b.titulo, tipo:b.tipo || 'otros', fecha:b.fecha, fecha_fin:b.fecha_fin,
+    hora:b.hora, hora_fin:b.hora_fin, lugar:b.lugar,
+    responsable:b.responsable, accion:b.accion,
+    repite:b.repite, repite_dias:b.repite_dias, repite_hasta:b.repite_hasta,
+    creado_por:state.user };
+  /* Un evento que se repite lo expande el backend en varias filas, así que
+     lo provisional no puede acertar: se pinta el primero y al volver la
+     respuesta se recarga en silencio para traer el resto. */
+  var fila = {
+    id:b.id, titulo:b.titulo, tipo:payload.tipo, fecha:b.fecha, fecha_fin:b.fecha_fin||'',
+    hora:b.hora||'', hora_fin:b.hora_fin||'', lugar:b.lugar||'',
+    responsable:b.responsable||'', accion:b.accion||'', creado_por:state.user,
+    timestamp:new Date().toISOString() };
+  guardarOptimista({ tabla:'eventos', provisional:fila, accion:'saveEvento',
+    payload:payload, mensaje:'Evento guardado', reintentar:guardarEvento,
+    despues: b.repite ? function(){ recargarEnSilencio(); } : null })
+    .catch(function(){});
 }
 function borrarEvento(){
-  llamarPost({ action:'deleteEvento', id:borradorEvento.id, creado_por:state.user })
-    .then(function(){ cerrarHoja(); toast('Evento borrado'); return recargar(); })
-    .catch(function(err){ toast(String(err.message||err), true); });
+  borrarOptimista({ tabla:'eventos', id:borradorEvento.id, accion:'deleteEvento',
+    mensaje:'Evento borrado' }).catch(function(){});
 }
 
 /* ============================================================
@@ -6731,18 +6980,22 @@ function guardarGasto(){
   leerFormGasto();
   var b = borradorGasto;
   if(num(b.importe) <= 0){ toast('Pon un importe mayor que 0', true); return; }
-  var btn = $('#gasGuardar');
-  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
-  llamarPost({ action:'saveGasto', payload:{
-      id:b.id, fecha:b.fecha, categoria:b.categoria || 'otro', descripcion:b.descripcion,
-      importe:num(b.importe), origen:b.origen, compartido:b.compartido ? 'TRUE' : 'FALSE',
-      comprobante:b.comprobante || '', nota:b.nota || '',
-      pagado_por: b.origen==='comun' ? 'comun' : b.origen, creado_por:state.user } })
-    .then(function(){ cerrarHoja(); toast('Gasto guardado'); return recargar(); })
-    .catch(function(err){
-      toast(String(err.message||err), true);
-      if(btn){ btn.disabled = false; btn.textContent = 'Guardar gasto'; }
-    });
+  var payload = {
+    id:b.id, fecha:b.fecha, categoria:b.categoria || 'otro', descripcion:b.descripcion,
+    importe:num(b.importe), origen:b.origen, compartido:b.compartido ? 'TRUE' : 'FALSE',
+    comprobante:b.comprobante || '', nota:b.nota || '',
+    pagado_por: b.origen==='comun' ? 'comun' : b.origen, creado_por:state.user };
+  /* La fila que se pinta ya, con la misma forma que la que devolverá el
+     backend. Si el envío falla, se quita sola y sale el aviso. */
+  var fila = {
+    id:b.id, fecha:b.fecha, categoria:payload.categoria, descripcion:b.descripcion,
+    importe:num(b.importe), origen:b.origen, pagado_por:payload.pagado_por,
+    compartido:b.compartido, comprobante:b.comprobante || '', reembolso_id:'',
+    nota:b.nota || '', recurrente_id:'', creado_por:state.user,
+    timestamp:new Date().toISOString() };
+  guardarOptimista({ tabla:'gastos', provisional:fila, accion:'saveGasto',
+    payload:payload, mensaje:'Gasto guardado', reintentar:guardarGasto })
+    .catch(function(){});
 }
 
 /* ---------- lo que se repite cada mes ---------- */
@@ -6854,31 +7107,33 @@ function guardarRecurrente(){
   var b = borradorRec;
   if(!b.descripcion){ toast('Ponle un nombre', true); return; }
   if(num(b.importe) <= 0){ toast('Pon un importe mayor que 0', true); return; }
-  var btn = $('#recGuardar');
-  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
-  llamarPost({ action:'saveRecurrente', payload:{
-      id:b.id, clase:b.clase, descripcion:b.descripcion, importe:num(b.importe),
-      categoria:b.categoria || 'otro', origen:b.origen, username:b.username,
-      compartido:b.compartido ? 'TRUE' : 'FALSE', dia_mes:b.dia_mes,
-      desde:b.id ? undefined : state.data.hoy, hasta:b.hasta || '',
-      creado_por:state.user } })
-    .then(function(){ cerrarHoja(); toast('Guardado'); return recargar(); })
-    .catch(function(err){
-      toast(String(err.message||err), true);
-      if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
-    });
+  var payload = {
+    id:b.id, clase:b.clase, descripcion:b.descripcion, importe:num(b.importe),
+    categoria:b.categoria || 'otro', origen:b.origen, username:b.username,
+    compartido:b.compartido ? 'TRUE' : 'FALSE', dia_mes:b.dia_mes,
+    desde:b.id ? undefined : state.data.hoy, hasta:b.hasta || '',
+    creado_por:state.user };
+  var fila = {
+    id:b.id, clase:b.clase, descripcion:b.descripcion, importe:num(b.importe),
+    categoria:payload.categoria, origen:b.origen, username:b.username,
+    compartido:b.compartido, dia_mes:b.dia_mes, desde:state.data.hoy,
+    hasta:b.hasta||'', ultima_generada:'', activo:true, creado_por:state.user };
+  /* Guardar una regla PUEDE crear gastos al vuelo (los meses que ya pasaron),
+     y esos no se pueden adivinar: se recargan en silencio al volver. */
+  guardarOptimista({ tabla:'recurrentes', provisional:fila, accion:'saveRecurrente',
+    payload:payload, mensaje:'Guardado', reintentar:guardarRecurrente,
+    despues:function(){ recargarEnSilencio(); } })
+    .catch(function(){});
 }
 
 function borrarRecurrente(){
-  llamarPost({ action:'deleteRecurrente', id:borradorRec.id, creado_por:state.user })
-    .then(function(){ cerrarHoja(); toast('Ya no se repetirá'); return recargar(); })
-    .catch(function(err){ toast(String(err.message||err), true); });
+  borrarOptimista({ tabla:'recurrentes', id:borradorRec.id, accion:'deleteRecurrente',
+    mensaje:'Ya no se repetirá' }).catch(function(){});
 }
 
 function borrarGasto(){
-  llamarPost({ action:'deleteGasto', id:borradorGasto.id, creado_por:state.user })
-    .then(function(){ cerrarHoja(); toast('Gasto borrado'); return recargar(); })
-    .catch(function(err){ toast(String(err.message||err), true); });
+  borrarOptimista({ tabla:'gastos', id:borradorGasto.id, accion:'deleteGasto',
+    mensaje:'Gasto borrado' }).catch(function(){});
 }
 
 var borradorAporte = null;
@@ -7218,13 +7473,15 @@ function pintarSalud(){
 function marcarDosis(medId){
   var m = state.data.medicacion.filter(function(x){ return String(x.id)===String(medId); })[0];
   var n = new Date();
-  llamarPost({ action:'saveDosis', payload:{ medicacion_id:medId, fecha:state.data.hoy,
-      hora: pad(n.getHours())+':'+pad(n.getMinutes()), dado_por:state.user } })
-    .then(function(){
-      toast('Dosis de ' + ((m&&m.nombre)||'la medicación') + ' registrada');
-      return recargar();
-    })
-    .catch(function(err){ toast(String(err.message||err), true); });
+  var hora = pad(n.getHours())+':'+pad(n.getMinutes());
+  guardarOptimista({ tabla:'dosis', cerrar:false,
+    provisional:{ medicacion_id:medId, fecha:state.data.hoy, hora:hora,
+                  dado_por:state.user, timestamp:n.toISOString() },
+    accion:'saveDosis',
+    payload:{ medicacion_id:medId, fecha:state.data.hoy, hora:hora, dado_por:state.user },
+    mensaje:'Dosis de ' + ((m&&m.nombre)||'la medicación') + ' registrada',
+    reintentar:function(){ marcarDosis(medId); } })
+    .catch(function(){});
 }
 
 /**
@@ -7384,7 +7641,7 @@ function guardarMedida(){
   llamarPost({ action:'saveCrecimiento', payload:{
       id:b.id, fecha:b.fecha, peso_kg:num(b.peso), talla_cm:num(b.talla),
       nota:b.nota, creado_por:state.user } })
-    .then(function(){ cerrarHoja(); toast('Medición guardada'); return recargar(); })
+    .then(function(){ cerrarHoja(); toast('Medición guardada'); return recargarEnSilencio(); })
     .catch(function(err){
       toast(String(err.message||err), true);
       if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
@@ -7393,7 +7650,7 @@ function guardarMedida(){
 
 function borrarMedida(){
   llamarPost({ action:'deleteCrecimiento', id:borradorMedida.id, creado_por:state.user })
-    .then(function(){ cerrarHoja(); toast('Medición borrada'); return recargar(); })
+    .then(function(){ cerrarHoja(); toast('Medición borrada'); return recargarEnSilencio(); })
     .catch(function(err){ toast(String(err.message||err), true); });
 }
 
@@ -7584,21 +7841,19 @@ function guardarSalud(){
   Object.keys(b).forEach(function(k){ if(k!=='k') p[k] = b[k]; });
   if(b.k === 'episodio' && !b.id && b.nueva_nota) p.notas = b.nueva_nota;
 
-  var btn = $('#salGuardar');
-  if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
-  llamarPost({ action: acciones[b.k], payload: p })
-    .then(function(){ cerrarHoja(); toast('Guardado'); return recargar(); })
-    .catch(function(err){
-      toast(String(err.message||err), true);
-      if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
-    });
+  var tablas = { cita:'citas', episodio:'episodios', medicacion:'medicacion' };
+  var fila = { timestamp:new Date().toISOString() };
+  Object.keys(p).forEach(function(k){ fila[k] = p[k]; });
+  guardarOptimista({ tabla:tablas[b.k], provisional:fila, accion:acciones[b.k],
+    payload:p, mensaje:'Guardado', reintentar:guardarSalud })
+    .catch(function(){});
 }
 function borrarSalud(){
   var b = borradorSalud;
   var acciones = { cita:'deleteCita', episodio:'deleteEpisodio', medicacion:'deleteMedicacion' };
-  llamarPost({ action: acciones[b.k], id:b.id, creado_por:state.user })
-    .then(function(){ cerrarHoja(); toast('Borrado'); return recargar(); })
-    .catch(function(err){ toast(String(err.message||err), true); });
+  var tablas = { cita:'citas', episodio:'episodios', medicacion:'medicacion' };
+  borrarOptimista({ tabla:tablas[b.k], id:b.id, accion:acciones[b.k],
+    mensaje:'Borrado' }).catch(function(){});
 }
 
 /* ============================================================
@@ -8401,6 +8656,13 @@ document.addEventListener('click', function(e){
     state.gasMes = mesAnterior(state.gasMes,-1); state.gasTodos = false; pintarGastos(); return; }
   if(e.target.closest('#gasNext')){
     state.gasMes = mesAnterior(state.gasMes, 1); state.gasTodos = false; pintarGastos(); return; }
+  if(e.target.closest('#falloX')){ cerrarFallo(); return; }
+  if(e.target.closest('#falloRe')){
+    var f = $('#fallo'), re = f && f._reintentar;
+    cerrarFallo();
+    if(re) re();
+    return;
+  }
   if(e.target.closest('#gasTodos')){ state.gasTodos = !state.gasTodos; pintarGastos(); return; }
   var gcat = e.target.closest('[data-gascat]');
   if(gcat){

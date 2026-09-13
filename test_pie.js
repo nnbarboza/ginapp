@@ -22,7 +22,7 @@ function resp(obj){
 
 const HOY = '2026-08-19';
 const B = { ok:true, data:{
-  version:'0.9.23', hoy:HOY, modo:'confianza',
+  version:'0.9.24', hoy:HOY, modo:'confianza',
   config:{ nombre_hija:'Georgina', nombre_corto:'Gina', moneda:'€', dias_min_ich:'3' },
   usuarios:[{ username:'papa', nombre:'Papá', color:'#2878D4', rol:'padre', activo:true },
             { username:'mama', nombre:'Mamá', color:'#E4575B', rol:'madre', activo:true }],
@@ -79,7 +79,7 @@ function abrir(sw, falla){
     ok('hay botón de actualizar', !!b);
     ok('al final del todo, con la versión',
        d.querySelector('.pie').contains(b) && d.querySelector('.pie').contains(d.querySelector('#ver')));
-    ok('la versión sale', d.querySelector('#ver').textContent === '0.9.23',
+    ok('la versión sale', d.querySelector('#ver').textContent === '0.9.24',
        d.querySelector('#ver').textContent);
     ok('y dice de cuándo son los datos que miras',
        /Datos de las \d\d:\d\d/.test(d.querySelector('#recHora').textContent),

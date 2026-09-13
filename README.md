@@ -89,6 +89,27 @@ No se puede evitar esa espera, pero sí dejar de mirarla:
   `Unexpected token '<'`. Un tropiezo se reintenta una vez; un error de verdad
   del backend, no.
 
+### Guardar no espera
+
+Guardar eran **dos** viajes: el POST que escribe y después un `recargar()` que
+releía las 34 pestañas para enterarse de la fila recién escrita. Con el
+arranque en frío, varios segundos mirando un botón verde.
+
+- El backend **ya devuelve la fila guardada**; se mete en su sitio con
+  `ponerFila()` y se repinta. Cero lecturas.
+- Y no se le espera: `guardarOptimista()` pinta la fila con un id provisional,
+  cierra la hoja y manda por detrás. Si falla, se deshace y sale
+  `#fallo` —que **no** se va solo, a diferencia de un toast— con un botón de
+  reintentar.
+- Optimista con la red, no con las reglas: si el backend contesta «falta el
+  título», la fila se va de la pantalla igual.
+- Un punto girando abajo a la derecha (`#enviando`) dice que hay algo en vuelo.
+
+Convertidos: gastos, comidas, eventos, recurrentes, salud (citas, episodios,
+medicación), recordatorios y dosis. Siguen recargando entero los que se tocan
+de uvas a peras: mensajes, custodia, fichas de Gina, aportes, notas y
+configuración.
+
 **Lo que queda por hacer:** `Comidas` viaja con 400 días de historia y es con
 diferencia lo más pesado del arranque. Recortarlo toca 13 sitios que dependen
 del histórico completo (qué alimento es nuevo, cuál está aceptado, las
