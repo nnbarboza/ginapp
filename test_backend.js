@@ -42,7 +42,17 @@ const FAKE_SS = {
   getSheetByName: () => null, insertSheet: () => null, getSheets: () => []
 };
 global.DriveApp = { getFileById: () => { throw new Error('sin Drive'); } };
-global.CacheService = { getScriptCache: () => ({ get: () => null, put: () => {}, remove: () => {} }) };
+/* Una CacheService de mentira pero con memoria: sin esto no se puede probar
+   que el bootstrap se parte en trozos y se vuelve a montar entero. */
+let CACHE = {};
+global.CacheService = { getScriptCache: () => ({
+  get: k => (k in CACHE ? CACHE[k] : null),
+  getAll: ks => { const o = {}; ks.forEach(k => { if (k in CACHE) o[k] = CACHE[k]; }); return o; },
+  put: (k, v) => { CACHE[k] = String(v); },
+  putAll: o => { Object.keys(o).forEach(k => { CACHE[k] = String(o[k]); }); },
+  remove: k => { delete CACHE[k]; },
+  removeAll: ks => ks.forEach(k => { delete CACHE[k]; })
+}) };
 global.ContentService = {
   createTextOutput: t => ({ _t: t, setMimeType(){ return this; }, getContent(){ return this._t; } }),
   MimeType: { JSON: 'json' }
@@ -58,7 +68,10 @@ eval(src);
 /* ---------- tablas en memoria ---------- */
 let TABLAS = {};
 _readSheet = function (tab) { return (TABLAS[tab] || []).map(r => Object.assign({}, r)); };
-_invalidar = function () {};
+/* Se sustituye porque _MEMO no existe con tablas en memoria, pero tiene que
+   seguir tirando la caché de servidor: es justo lo que garantiza que al
+   guardar un gasto el otro no siga viendo el arranque de hace un minuto. */
+_invalidar = function () { _bootTirar(); };
 _upsert = function (tab, keyCol, obj) {
   TABLAS[tab] = TABLAS[tab] || [];
   const i = TABLAS[tab].findIndex(r => String(r[keyCol]) === String(obj[keyCol]));
@@ -140,6 +153,43 @@ ok('lo que no son cuatro dígitos se deja como está',
 ok('vacío sigue vacío', _pinNorm('') === '' && _pinNorm(null) === '');
 ok('y NO cuela un PIN distinto por el padding',
    _pinNorm('1234') !== _pinNorm('234'), _pinNorm('234'));
+
+console.log('\n--- LA CACHÉ DEL ARRANQUE, EN EL SERVIDOR ---');
+/* Pasa de 100 KB por clave, así que va por trozos. Lo que importa es que
+   vuelva a salir EXACTAMENTE lo que entró, y que un trozo perdido no
+   devuelva medio JSON. */
+CACHE = {};
+const GRANDE = JSON.stringify({ ok:true, data:{ relleno:'x'.repeat(250000) } });
+_bootGuardar(GRANDE);
+ok('se parte en varias claves', parseInt(CACHE['_boot_n'], 10) >= 3, CACHE['_boot_n']);
+ok('ninguna pasa del tope de 100 KB',
+   Object.keys(CACHE).filter(k => k !== '_boot_n')
+     .every(k => CACHE[k].length <= 100000),
+   Math.max.apply(null, Object.keys(CACHE).filter(k => k !== '_boot_n').map(k => CACHE[k].length)));
+ok('y vuelve a montarse igual que entró', _bootLeer() === GRANDE);
+
+/* Si falta un trozo se descarta el conjunto: servir medio JSON haría que la
+   app fallara al parsear, que es peor que no tener caché. */
+delete CACHE['_boot_1'];
+ok('con un trozo perdido no se sirve nada', _bootLeer() === null);
+
+CACHE = {};
+_bootGuardar(GRANDE);
+_bootTirar();
+ok('cualquier escritura la tira entera', _bootLeer() === null);
+ok('y no deja restos', Object.keys(CACHE).length === 0, Object.keys(CACHE).join(','));
+
+/* Una carga demasiado grande simplemente no se cachea. */
+CACHE = {};
+_bootGuardar('y'.repeat(90000 * 45));
+ok('lo que no cabe no se cachea a medias', _bootLeer() === null);
+ok('y no deja basura ocupando sitio', !CACHE['_boot_n']);
+
+/* Escribir cualquier cosa invalida: _invalidar llama a _bootTirar. */
+CACHE = {};
+_bootGuardar('{"ok":true}');
+_invalidar();
+ok('guardar un gasto deja la caché sin efecto', _bootLeer() === null);
 
 console.log('\n--- RECURRENTES ---');
 /* El cole: 180 € el día 1 de cada mes desde junio. Hoy es 19 de agosto en

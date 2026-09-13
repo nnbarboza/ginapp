@@ -2,6 +2,16 @@
    Correr desde la carpeta del repo:  node test_gastos.js                   */
 const fs = require('fs'), path = require('path'), { JSDOM } = require('jsdom');
 
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
+
 const HOY = '2026-08-19', MES = '2026-08';
 
 const CATS = [
@@ -87,12 +97,12 @@ const dom = new JSDOM(fs.readFileSync(path.join(__dirname,'index.html'),'utf8'),
         const b = JSON.parse(o.body);
         posts.push(b);
         if(b.action === 'subirArchivo'){
-          return Promise.resolve({ json:()=>Promise.resolve({ ok:true,
-            data:{ url:'https://drive.test/f/abc', id:'abc', nombre:'ticket' } }) });
+          return resp({ ok:true,
+            data:{ url:'https://drive.test/f/abc', id:'abc', nombre:'ticket' } });
         }
-        return Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{ id:'x' } }) });
+        return resp({ ok:true, data:{ id:'x' } });
       }
-      return Promise.resolve({ json:()=>Promise.resolve(BOOT) });
+      return resp(BOOT);
     };
     w.scrollTo = ()=>{}; w.alert = ()=>{}; w.prompt = ()=>null;
     Object.defineProperty(w.navigator,'serviceWorker',{value:undefined,configurable:true});
@@ -162,16 +172,29 @@ setTimeout(() => {
   ok('el total del mes', ev.total === 248.5, ev.total);
   ok('compara con el mes anterior', ev.mes && ev.mes.ym === '2026-07', ev.mes);
   ok('y con el mismo mes del año pasado', ev.anio && ev.anio.ym === '2025-08', ev.anio);
-  ok('el año a año sale en porcentaje: +24 %', ev.anio.pct === 24, ev.anio.pct);
-  ok('se ve en pantalla', cuerpo().indexOf('+24 %') >= 0,
-     cuerpo().match(/.{0,40}ago 2025.{0,20}/));
-  ok('con la flecha Y la palabra, no solo el color',
-     cuerpo().indexOf('▲') >= 0 && cuerpo().indexOf('más que') >= 0);
+  /* El año contra año se quitó: la app lleva meses, no años, así que
+     "septiembre contra septiembre del año pasado" era una casilla vacía casi
+     siempre. En su sitio va el acumulado del año, que dice algo desde el
+     primer mes. El cálculo sigue existiendo por si algún día vuelve. */
+  ok('el año a año se sigue calculando', ev.anio.pct === 24, ev.anio.pct);
+  ok('pero lo que se enseña es el acumulado del año',
+     cuerpo().indexOf('en 2026') >= 0, cuerpo().match(/.{0,30}en 2026.{0,14}/));
+  const ac = w.acumuladoAnio(MES);
+  /* julio 22 + agosto 248,50 */
+  ok('que suma los meses del año hasta este', ac.total === 270.5, ac.total);
+  ok('y dice cuántos meses hay detrás', ac.meses === 2, ac.meses);
+
+  ok('la flecha va siempre, no solo el color', cuerpo().indexOf('▲') >= 0);
+  ok('y sin el «+» delante, que repetía lo que dice la flecha',
+     cuerpo().indexOf('+24 %') < 0 && cuerpo().indexOf('+1030') < 0);
+  ok('la comparación cabe en una línea: «vs julio»',
+     cuerpo().indexOf('vs julio') >= 0 && cuerpo().indexOf('más que') < 0,
+     cuerpo().match(/.{0,26}vs .{0,20}/));
 
   /* Contra julio la subida es del 1030 %: un número que no dice nada. */
   ok('un porcentaje disparado se cambia por los euros de diferencia',
-     cuerpo().indexOf('1030') < 0 && cuerpo().indexOf('+226,50 €') >= 0,
-     cuerpo().match(/.{0,30}que jul.{0,20}/));
+     cuerpo().indexOf('1030') < 0 && cuerpo().indexOf('226,50 €') >= 0,
+     cuerpo().match(/.{0,30}vs julio.{0,20}/));
 
   /* Lo importante: un mes sin datos NO es un mes a cero. */
   ok('sin un mes con el que comparar no se inventa una cifra',
@@ -189,6 +212,41 @@ setTimeout(() => {
      d.querySelectorAll('#gasCuerpo .spk-b.on').length === 1);
   ok('una sola serie no lleva leyenda: el título ya dice qué es',
      !d.querySelector('#gasCuerpo .spk .leg-g'));
+
+  console.log('\n--- EL FILTRO DE CATEGORÍA ---');
+  /* Agosto: salud 65 · educación 45 · actividades 40 · ropa 80 · ocio 18,50 */
+  ok('salen solo las categorías en las que se ha gastado algo',
+     d.querySelectorAll('#gasCuerpo .evo-f [data-gascat]').length === 6,
+     [...d.querySelectorAll('#gasCuerpo .evo-f [data-gascat]')]
+       .map(b => b.dataset.gascat).join(','));
+  ok('«Todo» viene marcado de entrada',
+     d.querySelector('#gasCuerpo .evo-f [data-gascat=""]').className === 'on');
+
+  click(d.querySelector('[data-gascat="ropa"]'));
+  /* Lo importante: el filtro afecta a TODA la tarjeta, no a media. */
+  ok('el total pasa a ser el de la categoría', w.totalMes(MES) === 80, w.totalMes(MES));
+  ok('la cifra grande cambia', cuerpo().indexOf('80,00 €') >= 0);
+  ok('y el rótulo dice qué estás mirando',
+     cuerpo().indexOf('Ropa') >= 0 && cuerpo().indexOf('Total gastado') < 0,
+     cuerpo().slice(cuerpo().indexOf('Gastos de agosto'), cuerpo().indexOf('Gastos de agosto')+60));
+  ok('la lista solo enseña esos gastos',
+     d.querySelectorAll('#gasCuerpo [data-gasto]').length === 1,
+     [...d.querySelectorAll('#gasCuerpo [data-gasto]')].map(b => b.dataset.gasto).join(','));
+  ok('el acumulado del año también se filtra',
+     w.acumuladoAnio(MES).total === 102, w.acumuladoAnio(MES).total);
+  ok('y la comparación con el mes anterior, igual',
+     w.evolucion(MES).mes.total === 22, w.evolucion(MES).mes);
+
+  ok('volver a tocarlo lo quita', (click(d.querySelector('[data-gascat="ropa"]')),
+     !w.state.gasCat && w.totalMes(MES) === 248.5), w.totalMes(MES));
+
+  /* Una categoría sin nada ese mes deja la tarjeta vacía, no rota. */
+  click(d.querySelector('[data-gascat="salud"]'));
+  w.state.gasMes = '2026-07'; w.pintarGastos();
+  ok('un mes sin nada de esa categoría lo dice, no se rompe',
+     cuerpo().indexOf('Ningún gasto') >= 0, cuerpo().slice(0,150));
+  ok('y el filtro sigue puesto al cambiar de mes', w.state.gasCat === 'salud');
+  w.state.gasCat = ''; w.state.gasMes = MES; w.pintarGastos();
 
   console.log('\n--- ORDEN DE LA PANTALLA ---');
   /* Lo primero es en qué se ha ido el dinero este mes. La cuenta común se
@@ -439,13 +497,15 @@ setTimeout(() => {
                ps && ps.payload.importe === 1240.55, ps && ps.payload.importe);
             ok('y queda explicado en el histórico',
                ps && ps.payload.nota === 'Saldo de partida', ps && ps.payload.nota);
-            /* 283 = los 313 de siempre menos la vacuna de 30 que añadimos
-               arriba para probar la vista de solo lectura. */
+            /* Se mide la DIFERENCIA, no el número absoluto. Antes esto
+               comparaba contra 283 y solo acertaba si la recarga posterior al
+               guardado todavía no había llegado: una carrera. Bastó con que
+               el fetch tuviera una capa más de promesa para que fallara. */
             const previo = w.saldoComun();
             w.state.data.cuenta.push({ id:'mv9', fecha:'2026-08-01', tipo:'ajuste',
               username:'', importe:1000, nota:'Saldo de partida', creado_por:'papa' });
             ok('un ajuste suma al saldo, no resta',
-               previo === 283 && w.saldoComun() === 1283, previo + ' → ' + w.saldoComun());
+               w.saldoComun() - previo === 1000, previo + ' → ' + w.saldoComun());
             ok('y el histórico lo llama por su nombre',
                w.textoMovimiento({ tipo:'ajuste', username:'', importe:1000,
                  nota:'Saldo de partida', fecha:'2026-08-01' }).indexOf('saldo de partida') === 0,

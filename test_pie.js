@@ -10,9 +10,19 @@
    ============================================================ */
 const fs = require('fs'), path = require('path'), { JSDOM } = require('jsdom');
 
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
+
 const HOY = '2026-08-19';
 const B = { ok:true, data:{
-  version:'0.9.22', hoy:HOY, modo:'confianza',
+  version:'0.9.23', hoy:HOY, modo:'confianza',
   config:{ nombre_hija:'Georgina', nombre_corto:'Gina', moneda:'€', dias_min_ich:'3' },
   usuarios:[{ username:'papa', nombre:'Papá', color:'#2878D4', rol:'padre', activo:true },
             { username:'mama', nombre:'Mamá', color:'#E4575B', rol:'madre', activo:true }],
@@ -36,8 +46,8 @@ function abrir(sw, falla){
     beforeParse(w){
       w.fetch = () => { reg.llamadas++;
         return falla && reg.llamadas > 1
-          ? Promise.resolve({ json:()=>Promise.resolve({ ok:false, error:'Sin conexión' }) })
-          : Promise.resolve({ json:()=>Promise.resolve(B) }); };
+          ? resp({ ok:false, error:'Sin conexión' })
+          : resp(B); };
       w.scrollTo = ()=>{};
       if(sw){
         w.caches = { keys: () => Promise.resolve(['ginapp-v0.8.1','ginapp-v0.8.0']),
@@ -69,7 +79,7 @@ function abrir(sw, falla){
     ok('hay botón de actualizar', !!b);
     ok('al final del todo, con la versión',
        d.querySelector('.pie').contains(b) && d.querySelector('.pie').contains(d.querySelector('#ver')));
-    ok('la versión sale', d.querySelector('#ver').textContent === '0.9.22',
+    ok('la versión sale', d.querySelector('#ver').textContent === '0.9.23',
        d.querySelector('#ver').textContent);
     ok('y dice de cuándo son los datos que miras',
        /Datos de las \d\d:\d\d/.test(d.querySelector('#recHora').textContent),

@@ -75,6 +75,16 @@ ctx._readSheet = t => (HOJAS[t] || []).map(r => Object.assign({}, r));
 /* las const de nivel superior no cuelgan del global del vm: se leen por evaluación */
 const G = expr => require('vm').runInContext(expr, ctx);
 
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
+
 console.log('\n--- EL TOKEN ---');
 const tk = ctx._crearToken('papa');
 ok('se emite con tres piezas', tk.split('.').length === 3, tk);
@@ -282,9 +292,9 @@ function abrir(modo, sesion, extra){
         if(o && o.method === 'POST'){
           const body = JSON.parse(o.body); posts.push(body);
           if(extra && extra.rechazaEscrituras)
-            return Promise.resolve({ json:()=>Promise.resolve(
-              { ok:false, error:'Sesión caducada. Vuelve a entrar.', code:'auth' }) });
-          return Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{ id:'x' } }) });
+            return resp(
+              { ok:false, error:'Sesión caducada. Vuelve a entrar.', code:'auth' });
+          return resp({ ok:true, data:{ id:'x' } });
         }
         const q = new URL(String(url), 'https://x/').searchParams;
         const acc = q.get('action') || '';
@@ -295,13 +305,13 @@ function abrir(modo, sesion, extra){
           const n = q.get('username'), p = q.get('pin') || '';
           const pines = { papa:'1234', mama:'5678' };
           if(modo === 'pin' && p !== pines[n])
-            return Promise.resolve({ json:()=>Promise.resolve(
-              { ok:false, error:'PIN incorrecto.' }) });
-          return Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{
+            return resp(
+              { ok:false, error:'PIN incorrecto.' });
+          return resp({ ok:true, data:{
             token:n+'.9999999999999.x', username:n,
-            nombre:n==='mama'?'Mamá':'Papá', modo:modo } }) });
+            nombre:n==='mama'?'Mamá':'Papá', modo:modo } });
         }
-        return Promise.resolve({ json:()=>Promise.resolve(bootData(modo)) });
+        return resp(bootData(modo));
       };
       w.scrollTo = ()=>{}; w.alert = ()=>{}; w.prompt = ()=>null;
       Object.defineProperty(w.navigator,'serviceWorker',{value:undefined,configurable:true});

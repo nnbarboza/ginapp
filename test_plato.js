@@ -12,6 +12,16 @@
    ============================================================ */
 const fs = require('fs'), path = require('path'), { JSDOM } = require('jsdom');
 
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
+
 const HOY = '2026-08-19';          /* miércoles */
 const LUN = '2026-08-17';
 
@@ -72,13 +82,13 @@ function abrir(comidas, ia){
           const body = JSON.parse(o.body);
           posts.push(body);
           if(body.action === 'interpretaPlato'){
-            return Promise.resolve({ json:()=>Promise.resolve(
+            return resp(
               ia || { ok:true, data:{ nombre:body.payload.nombre, fuente:'ia',
-                      grupos:['cereales','verduras'] }}) });
+                      grupos:['cereales','verduras'] }});
           }
-          return Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{ grupo_id:'g1' } }) });
+          return resp({ ok:true, data:{ grupo_id:'g1' } });
         }
-        return Promise.resolve({ json:()=>Promise.resolve(B) });
+        return resp(B);
       };
       w.scrollTo = ()=>{}; w.alert = ()=>{};
       Object.defineProperty(w.navigator,'serviceWorker',{value:undefined,configurable:true});

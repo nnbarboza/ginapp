@@ -8,6 +8,16 @@
    ============================================================ */
 const fs = require('fs'), path = require('path'), { JSDOM } = require('jsdom');
 
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
+
 const HOY = '2026-08-19';
 
 /* El backend manda `tiene_secreto`, nunca `secreto`. */
@@ -30,7 +40,7 @@ const ICONOS = [
 ];
 
 const B = { ok:true, data:{
-  version:'0.9.22', hoy:HOY, modo:'confianza',
+  version:'0.9.23', hoy:HOY, modo:'confianza',
   config:{ nombre_hija:'Georgina', nombre_corto:'Gina', moneda:'€' },
   usuarios:[{ username:'papa', nombre:'Papá', rol:'progenitor', color:'#2878D4', activo:true },
             { username:'mama', nombre:'Mamá', rol:'progenitor', color:'#E4575B', activo:true },
@@ -77,12 +87,12 @@ const dom = new JSDOM(fs.readFileSync(path.join(__dirname,'index.html'),'utf8'),
         const b = JSON.parse(o.body);
         posts.push(b);
         if(b.action === 'verSecreto'){
-          return Promise.resolve({ json:()=>Promise.resolve({
-            ok:true, data:{ secreto:'Clave.2026!' } }) });
+          return resp({
+            ok:true, data:{ secreto:'Clave.2026!' } });
         }
-        return Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{ id:'x' } }) });
+        return resp({ ok:true, data:{ id:'x' } });
       }
-      return Promise.resolve({ json:()=>Promise.resolve(B) });
+      return resp(B);
     };
     w.scrollTo = ()=>{}; w.alert = ()=>{};
     Object.defineProperty(w.navigator,'serviceWorker',{ value:undefined, configurable:true });

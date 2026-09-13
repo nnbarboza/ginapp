@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.22';
+const APP_VERSION = '0.9.23';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -1109,9 +1109,89 @@ function handleGetLogin() {
   }});
 }
 
+
+/* ============================================================
+   CACHÉ DEL ARRANQUE EN EL SERVIDOR
+
+   Montar el bootstrap son 34 pestañas leídas y filtradas. Si dos personas
+   abren la app con un minuto de diferencia —o la misma persona la abre dos
+   veces— no hace falta repetir el trabajo.
+
+   CacheService tope a 100 KB por clave, y el bootstrap pasa de eso, así que
+   se parte en trozos. La clave `_boot_n` dice cuántos hay: si falta alguno
+   (caducó a destiempo, se llenó la caché) se descarta el conjunto entero
+   antes que servir medio JSON.
+
+   Cualquier escritura la tira. Es preferible releer de más a que uno apunte
+   un gasto y el otro no lo vea durante un minuto.
+   ============================================================ */
+
+const BOOT_TTL = 60;            /* segundos */
+const BOOT_TROZO = 90000;       /* bytes por clave; el tope duro son 100 KB */
+const BOOT_MAX = 40;            /* ~3,6 MB: más que eso, no se cachea */
+
+function _bootCache() {
+  try { return CacheService.getScriptCache(); } catch (e) { return null; }
+}
+
+function _bootLeer() {
+  const c = _bootCache();
+  if (!c) return null;
+  try {
+    const n = parseInt(c.get('_boot_n'), 10);
+    if (!(n > 0)) return null;
+    const claves = [];
+    for (let i = 0; i < n; i++) claves.push('_boot_' + i);
+    const trozos = c.getAll(claves);
+    let out = '';
+    for (let i = 0; i < n; i++) {
+      const t = trozos['_boot_' + i];
+      if (t === undefined || t === null) return null;   /* falta uno: no vale */
+      out += t;
+    }
+    return out;
+  } catch (e) { return null; }
+}
+
+function _bootGuardar(texto) {
+  const c = _bootCache();
+  if (!c) return;
+  try {
+    const n = Math.ceil(texto.length / BOOT_TROZO);
+    if (n > BOOT_MAX) return;                 /* demasiado grande: sin caché */
+    const lote = {};
+    for (let i = 0; i < n; i++) {
+      lote['_boot_' + i] = texto.substr(i * BOOT_TROZO, BOOT_TROZO);
+    }
+    c.putAll(lote, BOOT_TTL);
+    /* El contador se pone AL FINAL: mientras no exista, _bootLeer no sirve
+       nada, así que nunca se lee un conjunto a medio escribir. */
+    c.put('_boot_n', String(n), BOOT_TTL);
+  } catch (e) { /* caché llena o no disponible: se sigue sin ella */ }
+}
+
+/** Tras cualquier escritura, lo cacheado deja de valer. */
+function _bootTirar() {
+  const c = _bootCache();
+  if (!c) return;
+  try {
+    const claves = ['_boot_n'];
+    for (let i = 0; i < BOOT_MAX; i++) claves.push('_boot_' + i);
+    c.removeAll(claves);
+  } catch (e) {}
+}
+
 function handleGetBootstrap(p) {
+  /* Servido de caché: nada de leer 34 pestañas otra vez. La invalida
+     cualquier escritura, así que no puede quedarse con datos viejos. */
+  const cacheado = _bootLeer();
+  if (cacheado) {
+    return ContentService.createTextOutput(cacheado)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   _alDia();                        /* pestañas y columnas nuevas, si las hay */
-  _precargar();                    /* 26 pestañas en una llamada, si se puede */
+  _precargar();                    /* 34 pestañas en una llamada, si se puede */
   /* Lo recurrente se fabrica aquí porque no hay disparadores de tiempo en
      este proyecto. Es idempotente, así que llamarlo en cada arranque no
      duplica nada; y si falla, la app tiene que abrir igual. */
@@ -1123,7 +1203,7 @@ function handleGetBootstrap(p) {
     if (r.clave) conf[String(r.clave).trim()] = r.valor;
   });
 
-  return _json({ ok: true, data: {
+  const salida = { ok: true, data: {
     version: APP_VERSION,
     hoy: _hoy(),
     config: conf,
@@ -1205,7 +1285,13 @@ function handleGetBootstrap(p) {
       o.fecha = _fechaKey(r.fecha);
       return o;
     })
-  }});
+  }};
+
+  /* Se serializa una sola vez: lo mismo que viaja es lo que se guarda. */
+  const texto = JSON.stringify(salida);
+  _bootGuardar(texto);
+  return ContentService.createTextOutput(texto)
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 /** Marca una sección como vista por un usuario. Así se sabe qué es nuevo. */
@@ -2689,6 +2775,9 @@ function _readSheet(name) {
 /** Tras escribir, lo leído deja de valer. Se llama en cada escritura. */
 function _invalidar(tab) {
   if (tab) delete _MEMO[tab]; else _MEMO = {};
+  /* Y el arranque cacheado, que acaba de quedarse viejo. Releer de más es
+     preferible a que uno apunte un gasto y el otro no lo vea. */
+  _bootTirar();
 }
 
 /** Filtra por `activo`: vacío cuenta como TRUE (la app funciona antes de rellenar nada). */

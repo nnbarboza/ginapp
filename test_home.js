@@ -1,4 +1,14 @@
 const fs=require('fs'), path=require('path'), {JSDOM}=require('jsdom');
+
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
 /* Fragmento real del calendario del convenio (10 ago - 15 sep 2026) */
 const cust={"2026-08-10": "mama", "2026-08-11": "mama", "2026-08-12": "mama", "2026-08-13": "mama", "2026-08-14": "mama", "2026-08-15": "mama", "2026-08-16": "papa", "2026-08-17": "papa", "2026-08-18": "papa", "2026-08-19": "papa", "2026-08-20": "papa", "2026-08-21": "papa", "2026-08-22": "papa", "2026-08-23": "papa", "2026-08-24": "papa", "2026-08-25": "papa", "2026-08-26": "papa", "2026-08-27": "papa", "2026-08-28": "papa", "2026-08-29": "papa", "2026-08-30": "papa", "2026-08-31": "papa", "2026-09-05": "mama", "2026-09-06": "mama", "2026-09-07": "papa", "2026-09-08": "papa", "2026-09-09": "mama", "2026-09-10": "mama", "2026-09-11": "papa", "2026-09-12": "papa", "2026-09-13": "papa", "2026-09-14": "papa", "2026-09-15": "papa"};
 const HOY='2026-08-19';
@@ -58,16 +68,16 @@ const dom=new JSDOM(fs.readFileSync(path.join(__dirname,'index.html'),'utf8'),{
       /* Las escrituras se apuntan en `posts` para poder mirarlas. */
       if(opt && opt.method === 'POST'){
         posts.push(JSON.parse(opt.body));
-        return Promise.resolve({json:()=>Promise.resolve({ok:true, data:{id:'x'}})});
+        return resp({ok:true, data:{id:'x'}});
       }
       const q=new URL(String(url),'https://x/').searchParams;
       if(q.get('action')==='login'){
         const u=q.get('username');
-        return Promise.resolve({json:()=>Promise.resolve({ok:true, data:{
+        return resp({ok:true, data:{
           token:u+'.9999999999999.x', username:u,
-          nombre:u==='mama'?'Mamá':'Papá', modo:'confianza'}})});
+          nombre:u==='mama'?'Mamá':'Papá', modo:'confianza'}});
       }
-      return Promise.resolve({json:()=>Promise.resolve(BOOT)});
+      return resp(BOOT);
     };
     w.scrollTo=()=>{}; w.alert=()=>{}; w.prompt=()=>null;
     Object.defineProperty(w.navigator,'serviceWorker',{value:undefined,configurable:true});

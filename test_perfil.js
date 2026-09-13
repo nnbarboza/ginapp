@@ -2,6 +2,16 @@
    Correr desde la carpeta del repo:  node test_perfil.js                   */
 const fs = require('fs'), path = require('path'), { JSDOM } = require('jsdom');
 
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
+
 const HOY = '2026-08-19', MES = '2026-08';
 
 /* Agosto 2026: del 1 al 15 mamá, del 16 al 31 papá → 16 días de papá */
@@ -88,16 +98,16 @@ const dom = new JSDOM(fs.readFileSync(path.join(__dirname,'index.html'),'utf8'),
     w.fetch = (u, o) => {
       if(o && o.method === 'POST'){
         posts.push(JSON.parse(o.body));
-        return Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{ id:'x' } }) });
+        return resp({ ok:true, data:{ id:'x' } });
       }
       const q = new URL(String(u),'https://x/').searchParams;
       if(q.get('action') === 'login'){
         const n = q.get('username');
-        return Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{
+        return resp({ ok:true, data:{
           token:n+'.9999999999999.x', username:n,
-          nombre:n==='mama'?'Mamá':'Papá', modo:'confianza' } }) });
+          nombre:n==='mama'?'Mamá':'Papá', modo:'confianza' } });
       }
-      return Promise.resolve({ json:()=>Promise.resolve(BOOT) });
+      return resp(BOOT);
     };
     w.scrollTo = ()=>{}; w.alert = ()=>{}; w.prompt = ()=>null;
     Object.defineProperty(w.navigator,'serviceWorker',{value:undefined,configurable:true});

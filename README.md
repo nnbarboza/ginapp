@@ -67,6 +67,33 @@ Subir siempre a la vez `APP_VERSION` (en `index.html` y `Code.gs`) y `CACHE`
 | `verificarIntegridad()` | Busca referencias rotas entre pestañas. Solo informa. |
 | `limpiarActividad(true)` | Recorta el feed de actividad. Sin `true` solo informa. |
 
+## Rendimiento
+
+Apps Script se duerme. Si hace rato que nadie lo usa, el arranque en frío son
+varios segundos **antes** de ejecutar una línea; si lo abriste hace un minuto,
+medio segundo. Eso es lo que hacía que la app a veces volara y a veces no.
+
+No se puede evitar esa espera, pero sí dejar de mirarla:
+
+- **El móvil pinta con lo de la última vez** (`ginapp_boot` en localStorage) y
+  refresca por detrás. Una cinta arriba dice de cuándo son los datos mientras
+  no hayan llegado los frescos. La caché se descarta si es de otra versión de
+  la app o si tiene más de 72 horas.
+- **El backend cachea el arranque montado** 60 segundos (`_bootGuardar`).
+  CacheService tope a 100 KB por clave, así que va por trozos; si falta uno se
+  descarta el conjunto entero antes que servir medio JSON. Cualquier escritura
+  lo tira: `_invalidar()` llama a `_bootTirar()`.
+- **La red no da por hecho que la respuesta sea JSON.** Apps Script devuelve
+  HTML cuando se atraganta o cuando Google pide iniciar sesión; `leerRespuesta`
+  lo detecta y lo cuenta en castellano en vez de soltar un
+  `Unexpected token '<'`. Un tropiezo se reintenta una vez; un error de verdad
+  del backend, no.
+
+**Lo que queda por hacer:** `Comidas` viaja con 400 días de historia y es con
+diferencia lo más pesado del arranque. Recortarlo toca 13 sitios que dependen
+del histórico completo (qué alimento es nuevo, cuál está aceptado, las
+estadísticas), así que necesita su propia pasada.
+
 ## Reglas del proyecto
 
 1. Se lee y se escribe **siempre por el nombre real de la cabecera**, nunca por posición.

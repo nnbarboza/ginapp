@@ -16,6 +16,16 @@ const HTML_SRC = fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
 const APP_V = (HTML_SRC.match(/APP_VERSION = '([^']+)'/) || [])[1];
 const { JSDOM } = require('jsdom');
 
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
+
 let fallos = 0;
 function ok(t, c, extra){
   if(c) console.log('  ✅ '+t);
@@ -55,8 +65,8 @@ function abrir(extra){
     runScripts:'dangerously', url:'https://x.test/ginapp/', pretendToBeVisual:true,
     beforeParse(w){
       w.fetch = (u, o) => (o && o.method === 'POST')
-        ? Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{ id:'x' } }) })
-        : Promise.resolve({ json:()=>Promise.resolve(B) });
+        ? resp({ ok:true, data:{ id:'x' } })
+        : resp(B);
       w.scrollTo = ()=>{}; w.alert = ()=>{}; w.prompt = ()=>null;
       Object.defineProperty(w.navigator,'serviceWorker',{value:undefined,configurable:true});
       w.navigator.setAppBadge   = n => { badges.push(n); return Promise.resolve(); };

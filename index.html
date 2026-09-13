@@ -982,23 +982,21 @@ svg{display:block;flex-shrink:0}
    punto debajo; el elegido, con un aro fino alrededor de la celda. */
 .cd .nu{font-size:13.5px;font-weight:600;line-height:1;height:20px;
   display:flex;align-items:center;justify-content:center;position:relative}
-.cd.hoy .nu{font-weight:800}
-/* Hoy se marca con una BARRITA, no con un punto. Justo debajo van los puntos
-   de los eventos, del mismo tamaño y redondos: pegados uno encima de otro
-   parecían dos eventos, o un fallo de pintado. Son dos cosas distintas y
-   ahora tienen forma distinta. */
-.cd.hoy .nu::after{content:'';position:absolute;bottom:-2px;left:50%;margin-left:-5px;
-  width:10px;height:2px;border-radius:2px;background:currentColor}
-.cd.papa.hoy .nu{color:var(--papa-d)}
-.cd.mama.hoy .nu{color:var(--mama-d)}
-.cd.avis.hoy .nu{color:var(--avis-d)}
 /* Día sin cole: el número en el mostaza del calendario y en negrita. Va
    DESPUÉS de las de custodia para ganarles, porque "hoy no hay cole" es
    lo que se busca cuando se mira el mes de un vistazo. */
-.cd.fest .nu{color:var(--cal-d);font-weight:800}
+.cd.fest .nu{color:var(--cal-d);font-weight:800;z-index:0}
 .cd.fest .nu::before{content:'';position:absolute;inset:-2px -5px;border-radius:999px;
   background:var(--cal-s);z-index:-1}
-.cd.fest .nu{z-index:0}
+
+/* HOY: el mismo círculo relleno que la tarjeta de esta semana en Inicio.
+   Antes era un punto (se confundía con los de eventos, que van justo debajo)
+   y luego una rayita, que no significaba nada para quien la miraba. Si en
+   dos pantallas "hoy" se dibuja igual, no hay nada que aprender.
+   Va el último para ganarle al festivo: si hoy no hay cole, hoy manda. */
+.cd.hoy .nu{background:var(--yo);color:#fff;font-weight:800;font-size:12px;
+  min-width:20px;height:20px;border-radius:50%;z-index:1}
+.cd.hoy .nu::before{display:none}
 /* El aro va por dentro y sin borde: un `border` cambiaría la caja y
    empujaría el contenido medio píxel hacia abajo — eso era el salto. */
 .cd.sel{box-shadow:inset 0 0 0 2px var(--t1)}
@@ -1159,10 +1157,28 @@ svg{display:block;flex-shrink:0}
 .evo-c{flex:1;min-width:0;background:var(--surface);border-radius:13px;padding:9px 11px}
 .evo-c b{display:block;font-size:14px;font-weight:700;letter-spacing:-.3px}
 .evo-c span{display:block;font-size:10.5px;color:var(--t2);margin-top:2px;line-height:1.35}
-.evo-c.up b{color:var(--gas-d)}
+/* El color acompaña a la dirección, pero la flecha va siempre: quien no
+   distinga el rojo del verde tiene que poder leerlo igual. */
+.evo-c.up b{color:var(--err)}
 .evo-c.dn b{color:var(--ali-d)}
 .evo-c.ig b, .evo-c.vacio b{color:var(--t3)}
+.evo-c.ac b{color:var(--t1);font-size:15px}
 .evo-c.vacio span{color:var(--t3)}
+.evo-c b{white-space:nowrap}
+.evo-c span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* El filtro, debajo de lo que filtra. Rueda en horizontal para no partir la
+   tarjeta en dos cuando hay muchas categorías. */
+.evo-f{display:flex;gap:6px;margin-top:13px;padding-top:12px;
+  border-top:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.evo-f::-webkit-scrollbar{display:none}
+.evo-f button{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
+  background:var(--surface);border:1px solid var(--border);border-radius:999px;
+  padding:5px 11px;font-size:11.5px;font-weight:600;color:var(--t2);cursor:pointer;
+  white-space:nowrap}
+.evo-f button i{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.evo-f button.on{color:#fff;border-color:var(--t1);background:var(--t1)}
+.evo-f button.on i{background:#fff !important}
 
 /* Una sola serie, así que sin leyenda: el mes que se mira va en el color de
    la sección y el resto en gris. Eso solo ya se lee de un vistazo. */
@@ -1407,6 +1423,12 @@ svg{display:block;flex-shrink:0}
 .pie #pieDbg button{color:var(--t3);text-decoration:underline}
 /* Barra fina arriba mientras se traen datos. Guardar en Apps Script
    tarda un par de segundos y sin señal parece que no ha pasado nada. */
+/* La cinta de «esto es de antes». Va pegada arriba, por encima de todo, y
+   es deliberadamente discreta: informa, no alarma. */
+#desfase{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;
+  justify-content:center;gap:8px;background:var(--cal-s);color:var(--cal-d);
+  padding:7px 12px;font-size:11.5px;font-weight:600;letter-spacing:-.1px}
+#desfase .sp{width:11px;height:11px;border-width:2px;flex-shrink:0}
 #cargando{position:fixed;top:0;left:0;right:0;height:3px;z-index:900;
   background:var(--surface2);overflow:hidden}
 #cargando i{display:block;height:100%;width:40%;background:var(--yo);
@@ -1445,6 +1467,10 @@ svg{display:block;flex-shrink:0}
 <div id="toast"></div>
 
 <div id="cargando" hidden><i></i></div>
+
+<!-- Lo que se ve es de la última vez y los frescos vienen de camino. Se
+     quita solo cuando llegan. -->
+<div id="desfase" hidden></div>
 
 <div class="wrap">
 
@@ -1551,7 +1577,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.22';
+var APP_VERSION = '0.9.23';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -2223,17 +2249,134 @@ function sesionCaida(err){
   return false;
 }
 
+/**
+ * Lee la respuesta SIN dar por hecho que es JSON.
+ *
+ * `r.json()` a secas era la causa del «Unexpected token '<'»: Apps Script
+ * no siempre contesta JSON. Cuando se atraganta, cuando caduca la sesión de
+ * Google o cuando la implementación no es pública, devuelve una página HTML
+ * de error con código 200, y el navegador se queja de una comilla angular
+ * que no significa nada para quien está mirando el móvil.
+ */
+function leerRespuesta(r){
+  return r.text().then(function(t){
+    try { return JSON.parse(t); }
+    catch(e){
+      var err = new Error(
+        /accounts\.google\.com|ServiceLogin/i.test(t)
+          ? 'Google está pidiendo iniciar sesión. Abre la URL del backend en el ' +
+            'navegador una vez y vuelve a probar.'
+        : /<title>Error|Se ha producido un error|Script function not found/i.test(t)
+          ? 'El backend ha devuelto un error. Suele ser que falta publicar una ' +
+            'versión nueva del Apps Script.'
+        : 'El backend no ha contestado con datos. Vuelve a intentarlo.');
+      err.crudo = String(t).slice(0, 300);
+      err.noJson = true;
+      throw err;
+    }
+  });
+}
+
+/* Un solo reintento, y solo si la primera falló por red o por respuesta que
+   no era JSON. Un error de verdad del backend («falta el título») no se
+   reintenta: saldría dos veces en el registro y no arreglaría nada. */
+function conReintento(hacer){
+  return hacer().catch(function(err){
+    if(!err || (!err.noJson && err.name !== 'TypeError')) throw err;
+    return new Promise(function(ok){ setTimeout(ok, 900); }).then(hacer);
+  });
+}
+
+
+/* ============================================================
+   CACHÉ LOCAL DEL ARRANQUE
+
+   Apps Script se duerme: si hace rato que nadie lo usa, tarda varios
+   segundos en despertar antes de ejecutar una línea. Eso es lo que hace
+   que la app a veces vuele y a veces se quede en el splash.
+
+   No se puede evitar la espera, pero sí dejar de mirarla: se pinta con lo
+   de la última vez y los datos frescos entran solos cuando llegan.
+
+   Esto NO contradice la regla de que nada derivado se persiste: aquí se
+   guardan las FILAS tal cual llegaron, no un cálculo. Y vive en el móvil,
+   no en el Sheet. La única fuente de verdad sigue siendo el Sheet.
+   ============================================================ */
+
+var LS_CACHE = 'ginapp_boot';
+var CACHE_MAX_HORAS = 72;
+
+/** Guarda el último bootstrap. Si no cabe, no pasa nada: se sigue igual. */
+function guardarCache(d){
+  try {
+    localStorage.setItem(LS_CACHE, JSON.stringify({ ts:Date.now(), v:APP_VERSION, d:d }));
+  } catch(e){
+    /* Cuota llena. Se tira lo que hay para no dejar una copia a medias, y
+       la próxima vez se vuelve a intentar con lo que quepa. */
+    try { localStorage.removeItem(LS_CACHE); } catch(e2){}
+  }
+}
+
+/**
+ * Lo último que se cargó, o null.
+ *
+ * Se descarta si es de otra versión de la app: entre versiones cambian
+ * campos y tablas, y pintar datos viejos con código nuevo es justo la
+ * clase de fallo que no se reproduce cuando lo buscas.
+ */
+function leerCache(){
+  try {
+    var c = JSON.parse(localStorage.getItem(LS_CACHE) || 'null');
+    if(!c || !c.d || c.v !== APP_VERSION) return null;
+    if(Date.now() - (c.ts||0) > CACHE_MAX_HORAS*3600*1000) return null;
+    return c;
+  } catch(e){ return null; }
+}
+function borrarCache(){ try { localStorage.removeItem(LS_CACHE); } catch(e){} }
+
+/** Cuánto hace de los datos que se están viendo, en palabras. */
+function edadCache(ts){
+  var m = Math.floor((Date.now() - ts) / 60000);
+  if(m < 1) return 'hace un momento';
+  if(m < 60) return 'hace ' + m + (m===1?' minuto':' minutos');
+  var h = Math.floor(m/60);
+  if(h < 24) return 'hace ' + h + (h===1?' hora':' horas');
+  var dd = Math.floor(h/24);
+  return 'hace ' + dd + (dd===1?' día':' días');
+}
+
+/**
+ * La cinta de «estos datos son de antes».
+ *
+ * Va arriba del todo y desaparece sola en cuanto llegan los frescos. Sin
+ * esto, la caché sería una mentira silenciosa: en una app que usan dos
+ * casas, ver la custodia de ayer sin saberlo es peor que esperar.
+ */
+function pintarDesfase(ts){
+  var el = $('#desfase');
+  if(!el) return;
+  if(!ts){ el.hidden = true; el.textContent = ''; return; }
+  el.hidden = false;
+  el.innerHTML = '<i class="sp"></i><span>Datos de ' + esc(edadCache(ts)) +
+    ' · actualizando…</span>';
+}
+
 function llamar(action, params){
-  var url = new URL(backend());
-  url.searchParams.set('action', action);
-  Object.keys(params||{}).forEach(function(k){ url.searchParams.set(k, params[k]); });
-  if(token()) url.searchParams.set('token', token());
-  return fetch(url.toString())
-    .then(function(r){ return r.json(); })
-    .then(function(j){
-      if(!j || !j.ok) throw errorBackend(j);
-      return j.data;
-    });
+  return conReintento(function(){
+    var url = new URL(backend());
+    url.searchParams.set('action', action);
+    Object.keys(params||{}).forEach(function(k){ url.searchParams.set(k, params[k]); });
+    if(token()) url.searchParams.set('token', token());
+    /* Cache-busting: sin esto, Safari puede servir el bootstrap de su propia
+       caché y enseñar datos viejos sin que la app se entere. */
+    url.searchParams.set('_', Date.now());
+    return fetch(url.toString(), { cache:'no-store' })
+      .then(leerRespuesta)
+      .then(function(j){
+        if(!j || !j.ok) throw errorBackend(j);
+        return j.data;
+      });
+  });
 }
 /**
  * POST con text/plain: no dispara preflight CORS desde GitHub Pages y
@@ -2242,16 +2385,17 @@ function llamar(action, params){
 function llamarPost(body){
   body = body || {};
   body.token = token();
-  return fetch(backend(), {
-    method:'POST',
-    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-    body: JSON.stringify(body)
-  }).then(function(r){ return r.json(); })
-    .then(function(j){
-      if(!j || !j.ok) throw errorBackend(j);
-      return j.data;
-    })
-    .catch(function(err){ sesionCaida(err); throw err; });
+  return conReintento(function(){
+    return fetch(backend(), {
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    }).then(leerRespuesta)
+      .then(function(j){
+        if(!j || !j.ok) throw errorBackend(j);
+        return j.data;
+      });
+  }).catch(function(err){ sesionCaida(err); throw err; });
 }
 
 /** Recarga los datos del Sheet y repinta. Nada se guarda en local. */
@@ -2265,6 +2409,7 @@ function cargando(on){
 function recargar(){
   cargando(true);
   return llamar('getBootstrap', {}).then(function(d){
+    guardarCache(d);
     state.data = normalizar(d); trasCargar();
     state._primeraVez = null;
     pintarTodo();
@@ -6064,10 +6209,43 @@ function estadoCuenta(ym){
 
 /* ---------- evolución del gasto ---------- */
 
+/**
+ * Los gastos de un mes, filtrados por categoría si hay filtro puesto.
+ *
+ * El filtro afecta a TODA la tarjeta —total, comparaciones, barras, donut y
+ * lista— porque un filtro que solo cambia media pantalla es peor que no
+ * tenerlo: se acaba leyendo una cifra que no corresponde a lo que se ve.
+ */
+function gastosFiltrados(ym){
+  var cat = state.gasCat || '';
+  return gastosDeMes(ym).filter(function(g){
+    return !cat || String(g.categoria||'otro') === cat;
+  });
+}
+
 /** Lo gastado en un mes. Sin guardar nada: se suma cada vez. */
 function totalMes(ym){
-  return Math.round(gastosDeMes(ym).reduce(function(a,g){
+  return Math.round(gastosFiltrados(ym).reduce(function(a,g){
     return a + num(g.importe); }, 0) * 100) / 100;
+}
+
+/**
+ * Lo gastado en el año hasta el mes que se está mirando, inclusive.
+ *
+ * Sustituye al año contra año, que en la práctica no iba a funcionar: la app
+ * lleva meses, no años, así que "septiembre contra septiembre del año pasado"
+ * era una casilla vacía la mayor parte del tiempo. El acumulado del año dice
+ * algo desde el primer mes.
+ */
+function acumuladoAnio(ym){
+  var p = ym.split('-'), anio = p[0], hasta = +p[1];
+  var t = 0, n = 0;
+  for(var m = 1; m <= hasta; m++){
+    var k = anio + '-' + pad(m);
+    t += totalMes(k);
+    if(hayGastosEn(k)) n++;
+  }
+  return { total:Math.round(t*100)/100, meses:n };
 }
 
 /**
@@ -6092,7 +6270,11 @@ function evolucion(ym){
 
 /** ¿Ese mes llegó a usarse? Un mes sin una sola fila no es un mes a cero. */
 function hayGastosEn(ym){
-  return state.data.gastos.some(function(g){ return mesDe(fechaKey(g.fecha))===ym; });
+  var cat = state.gasCat || '';
+  return state.data.gastos.some(function(g){
+    return mesDe(fechaKey(g.fecha))===ym &&
+           (!cat || String(g.categoria||'otro') === cat);
+  });
 }
 
 /** Los últimos n meses hasta `ym`, del más viejo al más nuevo. */
@@ -6128,8 +6310,12 @@ function sparkGastos(ym, n){
 }
 
 /**
- * Una comparación en palabras. Lleva flecha Y texto: el color solo no
- * puede ser lo único que diga si se ha subido o bajado.
+ * La comparación contra otro mes.
+ *
+ * Solo flecha: el "+" delante del porcentaje era decir dos veces lo mismo
+ * que la flecha ya decía. El color acompaña a la dirección —rojo si el gasto
+ * sube, verde si baja— pero nunca va solo: la flecha aguanta la información
+ * para quien no distinga los dos colores.
  */
 function chipEvo(e, etiqueta){
   if(!e) return '<div class="evo-c vacio"><b>—</b><span>Sin ' + esc(etiqueta) +
@@ -6138,16 +6324,44 @@ function chipEvo(e, etiqueta){
   var k = igual ? 'ig' : sube ? 'up' : 'dn';
   var flecha = igual ? '=' : sube ? '▲' : '▼';
   /* Contra un mes casi vacío el porcentaje se dispara y no dice nada:
-     "+1030 %" sobre 22 € es ruido. A partir de ahí, la diferencia en euros. */
+     "1030 %" sobre 22 € es ruido. A partir de ahí, la diferencia en euros. */
   var cifra = igual ? '0 %'
-    : Math.abs(e.pct) >= 300 ? (sube?'+':'−')+eur(Math.abs(e.dif))
-    : (sube?'+':'−')+Math.abs(e.pct)+' %';
+    : Math.abs(e.pct) >= 300 ? eur(Math.abs(e.dif))
+    : Math.abs(e.pct)+' %';
   return '<div class="evo-c '+k+'"><b>'+flecha+' '+cifra+'</b>' +
-    '<span>'+(igual ? 'Igual que' : (sube?'más que':'menos que'))+' ' +
-    esc(etiqueta)+' · '+eur(e.total)+'</span></div>';
+    '<span>vs '+esc(etiqueta)+' · '+eur(e.total)+'</span></div>';
+}
+
+/** El acumulado del año, en el mismo formato que la comparación de al lado. */
+function chipAnio(ym){
+  var a = acumuladoAnio(ym);
+  if(!a.meses) return '<div class="evo-c vacio"><b>—</b><span>Nada apuntado ' +
+    'este año</span></div>';
+  return '<div class="evo-c ac"><b>'+eur(a.total)+'</b>' +
+    '<span>en ' + ym.split('-')[0] + ' · ' + a.meses +
+    (a.meses===1 ? ' mes' : ' meses') + '</span></div>';
 }
 
 /* ---------- recurrentes ---------- */
+
+/**
+ * Las categorías que aparecen en el año hasta este mes.
+ *
+ * No se listan las 6 de la pestaña: una categoría en la que nunca se ha
+ * gastado nada es un botón que solo sirve para vaciar la pantalla. Se mira el
+ * año entero y no solo el mes para que el filtro no cambie de sitio cada vez
+ * que se pasa de mes.
+ */
+function catsDelPeriodo(ym){
+  var anio = ym.split('-')[0], hasta = ym, vistas = {};
+  state.data.gastos.forEach(function(g){
+    var m = mesDe(fechaKey(g.fecha));
+    if(m.slice(0,4) !== anio || m > hasta) return;
+    vistas[String(g.categoria||'otro')] = true;
+  });
+  return state.data.categorias_gasto.filter(function(c){ return vistas[String(c.id)]; })
+    .map(function(c){ return categoriaGasto(c.id); });
+}
 
 function recurrentesActivos(){
   return (state.data.recurrentes||[]).filter(function(r){ return truthy(r.activo); })
@@ -6198,7 +6412,7 @@ function pintarGastos(){
   $('#gasRango').innerHTML = svg('calendario',17)+'<span>'+mesNom+' '+ym.split('-')[0]+'</span>';
 
   var out = '';
-  var gs = gastosDeMes(ym);
+  var gs = gastosFiltrados(ym);
   var total = gs.reduce(function(a,g){ return a + num(g.importe); }, 0);
   var porCat = {};
   gs.forEach(function(g){
@@ -6222,13 +6436,25 @@ function pintarGastos(){
       'Ningún gasto apuntado este mes.</div>';
   } else {
     var evo = evolucion(ym);
-    out += '<div class="evo"><div class="evo-hero"><div class="lb">Total gastado</div>' +
+    var catSel = state.gasCat ? categoriaGasto(state.gasCat) : null;
+    out += '<div class="evo"><div class="evo-hero">' +
+      '<div class="lb">' + (catSel ? esc(catSel.nombre) : 'Total gastado') + '</div>' +
       '<div class="vl">'+eur(total)+'</div>' +
       '<div class="n">'+gs.length+(gs.length===1?' gasto':' gastos')+'</div></div>' +
       '<div class="evo-cs">' +
-        chipEvo(evo.mes, MESES_C[+mesAnterior(ym,-1).split('-')[1]-1]) +
-        chipEvo(evo.anio, MESES_C[+ym.split('-')[1]-1]+' '+(+ym.split('-')[0]-1)) +
-      '</div>' + sparkGastos(ym, 6) + '</div>';
+        chipEvo(evo.mes, MESES[+mesAnterior(ym,-1).split('-')[1]-1].toLowerCase()) +
+        chipAnio(ym) +
+      '</div>' + sparkGastos(ym, 6) +
+      /* El filtro va DEBAJO de lo que filtra: primero se ve la cifra y luego
+         se acota. Arriba parecería un selector de qué vas a mirar, y no lo es. */
+      '<div class="evo-f">' +
+        '<button data-gascat="" class="'+(state.gasCat?'':'on')+'">Todo</button>' +
+        catsDelPeriodo(ym).map(function(c){
+          var on = state.gasCat === c.id;
+          return '<button data-gascat="'+esc(c.id)+'" class="'+(on?'on':'')+'" style="' +
+            (on?'background:'+c.color+';border-color:'+c.color:'')+'">' +
+            '<i style="background:'+c.color+'"></i>'+esc(c.nombre)+'</button>';
+        }).join('') + '</div></div>';
 
     out += '<div class="gm-top">' + donut(cats, 104) +
       '<div class="leg-g">' + cats.slice(0,6).map(function(c){
@@ -7824,28 +8050,63 @@ function arrancar(){
     return;
   }
 
+  /* Con datos de la última vez se pinta YA y la espera desaparece. Los
+     frescos entran solos por detrás. La cinta de arriba dice que lo que se
+     ve es de antes, para que nadie se fíe de una custodia caducada. */
+  var cache = leerCache();
+  var pintadoDeCache = false;
+  if(cache){
+    try {
+      arrancarCon(cache.d);
+      pintarDesfase(cache.ts);
+      pintadoDeCache = true;
+    } catch(e){
+      /* Una caché de una versión rara que el código nuevo no sabe leer no
+         puede dejar la app en blanco: se tira y se espera al backend. */
+      borrarCache();
+      pintadoDeCache = false;
+    }
+  }
+
   llamar('getBootstrap', {})
     .then(function(d){
-      state.data = normalizar(d); trasCargar();
-      var guardado = localStorage.getItem(LS_USER);
-      var validos = state.data.usuarios.map(function(u){ return String(u.username); });
-      state.user = (guardado && validos.indexOf(guardado)>=0) ? guardado : (validos[0] || 'papa');
-
-      localStorage.setItem(LS_USER, state.user);
-      pintarTodo();
-      pintarPieHora();
-      $('#splash').classList.add('out');
-      setTimeout(function(){ $('#splash').hidden = true; }, 400);
+      arrancarCon(d);
+      guardarCache(d);
+      pintarDesfase(null);
       /* Se marca como visto DESPUÉS de pintar: si no, se borrarían las
          novedades de esta misma visita antes de que las veas. */
       marcarSeccionVista('inicio');
     })
     .catch(function(err){
+      /* Si ya hay algo en pantalla, un fallo de red no puede taparlo con
+         una pantalla de error: se avisa y se sigue usando lo que hay. */
+      if(pintadoDeCache){
+        pintarDesfase(null);
+        toast('Sin conexión con el Sheet. Estás viendo lo de ' +
+              edadCache(cache.ts) + '.', true);
+        return;
+      }
       $('#splashTx').innerHTML = 'No se pudo cargar.<br>' +
         '<span style="color:#D64545">' + esc(err.message||err) + '</span><br>' +
         '<button id="pedirUrl">Cambiar la URL</button>';
       $('#pedirUrl').addEventListener('click', pedirUrl);
     });
+}
+
+/** Montar la app con un juego de datos, venga de la red o de la caché. */
+function arrancarCon(d){
+  state.data = normalizar(d); trasCargar();
+  var guardado = localStorage.getItem(LS_USER);
+  var validos = state.data.usuarios.map(function(u){ return String(u.username); });
+  state.user = (guardado && validos.indexOf(guardado)>=0) ? guardado : (validos[0] || 'papa');
+  localStorage.setItem(LS_USER, state.user);
+  pintarTodo();
+  pintarPieHora();
+  var sp = $('#splash');
+  if(sp && !sp.hidden){
+    sp.classList.add('out');
+    setTimeout(function(){ sp.hidden = true; }, 400);
+  }
 }
 function pedirUrl(){
   var v = prompt('URL de la aplicación web de Apps Script (acaba en /exec):', backend());
@@ -8141,6 +8402,12 @@ document.addEventListener('click', function(e){
   if(e.target.closest('#gasNext')){
     state.gasMes = mesAnterior(state.gasMes, 1); state.gasTodos = false; pintarGastos(); return; }
   if(e.target.closest('#gasTodos')){ state.gasTodos = !state.gasTodos; pintarGastos(); return; }
+  var gcat = e.target.closest('[data-gascat]');
+  if(gcat){
+    var vc = gcat.dataset.gascat;
+    state.gasCat = (state.gasCat === vc) ? '' : vc;   /* volver a tocarlo lo quita */
+    pintarGastos(); return;
+  }
   if(e.target.closest('#gasNuevo')){ formGasto(''); return; }
   if(e.target.closest('#gasAporte') || e.target.closest('#gasAporteCC')){ formAporte(); return; }
   if(e.target.closest('#gasMovs')){ toast('Los movimientos llegan en la siguiente entrega'); return; }

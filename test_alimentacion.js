@@ -2,6 +2,16 @@
    Correr desde la carpeta del repo:  node test_alimentacion.js            */
 const fs = require('fs'), path = require('path'), { JSDOM } = require('jsdom');
 
+/* Una respuesta como la que da el navegador: la app lee r.text() y parsea
+   ella, porque Apps Script no siempre contesta JSON. Un mock que solo
+   tuviera json() dejaría sin probar justo el camino que falla en el móvil. */
+function resp(obj){
+  const t = typeof obj === 'string' ? obj : JSON.stringify(obj);
+  return Promise.resolve({ ok:true, status:200,
+    text:()=>Promise.resolve(t), json:()=>Promise.resolve(JSON.parse(t)) });
+}
+
+
 const HOY = '2026-08-19';           // miércoles
 const LUN = '2026-08-17';
 
@@ -79,9 +89,9 @@ const dom = new JSDOM(fs.readFileSync(path.join(__dirname,'index.html'),'utf8'),
     w.fetch = (u, o) => {
       if(o && o.method === 'POST'){
         posts.push(JSON.parse(o.body));
-        return Promise.resolve({ json:()=>Promise.resolve({ ok:true, data:{ grupo_id:'nuevo', filas:1 } }) });
+        return resp({ ok:true, data:{ grupo_id:'nuevo', filas:1 } });
       }
-      return Promise.resolve({ json:()=>Promise.resolve(BOOT) });
+      return resp(BOOT);
     };
     w.scrollTo = ()=>{}; w.alert = ()=>{}; w.prompt = ()=>null;
     Object.defineProperty(w.navigator,'serviceWorker',{value:undefined,configurable:true});
