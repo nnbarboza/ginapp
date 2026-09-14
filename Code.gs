@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.26';
+const APP_VERSION = '0.9.27';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -635,6 +635,9 @@ function _alDia() {
     const props = PropertiesService.getScriptProperties();
     if (props.getProperty('GINAPP_ESQUEMA') === APP_VERSION) return;
     setup();
+    /* _invalidar tira también el arranque cacheado, que se montó con el
+       esquema viejo: sin esto, lo primero que vería la app tras publicar
+       sería lo de antes. */
     _invalidar();
   } catch (err) {
     /* Sin permisos o con el Sheet ocupado: se sigue. La app aguanta una
@@ -1200,6 +1203,13 @@ function _bootTirar() {
 }
 
 function handleGetBootstrap(p) {
+  /* El esquema va ANTES de mirar la caché. Al revés, tras publicar una
+     versión nueva podía servirse durante un minuto un arranque cacheado y
+     _alDia() no llegaba a correr: las pestañas y columnas nuevas no se
+     creaban hasta que la caché caducara. Es una lectura de propiedad y
+     sale por la puerta enseguida si la versión no ha cambiado. */
+  _alDia();                        /* pestañas y columnas nuevas, si las hay */
+
   /* Servido de caché: nada de leer 34 pestañas otra vez. La invalida
      cualquier escritura, así que no puede quedarse con datos viejos. */
   const cacheado = _bootLeer();
@@ -1208,7 +1218,6 @@ function handleGetBootstrap(p) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  _alDia();                        /* pestañas y columnas nuevas, si las hay */
   _precargar();                    /* 34 pestañas en una llamada, si se puede */
   /* Lo recurrente se fabrica aquí porque no hay disparadores de tiempo en
      este proyecto. Es idempotente, así que llamarlo en cada arranque no

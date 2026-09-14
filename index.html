@@ -626,11 +626,16 @@ svg{display:block;flex-shrink:0}
   padding:15px 16px;margin-bottom:14px}
 .cons-hd{display:flex;align-items:center;gap:8px;color:var(--ali-d);margin-bottom:10px}
 .cons-hd b{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
-.cons-l{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-wrap:wrap;gap:7px}
-.cons-l li{display:flex;align-items:center;gap:7px;background:var(--surface);
-  border-radius:999px;padding:7px 13px 7px 9px;font-size:13.5px;font-weight:600;
-  box-shadow:var(--sh)}
-.cons-l .em{font-size:15px;line-height:1}
+/* Cada sugerencia lleva su PORQUÉ al lado. En fila, no en píldoras: «hace 3
+   días que no» no cabe en una píldora, y sin el porqué hay que creerse la
+   sugerencia en vez de entenderla. */
+.cons-l{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:2px}
+.cons-l li{display:flex;align-items:center;gap:9px;background:var(--surface);
+  border-radius:13px;padding:9px 12px;box-shadow:var(--sh)}
+.cons-l .em{font-size:16px;line-height:1;flex-shrink:0}
+.cons-l .nm{font-size:13.5px;font-weight:600;letter-spacing:-.2px;flex-shrink:0}
+.cons-l .pq{font-size:11.5px;color:var(--t3);margin-left:auto;text-align:right;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cons-p{margin:0 0 5px;font-size:13px;color:var(--t2);line-height:1.4}
 .cons-p:last-child{margin-bottom:0}
 .cons-vacio{margin:0;font-size:13px;color:var(--t2);line-height:1.4}
@@ -1631,7 +1636,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.26';
+var APP_VERSION = '0.9.27';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1647,6 +1652,18 @@ var LS_URL  = 'ginapp_backend_url';   // solo respaldo si la constante no está 
 var DIAS_COL  = ['dom','lun','mar','mie','jue','vie','sab'];
 var DOW_CORTO = ['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
 var DOW_INI   = ['L','M','X','J','V','S','D'];   // X para miércoles: dos "M" no se distinguen
+
+/**
+ * La inicial del día de la semana de UNA FECHA.
+ *
+ * Existe porque se etiquetaba por posición —DOW_INI[i] dentro del bucle— y
+ * eso solo acertaba mientras la ventana empezaba en lunes. Al pasar a los
+ * últimos siete días, un lunes 14 salía rotulado como domingo y la tira
+ * entera parecía la semana pasada.
+ */
+function iniDow(f){
+  return DOW_INI[(dow(f) + 6) % 7];   /* getDay(): 0 = domingo */
+}
 var DOW_LARGO = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
              'septiembre','octubre','noviembre','diciembre'];
@@ -3948,6 +3965,72 @@ function consejoComida(){
            comida:prox, dias:diasPasados };
 }
 
+/**
+ * Raciones de un grupo en una ventana de días que acaba hoy.
+ * `dias` = 1 es solo hoy; 3, los últimos tres; 7, la semana móvil.
+ */
+function racionesUltimos(grupo, dias){
+  var n = 0, hoy = state.data.hoy;
+  for(var i = 0; i < dias; i++) n += racionesDia(grupo, addDays(hoy, -i));
+  return Math.round(n*10)/10;
+}
+
+/** Días completos desde la última vez que apareció un grupo. null si nunca. */
+function diasSin(grupo){
+  for(var i = 0; i <= 30; i++){
+    if(racionesDia(grupo, addDays(state.data.hoy, -i)) > 0) return i;
+  }
+  return null;
+}
+
+/**
+ * QUÉ LE DOY AHORA.
+ *
+ * Tres ventanas, porque son tres preguntas distintas:
+ *   · hoy    → qué lleva ya comido, para no insistir con lo mismo en la cena
+ *   · 3 días → huecos recientes; que hoy no haya pescado da igual si lo
+ *              hubo ayer
+ *   · 7 días → el patrón, que es lo que de verdad describe la dieta
+ *
+ * Los de moderar se miran por HOY y no por la semana: «hoy ya lleva dos
+ * dulces» es accionable esta noche; «llevas nueve esta semana» no es un
+ * consejo, es un reproche.
+ */
+function queLeDoy(){
+  var prox = siguienteComida();
+  var hayHoy = comidasDelDia(state.data.hoy).length;
+  var out = { comida:prox, hoy:[], prioridad:[], sobra:[], sugeridos:[], reg:hayHoy };
+  if(!hayHoy) return out;
+
+  objetivosSemana().forEach(function(o){
+    var g = String(o.grupo), obj = num(o.objetivo);
+    var d1 = racionesUltimos(g, 1);
+
+    if(String(o.tipo) === 'max'){
+      if(d1 >= 2) out.sobra.push({ o:o, hoy:d1 });
+      return;
+    }
+    if(!obj) return;
+    if(d1 > 0){ out.hoy.push({ o:o, veces:d1 }); return; }
+
+    /* La urgencia suma dos cosas: lo que falta en la ventana larga y si
+       además lleva tres días sin aparecer. Un hueco reciente en algo que
+       encima va corto es lo primero que hay que tapar. */
+    var d3 = racionesUltimos(g, 3), d7 = racionesUltimos(g, 7);
+    var deuda = Math.max(0, obj - d7) / Math.max(1, obj);
+    var urgencia = deuda + (d3 > 0 ? 0 : 0.5);
+    if(urgencia < 0.25) return;
+    out.prioridad.push({ o:o, d3:d3, d7:d7, obj:obj, urgencia:urgencia,
+                         dias:diasSin(g) });
+  });
+
+  out.prioridad.sort(function(a,b){ return b.urgencia - a.urgencia; });
+  out.hoy.sort(function(a,b){ return b.veces - a.veces; });
+  /* Y solo se propone lo que pega con la comida que toca. */
+  out.sugeridos = out.prioridad.filter(function(x){ return pegaEn(x.o, prox); });
+  return out;
+}
+
 /** ¿Este grupo tiene sentido en esa comida? Sin `momentos`, en todas. */
 function pegaEn(o, tipoComida){
   var m = String((o && o.momentos) || '').trim();
@@ -3976,48 +4059,54 @@ function banda(o, ocasiones){
 }
 
 function pintarConsejo(){
-  var c = consejoComida();
-  var nom = { desayuno:'el desayuno', almuerzo:'el almuerzo', comida:'la comida',
-              merienda:'la merienda', cena:'la cena' }[c.comida] || '';
-  var reg = comidasDelDia(state.data.hoy).length;
+  var c = queLeDoy();
+  var t = c.comida ? tipoComida(c.comida) : null;
+  var nom = t ? String(t.nom).toLowerCase() : '';
 
-  /* Sin nada registrado hoy no hay nada que aconsejar: inventarlo sería
-     justo lo que el planteamiento pide no hacer. */
-  if(!reg){
+  /* Sin nada apuntado hoy no hay nada que aconsejar: inventarlo sería
+     justo lo que este planteamiento pide no hacer. */
+  if(!c.reg){
     return '<div class="cons"><div class="cons-hd">' + svg('destello',16) +
-      '<b>' + (nom ? 'Para ' + nom : 'Hoy') + '</b></div>' +
+      '<b>' + (nom ? 'Para ' + esc(nom) : 'Hoy') + '</b></div>' +
       '<p class="cons-vacio">Cuando apuntéis la primera comida del día, aquí ' +
       'aparecerá qué conviene para la siguiente.</p></div>';
   }
 
   var h = '<div class="cons"><div class="cons-hd">' + svg('destello',16) +
-    '<b>' + (nom ? 'Para ' + nom : 'Por hoy ya está') + '</b></div>';
+    '<b>' + (nom ? 'Para ' + esc(nom) : 'Por hoy ya está') + '</b></div>';
 
-  if(c.faltan.length){
-    h += '<ul class="cons-l">' + c.faltan.slice(0,3).map(function(f){
+  /* Lo que conviene priorizar, con el PORQUÉ al lado: «hace 3 días que no»
+     se entiende y se actúa; un nombre suelto hay que creérselo. */
+  if(c.sugeridos.length){
+    h += '<ul class="cons-l">' + c.sugeridos.slice(0,3).map(function(f){
+      var por = f.dias === null ? 'no aparece últimamente'
+              : f.dias >= 2 ? 'hace ' + f.dias + ' días que no'
+              : 'va corto esta semana';
       return '<li class="si"><span class="em">'+ico(f.o,17,'•')+'</span>' +
-        '<span>'+esc(String(f.o.nombre||f.o.grupo))+'</span></li>';
+        '<span class="nm">'+esc(String(f.o.nombre||f.o.grupo))+'</span>' +
+        '<span class="pq">'+esc(por)+'</span></li>';
     }).join('') + '</ul>';
   }
 
   var lineas = [];
-  if(c.cubiertos.length){
-    lineas.push('Hoy ' + listaEs(c.cubiertos.slice(0,3).map(function(x){
-      return String(x.o.nombre||x.o.grupo).toLowerCase(); })) +
-      (c.cubiertos.length === 1 ? ' ya está' : ' ya están') + ': no hace falta insistir.');
+  if(c.hoy.length){
+    lineas.push('Hoy ya lleva ' + listaEs(c.hoy.slice(0,4).map(function(x){
+      return String(x.o.nombre||x.o.grupo).toLowerCase(); })) + '.');
   }
-  if(!c.faltan.length && !c.cubiertos.length){
+  if(!c.sugeridos.length && c.prioridad.length && nom){
+    /* Hay huecos pero ninguno pega con esta comida. Decirlo es más útil que
+       callarse, y desde luego más que soltar «pescado» para merendar. */
+    lineas.push('Para ' + nom + ' no hay nada que compensar. ' +
+      listaEs(c.prioridad.slice(0,2).map(function(x){
+        return String(x.o.nombre||x.o.grupo).toLowerCase(); })) +
+      ' encaja mejor en otra comida.');
+  } else if(!c.sugeridos.length && !c.prioridad.length){
     lineas.push('La semana va equilibrada. Lo que apetezca.');
-  } else if(!c.faltan.length){
-    lineas.push('No falta ningún grupo a estas alturas de la semana.');
   }
-  /* Se nombra la frecuencia, no un saldo gastado. */
-  c.pasados.filter(function(p){ return p.banda.nivel === 'alta'; }).slice(0,2)
-    .forEach(function(p){
-      lineas.push(String(p.o.nombre||p.o.grupo).toLowerCase() + ': ' +
-        Math.round(p.sem) + (Math.round(p.sem)===1?' vez':' veces') +
-        ' en siete días. Frecuencia alta.');
-    });
+  c.sobra.slice(0,2).forEach(function(p){
+    lineas.push('Hoy ya van ' + Math.round(p.hoy) + ' de ' +
+      String(p.o.nombre||p.o.grupo).toLowerCase() + '.');
+  });
 
   h += lineas.map(function(l){ return '<p class="cons-p">'+esc(l)+'</p>'; }).join('');
   return h + '</div>';
@@ -4116,7 +4205,7 @@ function pintarAlimentacion(){
     var cab = '';
     for(var k=0;k<7;k++){
       var f = addDays(lun,k), es = f===state.data.hoy;
-      cab += '<th class="'+(es?'hoy':'')+'">'+DOW_INI[k] +
+      cab += '<th class="'+(es?'hoy':'')+'">'+iniDow(f) +
              '<b>'+(+f.split('-')[2])+'</b></th>';
     }
     /* TODOS los grupos, siempre. Antes se cortaba a 8 detrás de un botón
@@ -4244,7 +4333,7 @@ function pintarDiaComidas(f){
     var d = addDays(lun,i), on = d===f, fut = d > state.data.hoy;
     var n = comidasDelDia(d).length;
     return '<button class="dt'+(on?' on':'')+(fut?' fut':'')+'" data-alidia="'+d+'">' +
-      '<span class="dw">'+DOW_INI[i]+'</span><span class="nu">'+(+d.split('-')[2])+'</span>' +
+      '<span class="dw">'+iniDow(d)+'</span><span class="nu">'+(+d.split('-')[2])+'</span>' +
       '<span class="pt'+(n?' hay':'')+'"></span></button>';
   }).join('') + '</div>';
 

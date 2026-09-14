@@ -238,7 +238,113 @@ setTimeout(() => {
      muchos.comp.limites >= 0 && muchos.total > 0,
      muchos.comp.limites + ' / ' + muchos.total);
 
-  console.log('\n--- CÁLCULO ---');  console.log('\n--- CÁLCULO ---');
+  console.log('\n--- LAS INICIALES SON DE LA FECHA, NO DE LA POSICIÓN ---');
+  /* Se etiquetaba con DOW_INI[i] dentro del bucle, y eso solo acertaba
+     mientras la ventana empezaba en lunes. Con los últimos siete días, un
+     lunes salía rotulado como domingo y la tira entera parecía la semana
+     pasada. Hoy es miércoles 19: la ventana va del jueves 13 al miércoles 19. */
+  const INI = ['L','M','X','J','V','S','D'];
+  const espera = f => INI[(new Date(f + 'T12:00:00').getDay() + 6) % 7];
+  ok('iniDow saca la letra de la fecha',
+     w.iniDow('2026-08-19') === 'X' && w.iniDow('2026-08-13') === 'J',
+     w.iniDow('2026-08-19') + ' / ' + w.iniDow('2026-08-13'));
+  ok('un lunes es L, no lo que toque por posición', w.iniDow('2026-09-14') === 'L',
+     w.iniDow('2026-09-14'));
+  ok('y un domingo, D', w.iniDow('2026-09-13') === 'D');
+
+  const tira = [...d.querySelectorAll('#aliCuerpo .dtira [data-alidia]')]
+    .map(b => ({ f:b.dataset.alidia,
+                 dw:b.querySelector('.dw').textContent,
+                 nu:b.querySelector('.nu').textContent }));
+  ok('la tira tiene siete días', tira.length === 7, tira.length);
+  ok('cada letra corresponde a SU fecha',
+     tira.every(t => t.dw === espera(t.f)),
+     tira.map(t => t.f + '=' + t.dw + '(' + espera(t.f) + ')').join(' '));
+  ok('y cada número también',
+     tira.every(t => t.nu === String(+t.f.split('-')[2])),
+     tira.map(t => t.f + '=' + t.nu).join(' '));
+  ok('el último día de la tira es hoy', tira[6].f === HOY, tira[6].f);
+  ok('hoy, miércoles, sale como X', tira[6].dw === 'X', tira[6].dw);
+
+  const th = [...d.querySelectorAll('#aliCuerpo .tb th')].slice(1, 8)
+    .map(x => x.textContent.replace(/[0-9]+/g, ''));
+  ok('la cabecera de la tabla usa las mismas letras',
+     th.join('') === tira.map(t => t.dw).join(''),
+     th.join('') + ' vs ' + tira.map(t=>t.dw).join(''));
+
+  console.log('\n--- QUÉ LE DOY AHORA: TRES VENTANAS ---');
+  /* Tres preguntas distintas: qué lleva HOY (para no insistir con lo mismo),
+     qué falta hace poco (3 días) y cómo va el patrón (7). */
+  ok('hoy cuenta solo hoy', w.racionesUltimos('fruta', 1) === w.racionesDia('fruta', HOY),
+     w.racionesUltimos('fruta', 1));
+  ok('tres días suman tres', w.racionesUltimos('fruta', 3) >= w.racionesUltimos('fruta', 1));
+  ok('y siete, la ventana entera',
+     w.racionesUltimos('fruta', 7) === w.racionesSemana('fruta', w.state.aliLunes),
+     w.racionesUltimos('fruta',7) + ' vs ' + w.racionesSemana('fruta', w.state.aliLunes));
+
+  /* El pescado se comió el lunes 17; hoy es miércoles 19 → hace 2 días. */
+  ok('sabe cuántos días lleva sin un grupo', w.diasSin('pescado') === 2, w.diasSin('pescado'));
+  ok('lo de hoy son cero días', w.diasSin('fruta') === 0, w.diasSin('fruta'));
+  ok('y lo que nunca ha aparecido devuelve null',
+     w.diasSin('grupo_que_no_existe') === null);
+
+  const q = w.queLeDoy();
+  ok('lo que ya lleva hoy no se sugiere',
+     q.prioridad.every(p2 => w.racionesDia(p2.o.grupo, HOY) === 0),
+     q.prioridad.map(p2 => p2.o.grupo).join(','));
+  ok('y sale aparte como "ya lleva"',
+     q.hoy.every(x => w.racionesDia(x.o.grupo, HOY) > 0),
+     q.hoy.map(x => x.o.grupo).join(','));
+  ok('lo urgente va primero',
+     q.prioridad.length < 2 ||
+     q.prioridad[0].urgencia >= q.prioridad[1].urgencia,
+     q.prioridad.map(p2 => p2.o.grupo + ':' + p2.urgencia.toFixed(2)).join(' '));
+  ok('y solo se propone lo que pega con la comida que toca',
+     q.sugeridos.every(x => w.pegaEn(x.o, q.comida)),
+     q.comida + ' → ' + q.sugeridos.map(x => x.o.grupo).join(','));
+
+  /* Lo de moderar se mira por HOY, no por la semana: "hoy ya lleva dos
+     dulces" es accionable esta noche; "llevas nueve esta semana" es un
+     reproche, no un consejo. */
+  const guardadas = w.state.data.comidas;
+  w.state.data.comidas = guardadas.concat([
+    { id:'z1', grupo_id:'gz1', fecha:HOY, hora:'10:00', tipo_comida:'almuerzo',
+      alimento_id:'al_chocolate', nombre:'Chocolate', grupo:'capricho',
+      estado_toma:'comio', creado_por:'papa' },
+    { id:'z2', grupo_id:'gz2', fecha:HOY, hora:'17:00', tipo_comida:'merienda',
+      alimento_id:'al_chocolate', nombre:'Chocolate', grupo:'capricho',
+      estado_toma:'comio', creado_por:'papa' }
+  ]);
+  const q2 = w.queLeDoy();
+  ok('con dos dulces hoy, lo dice', q2.sobra.length === 1, q2.sobra.map(x=>x.o.grupo).join(','));
+  ok('contando los de HOY, no los de la semana', q2.sobra[0].hoy === 2, q2.sobra[0].hoy);
+  w.state.data.comidas = guardadas;
+
+  console.log('\n--- Y EN PANTALLA ---');
+  w.pintarAlimentacion();
+  const cons = d.querySelector('#aliCuerpo .cons');
+  ok('la tarjeta está', !!cons);
+  ok('dice para qué comida es', /Para (el |la )?\w+/.test(cons.textContent),
+     cons.textContent.slice(0,40));
+  ok('cada sugerencia trae su porqué',
+     [...cons.querySelectorAll('.cons-l .pq')].length ===
+     [...cons.querySelectorAll('.cons-l .nm')].length,
+     [...cons.querySelectorAll('.cons-l .pq')].map(x=>x.textContent).join(' | '));
+  ok('y el porqué se entiende sin saber cómo funciona por dentro',
+     [...cons.querySelectorAll('.cons-l .pq')].every(x =>
+       /no aparece|días que no|va corto/.test(x.textContent)),
+     [...cons.querySelectorAll('.cons-l .pq')].map(x=>x.textContent).join(' | '));
+
+  /* Sin nada apuntado hoy no se inventa un consejo. */
+  const antesC = w.state.data.comidas;
+  w.state.data.comidas = antesC.filter(c => w.fechaKey(c.fecha) !== HOY);
+  w.pintarAlimentacion();
+  ok('sin comidas hoy, no se inventa nada',
+     d.querySelector('#aliCuerpo .cons-vacio') !== null &&
+     d.querySelectorAll('#aliCuerpo .cons-l li').length === 0);
+  w.state.data.comidas = antesC; w.pintarAlimentacion();
+
+  console.log('\n--- CÁLCULO ---');
   ok('3 días con registro', w.diasConRegistro(LUN) === 3, w.diasConRegistro(LUN));
 
   // fruta: plátano(1) + manzana(1) + kiwi(1) = 3 · brócoli probó = 0,5 en verduras

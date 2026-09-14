@@ -285,8 +285,14 @@ async function formulario(comidas, ia, tipo){
     const c = A.cuerpo();
     ok('propone lo que falta', c.indexOf('Pescado') >= 0 || c.indexOf('Verdura') >= 0,
        c.slice(0,240));
-    ok('y dice lo que ya está cubierto hoy',
-       c.indexOf('no hace falta insistir') >= 0, c.slice(0,300));
+    /* Antes decía «hoy X ya está: no hace falta insistir». Ahora lo dice al
+       derecho —«hoy ya lleva…»— y, sobre todo, cada sugerencia trae su
+       PORQUÉ: «hace 3 días que no» se entiende y se actúa; un nombre suelto
+       hay que creérselo. */
+    ok('y dice lo que ya lleva hoy', c.indexOf('Hoy ya lleva') >= 0, c.slice(0,320));
+    ok('cada sugerencia explica por qué',
+       /no aparece últimamente|hace \d+ días que no|va corto esta semana/.test(c),
+       c.slice(c.indexOf('Para '), c.indexOf('Para ')+160));
     ok('sin juzgar', c.indexOf('ha comido mal') < 0);
     ok('esto no llama a la IA', A.posts.filter(p => p.action === 'interpretaPlato').length === 0);
     A.dom.window.close();

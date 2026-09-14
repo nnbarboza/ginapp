@@ -135,6 +135,14 @@ semanal se lee como un presupuesto de pecados, y tres galletas sueltas no son
 una dieta basada en bollería. En el índice la puntuación baja con pendiente en
 vez de agotarse: un indicador clavado en cero deja de informar.
 
+**Qué le doy ahora.** `queLeDoy()` mira tres ventanas porque son tres
+preguntas distintas: **hoy** (qué lleva ya, para no insistir con lo mismo en
+la cena), **3 días** (huecos recientes: que hoy no haya pescado da igual si lo
+hubo ayer) y **7 días** (el patrón). Cada sugerencia sale con su porqué —«hace
+3 días que no»—: un nombre suelto hay que creérselo, el porqué se entiende.
+Los grupos a moderar se miran por HOY y no por la semana: «hoy ya lleva dos
+dulces» es accionable esta noche; «llevas nueve esta semana» es un reproche.
+
 **El consejo solo propone lo que pega con la comida** (columna `momentos`).
 Decía «para la merienda: pescado y legumbres»; nadie merienda lentejas, y un
 consejo que nadie sigue le quita credibilidad a los que sí valen. El hueco se
