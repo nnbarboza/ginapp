@@ -73,6 +73,43 @@ const ANTES = ['al_tomate','al_platano','al_manzana','al_lentejas','al_merluza',
                'al_yogur','al_pan','al_chocolate','al_pizza','al_brocoli']
   .map((id,i) => toma('2026-08-0'+((i%8)+1),'13:00','comida',id));
 
+/* La pestaña Platos: plato → categorías. Ya existía como caché para no
+   repreguntarle a la IA; ahora además se te ofrece. */
+const PLATOS = [
+  { clave:'arroz con tomate y huevo', nombre:'Arroz con tomate y huevo',
+    grupos:'cereales,verduras', emoji:'🍚', fuente:'manual', usos:9 },
+  { clave:'leche con galletas', nombre:'Leche con galletas',
+    grupos:'lacteos,capricho', emoji:'🥛', fuente:'manual', usos:12 },
+  { clave:'arroz con pollo', nombre:'Arroz con pollo',
+    grupos:'cereales,proteina_blanca', emoji:'🍚', fuente:'ia', usos:4 },
+  { clave:'merluza rebozada', nombre:'Merluza rebozada',
+    grupos:'pescado', emoji:'🐟', fuente:'manual', usos:6 },
+  /* Sin grupos: no se puede ofrecer, no aportaría nada al marcarlo. */
+  { clave:'algo raro', nombre:'Algo raro', grupos:'', emoji:'', fuente:'ia', usos:1 }
+];
+
+/* Comidas con el nombre del plato en `nota`, que es de donde sale en qué
+   comida se suele comer cada cosa.
+
+   Van FUERA de la ventana de siete días y sin alimento concreto, a
+   propósito: sirven para probar el buscador de platos sin tocar raciones,
+   variedad ni el orden de los alimentos más usados, que se prueban aparte. */
+const CON_PLATO = [
+  { id:'p1', grupo_id:'gp1', fecha:'2026-07-20', hora:'09:00', tipo_comida:'desayuno',
+    alimento_id:'', nombre:'Lácteos', grupo:'lacteos', estado_toma:'comio',
+    nota:'Leche con galletas', creado_por:'papa' },
+  { id:'p2', grupo_id:'gp2', fecha:'2026-07-21', hora:'09:00', tipo_comida:'desayuno',
+    alimento_id:'', nombre:'Lácteos', grupo:'lacteos', estado_toma:'comio',
+    nota:'Leche con galletas', creado_por:'papa' },
+  { id:'p3', grupo_id:'gp3', fecha:'2026-07-22', hora:'13:30', tipo_comida:'comida',
+    alimento_id:'', nombre:'Verduras', grupo:'verduras', estado_toma:'comio',
+    nota:'Arroz con tomate y huevo', creado_por:'papa' },
+  /* Dos filas de la MISMA comida: el plato no puede contar dos veces. */
+  { id:'p4', grupo_id:'gp3', fecha:'2026-07-22', hora:'13:30', tipo_comida:'comida',
+    alimento_id:'', nombre:'Cereales', grupo:'cereales', estado_toma:'comio',
+    nota:'Arroz con tomate y huevo', creado_por:'papa' }
+];
+
 const BOOT = { ok:true, data:{
   version:'0.3.1', hoy:HOY,
   config:{ nombre_hija:'Georgina', nombre_corto:'Gina', dias_min_ich:'3',
@@ -83,7 +120,8 @@ const BOOT = { ok:true, data:{
            dom:'alterno',hora_cambio:'18:00',ancla_fecha:'2026-08-21',ancla_usuario:'papa'}],
   custodia:[], eventos:[], eventos_excepciones:[], tipos_evento:[],
   gastos:[], liquidaciones:[], categorias_gasto:[],
-  alimentos: ALIMENTOS, comidas: ANTES.concat(COMIDAS), objetivos_semana: OBJ,
+  alimentos: ALIMENTOS, comidas: ANTES.concat(COMIDAS).concat(CON_PLATO), objetivos_semana: OBJ,
+  platos: PLATOS,
   citas:[], medicacion:[], dosis:[], episodios:[], vacunas:[], crecimiento:[], documentos:[],
   actividad:[], visitas:[]
 }};
@@ -412,7 +450,88 @@ setTimeout(() => {
     ok('una categoría repetida sale una sola vez',
        res.split('Verduras').length - 1 === 1, res);
 
-    console.log('\n--- EL MENÚ DEL COLE ---');
+    console.log('\n--- TUS PLATOS: UN TOQUE, NO OCHO ---');
+  /* La pestaña Platos ya guardaba plato → categorías, pero solo como caché
+     para no repreguntar a la IA: nunca se ofrecía. Así que cada arroz con
+     tomate había que montarlo otra vez teniendo la respuesta guardada. */
+  w.abrirComida('', 'desayuno');
+  ok('sin escribir nada ya se ofrecen platos',
+     d.querySelectorAll('#pltWrap [data-plato]').length > 0,
+     d.querySelectorAll('#pltWrap [data-plato]').length);
+  ok('y se dice que son los de siempre EN ESA comida',
+     d.querySelector('#pltWrap').textContent.indexOf('Lo de siempre') >= 0,
+     d.querySelector('#pltWrap').textContent.slice(0,60));
+
+  /* Lo que se desayuna y lo que se cena no se parecen en nada. */
+  const primerosDe = t => { w.abrirComida('', t);
+    return [...d.querySelectorAll('#pltWrap [data-plato]')].map(b => b.dataset.plato); };
+  ok('en desayuno manda lo del desayuno',
+     primerosDe('desayuno')[0] === 'leche con galletas', primerosDe('desayuno')[0]);
+  ok('en comida, lo de la comida',
+     primerosDe('comida')[0] === 'arroz con tomate y huevo', primerosDe('comida')[0]);
+  ok('pero el resto NO desaparece: se ordena, no se filtra',
+     primerosDe('desayuno').length >= 3, primerosDe('desayuno').join(','));
+  ok('un plato sin categorías no se ofrece: marcarlo no aportaría nada',
+     primerosDe('comida').indexOf('algo raro') < 0, primerosDe('comida').join(','));
+
+  console.log('\n--- APLICAR UN PLATO ---');
+  w.abrirComida('', 'comida');
+  click(d.querySelector('[data-plato="arroz con tomate y huevo"]'));
+  ok('pone el nombre', w.borrador.plato === 'Arroz con tomate y huevo', w.borrador.plato);
+  ok('y marca sus categorías solo',
+     w.borrador.items.filter(i => !i.alimento_id).map(i => i.grupo).sort().join(',')
+       === 'cereales,verduras',
+     w.borrador.items.map(i => i.grupo).join(','));
+  ok('se ve en el campo, no solo en el dato',
+     (d.querySelector('#inPlato')||{}).value === 'Arroz con tomate y huevo',
+     (d.querySelector('#inPlato')||{}).value);
+  ok('ya se puede guardar sin tocar nada más',
+     !d.querySelector('#guardarComida').disabled);
+  ok('y deja de ofrecerte el que acabas de elegir',
+     [...d.querySelectorAll('#pltWrap [data-plato]')]
+       .every(b => b.dataset.plato !== 'arroz con tomate y huevo'),
+     [...d.querySelectorAll('#pltWrap [data-plato]')].map(b=>b.dataset.plato).join(','));
+
+  console.log('\n--- BUSCAR ESCRIBIENDO ---');
+  w.abrirComida('', 'cena');
+  const inp = d.querySelector('#inPlato');
+  inp.value = 'arroz';
+  inp.dispatchEvent(new w.Event('input', { bubbles:true }));
+  const hall = [...d.querySelectorAll('#pltWrap [data-plato]')].map(b => b.dataset.plato);
+  ok('salen los dos arroces', hall.length === 2, hall.join(','));
+  ok('y no la merluza', hall.indexOf('merluza rebozada') < 0);
+  ok('lo dice con otras palabras: no son los de siempre, son los que casan',
+     d.querySelector('#pltWrap').textContent.indexOf('casan') >= 0,
+     d.querySelector('#pltWrap').textContent.slice(0,40));
+
+  /* Buscar sin acentos y con mayúsculas tiene que funcionar igual. */
+  inp.value = 'MERLUZA';
+  inp.dispatchEvent(new w.Event('input', { bubbles:true }));
+  ok('da igual cómo se escriba',
+     [...d.querySelectorAll('#pltWrap [data-plato]')].map(b=>b.dataset.plato)
+       .join(',') === 'merluza rebozada',
+     [...d.querySelectorAll('#pltWrap [data-plato]')].map(b=>b.dataset.plato).join(','));
+
+  inp.value = 'algo que no existe';
+  inp.dispatchEvent(new w.Event('input', { bubbles:true }));
+  ok('sin coincidencias, la lista se vacía',
+     d.querySelectorAll('#pltWrap [data-plato]').length === 0);
+  ok('pero sigue estando el botón de deducir, para un plato nuevo',
+     !!d.querySelector('#btnPlato'));
+  ok('y lo escrito se conserva como nombre del plato',
+     w.borrador.plato === 'algo que no existe', w.borrador.plato);
+
+  console.log('\n--- CUÁNTAS VECES, CONTADO BIEN ---');
+  const u = w.usosDePlatos();
+  ok('una comida con dos filas cuenta UNA vez',
+     u['arroz con tomate y huevo'].total === 1, u['arroz con tomate y huevo'].total);
+  ok('dos desayunos distintos cuentan dos',
+     u['leche con galletas'].total === 2, u['leche con galletas'].total);
+  ok('y se sabe en qué comida se toma',
+     u['leche con galletas'].tipos.desayuno === 2,
+     JSON.stringify(u['leche con galletas'].tipos));
+
+  console.log('\n--- EL MENÚ DEL COLE ---');
   w.state.data.menu_cole = [
     { fecha:HOY, plato:'Espaguetis y croquetas',
       alimentos:'Espaguetis:cereales, Tomate:verduras, Croquetas de pollo:proteina_blanca',
@@ -621,8 +740,12 @@ setTimeout(() => {
      ids('otro').length === des.length, ids('otro').length);
 
   console.log('\n--- ORDEN DE LA HOJA ---');
+    /* El plato sube justo detrás del tipo de comida. Hora, lugar y quién
+       aciertan solos (ahora, casa, quien tiene la custodia), así que
+       ponerlos antes obligaba a pasar por tres preguntas ya resueltas para
+       llegar a la única que hay que contestar. */
     w.abrirComida('');
-    const orden = ['Qué comida es','Hora','Dónde','A cargo de','El plato',
+    const orden = ['Qué comida es','El plato','Hora','Dónde','A cargo de',
                    'Bebidas','Postres','Y además','Qué categorías cuenta'];
     const txt = hoja();
     let pos = -1, bien = true, donde = '';

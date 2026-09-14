@@ -1443,6 +1443,24 @@ svg{display:block;flex-shrink:0}
 #fallo button.x{padding:0;width:28px;height:28px;display:flex;align-items:center;
   justify-content:center;background:none}
 
+/* ---------- tus platos ----------
+   Va pegado al campo del nombre, sin tarjeta propia: es una continuación
+   del campo, no otra sección. */
+.plt-l{margin-top:8px;background:var(--surface2);border-radius:var(--r-in);padding:7px 6px 6px}
+.plt-h{font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--t3);padding:2px 7px 6px}
+.plt{display:flex;align-items:center;gap:10px;width:100%;padding:8px 8px;text-align:left;
+  border-radius:11px;cursor:pointer}
+.plt:active{background:var(--surface)}
+.plt .em{font-size:19px;line-height:1;width:24px;text-align:center;flex-shrink:0}
+.plt .tx{flex:1;min-width:0}
+.plt .tx b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plt .tx span{display:block;font-size:11px;color:var(--t2);margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plt .n{flex-shrink:0;font-size:10.5px;font-weight:700;color:var(--t3);
+  background:var(--surface);border-radius:999px;padding:2px 7px}
+
 /* La banda de frecuencia sustituye al «3 / 3». No hay rojo: una frecuencia
    alta es información, no una falta. */
 .tb td.o.bd{font-size:10.5px;font-weight:700;letter-spacing:.2px;text-transform:uppercase;
@@ -1613,7 +1631,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.25';
+var APP_VERSION = '0.9.26';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1825,6 +1843,12 @@ function trasCargar(){
   guardarLogos();
   pintarLogos();
   _idxCustodia = null;
+  /* Los memos que se calculan una vez por carga. Estaban limpiándose solo
+     en recargar(), y desde que hay caché local, recarga en silencio y
+     guardado optimista, esa ya no es la única puerta de entrada: aquí sí
+     pasan todas. */
+  state._primeraVez = null;
+  state._usosPlato = null;
 }
 
 /* ---------- los dos logos ----------
@@ -2616,7 +2640,6 @@ function recargar(){
   return llamar('getBootstrap', {}).then(function(d){
     guardarCache(d);
     state.data = normalizar(d); trasCargar();
-    state._primeraVez = null;
     pintarTodo();
     if(state.seccion === 'alimentacion') pintarAlimentacion();
     if(state.seccion === 'salud') pintarSalud();
@@ -4370,6 +4393,39 @@ function pintarHojaComida(){
         ico(t,15,t.em)+' '+esc(t.nom)+'</button>';
     }).join('') + '</div>';
 
+  /* ---------- LA COMIDA ----------
+     El plato es lo que se comió: "Tequeños con guacamole". Lo que cuenta
+     para los objetivos son sus CATEGORÍAS, no una lista de ingredientes.
+     Nadie va a dar de alta "tequeños" como alimento, ni tiene por qué. */
+  h += '<div class="f-lb">El plato</div>' +
+    '<input class="inp" id="inPlato" type="text" placeholder="Tequeños con guacamole…" ' +
+      'value="'+esc(b.plato||'')+'" autocomplete="off" autocorrect="off">';
+
+  /* ---------- TUS PLATOS ----------
+     Lo que sueles dar en ESA comida, de un toque. La pestaña `Platos` ya
+     guardaba plato → categorías, pero solo como caché para no repreguntar
+     a la IA: nunca se te ofrecía, así que cada arroz con tomate había que
+     montarlo otra vez teniendo la respuesta guardada. */
+  /* El contenedor se pinta siempre, aunque esté vacío: al escribir se
+     rellena solo este trozo, y repintar la hoja entera perdería el foco
+     del teclado en mitad de una palabra. */
+  h += '<div id="pltWrap"></div>';
+
+  h +=
+    /* Un input de foto SIN `capture` hace que el móvil pregunte solo:
+       "Cámara / Fototeca". Poner dos botones era duplicar un menú que el
+       sistema ya da, y encima no cabían. */
+    '<div class="plato-acc">' +
+      '<button class="pa" id="btnPlato">'+svg('destello',16)+'<span>Deducir</span></button>' +
+      '<label class="pa alt" for="inFoto">'+svg('camara',16)+'<span>Foto</span>' +
+        '<input type="file" id="inFoto" accept="image/*" hidden></label>' +
+    '</div>';
+
+
+  /* Hora, lugar y quién van DESPUÉS del plato: los tres aciertan solos
+     (la hora es ahora, el lugar casa, y a cargo quien tiene la custodia),
+     así que ponerlos antes obligaba a pasar por tres preguntas resueltas
+     para llegar a la única que hay que contestar. */
   h += '<div class="f-lb">Hora</div>' +
     '<input class="inp" id="inHora" style="width:130px" type="time" ' +
       'value="'+esc(horaHHMM(b.hora))+'">';
@@ -4390,22 +4446,6 @@ function pintarHojaComida(){
                 'border-color:var(--'+k+')"' : '') + '>' + esc(u.nombre)+'</button>';
       }).join('') + '</div>';
   }
-
-  /* ---------- LA COMIDA ----------
-     El plato es lo que se comió: "Tequeños con guacamole". Lo que cuenta
-     para los objetivos son sus CATEGORÍAS, no una lista de ingredientes.
-     Nadie va a dar de alta "tequeños" como alimento, ni tiene por qué. */
-  h += '<div class="f-lb">El plato</div>' +
-    '<input class="inp" id="inPlato" type="text" placeholder="Tequeños con guacamole…" ' +
-      'value="'+esc(b.plato||'')+'" autocomplete="off" autocorrect="off">' +
-    /* Un input de foto SIN `capture` hace que el móvil pregunte solo:
-       "Cámara / Fototeca". Poner dos botones era duplicar un menú que el
-       sistema ya da, y encima no cabían. */
-    '<div class="plato-acc">' +
-      '<button class="pa" id="btnPlato">'+svg('destello',16)+'<span>Deducir</span></button>' +
-      '<label class="pa alt" for="inFoto">'+svg('camara',16)+'<span>Foto</span>' +
-        '<input type="file" id="inFoto" accept="image/*" hidden></label>' +
-    '</div>';
 
   if(b.platoEstado === 'cargando'){
     h += '<div class="plato-e"><i class="sp"></i>' +
@@ -4559,6 +4599,33 @@ function pintarHojaComida(){
 
   abrirHoja(h);
   pintarBusqueda();
+  pintarPlatos();
+}
+
+/** La lista de tus platos, bajo el campo del nombre. */
+function pintarPlatos(){
+  var el = $('#pltWrap');
+  if(!el || !borrador) return;
+  var b = borrador;
+  var q = b.platoBusca !== undefined ? b.platoBusca : (b.plato || '');
+  /* El plato que ya está puesto no se ofrece: proponerte lo que acabas de
+     elegir no aporta nada y encima invita a tocarlo dos veces. */
+  var puesto = clavePlato(b.plato || '');
+  var sug = buscarPlatos(q, b.tipo_comida).filter(function(x){
+    return clavePlato(x.nombre) !== puesto; });
+  if(!sug.length){ el.innerHTML = ''; return; }
+  var busca = String(q).trim();
+  var t = b.tipo_comida ? tipoComida(b.tipo_comida) : null;
+  el.innerHTML = '<div class="plt-l">' +
+    '<div class="plt-h">' + (busca ? 'Tus platos que casan'
+      : 'Lo de siempre' + (t ? ' en ' + esc(String(t.nom).toLowerCase()) : '')) +
+    '</div>' + sug.slice(0,5).map(function(pl){
+      return '<button class="plt" data-plato="'+esc(pl.clave)+'">' +
+        '<span class="em">'+esc(pl.emoji||'🍽️')+'</span>' +
+        '<span class="tx"><b>'+esc(pl.nombre)+'</b>' +
+        '<span>'+esc(nombresGrupos(pl.grupos).join(' · '))+'</span></span>' +
+        (pl.veces > 1 ? '<span class="n">'+pl.veces+'</span>' : '') + '</button>';
+    }).join('') + '</div>';
 }
 
 /* ---------- interpretar un plato ----------
@@ -4580,6 +4647,111 @@ function estadoNom(id){
 }
 
 /** Marca los grupos que propone la IA. Son checks: se repasan. */
+
+/* ============================================================
+   TUS PLATOS
+
+   La pestaña `Platos` ya guardaba plato → categorías desde hace tiempo,
+   pero solo se usaba de caché para no repreguntarle a la IA. Nunca se te
+   ofrecía. Así que cada arroz con tomate y huevo había que montarlo otra
+   vez ingrediente a ingrediente, teniendo la respuesta guardada.
+
+   Aquí se ofrece: sin escribir nada, los que sueles comer EN ESA COMIDA;
+   escribiendo, los que casan. Un toque y la comida está apuntada.
+
+   En qué comida se suele comer cada plato no se guarda en ninguna parte:
+   sale de `Comidas`, que ya lleva el tipo y el nombre del plato. Guardarlo
+   sería persistir algo deducible, y encima se quedaría viejo.
+   ============================================================ */
+
+/** nombre de plato normalizado → misma clave que usa el backend. */
+function clavePlato(s){
+  return String(s||'').trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/g,' ').trim();
+}
+
+/**
+ * Cuántas veces se ha comido cada plato, en total y por tipo de comida.
+ * Se recorre `Comidas` una vez y se memoriza hasta la siguiente carga.
+ */
+function usosDePlatos(){
+  if(state._usosPlato) return state._usosPlato;
+  var m = {};
+  var vistos = {};
+  state.data.comidas.forEach(function(c){
+    var nom = String(c.nota||'').trim();
+    if(!nom) return;
+    /* Una comida son N filas; solo cuenta una vez por comida. */
+    var k = clavePlato(nom), gid = String(c.grupo_id||c.id);
+    if(vistos[k+'|'+gid]) return;
+    vistos[k+'|'+gid] = true;
+    if(!m[k]) m[k] = { total:0, tipos:{}, ultima:'' };
+    m[k].total++;
+    var t = String(c.tipo_comida||'');
+    m[k].tipos[t] = (m[k].tipos[t]||0) + 1;
+    var f = fechaKey(c.fecha);
+    if(f > m[k].ultima) m[k].ultima = f;
+  });
+  state._usosPlato = m;
+  return m;
+}
+
+/**
+ * Platos para ofrecer.
+ *
+ * Sin texto: los de esa comida primero. Lo que se desayuna y lo que se
+ * cena no se parecen en nada, y una lista única no vale para ninguna de
+ * las dos. Con texto: los que casan, ordenados igual.
+ */
+function buscarPlatos(q, tipo){
+  q = clavePlato(q);
+  var usos = usosDePlatos();
+  var lista = (state.data.platos||[]).filter(function(p){
+    return String(p.nombre||'').trim() !== '';
+  });
+  if(q){
+    lista = lista.filter(function(p){
+      return clavePlato(p.nombre).indexOf(q) >= 0;
+    });
+  }
+  return lista.map(function(p){
+    var u = usos[clavePlato(p.nombre)] || { total:0, tipos:{}, ultima:'' };
+    return { clave:String(p.clave||''), nombre:String(p.nombre||''),
+             grupos:String(p.grupos||'').split(',').map(function(x){ return x.trim(); })
+               .filter(Boolean),
+             emoji:String(p.emoji||''),
+             enEsta:u.tipos[String(tipo||'')] || 0,
+             veces:u.total || num(p.usos), ultima:u.ultima };
+  }).filter(function(p){ return p.grupos.length; })
+    .sort(function(a,b){
+      return (b.enEsta - a.enEsta) || (b.veces - a.veces) ||
+             a.nombre.localeCompare(b.nombre);
+    });
+}
+
+/** Vuelca un plato guardado en el borrador. Un toque y la comida está. */
+function aplicarPlato(clave){
+  var p = buscarPlatos('', borrador.tipo_comida)
+    .filter(function(x){ return x.clave === clave; })[0];
+  if(!p) return;
+  borrador.plato = p.nombre;
+  borrador.platoTocado = true;
+  borrador.platoFuente = 'guardado';
+  borrador.platoAviso = '';
+  borrador.platoBusca = '';
+  _meterGrupos(p.grupos);
+  pintarHojaComida();
+}
+
+/** El nombre de los grupos de un plato, para enseñarlo en la lista. */
+function nombresGrupos(gs){
+  return gs.map(function(g){
+    var o = objGrupo(g);
+    return o ? String(o.nombre||g) : g;
+  });
+}
+
 function _meterGrupos(lista){
   var n = 0;
   (lista||[]).forEach(function(g){
@@ -8598,6 +8770,8 @@ document.addEventListener('click', function(e){
     return;
   }
   if(e.target.closest('#quitarMenu')){ quitarMenu(); pintarHojaComida(); return; }
+  var pl = e.target.closest('[data-plato]');
+  if(pl){ aplicarPlato(pl.dataset.plato); return; }
   if(e.target.closest('#btnPlato')){ interpretarPlato(); return; }
   var ab = e.target.closest('[data-abrir]');
   if(ab){ borrador.items[+ab.dataset.abrir].abierto = true; pintarHojaComida(); return; }
@@ -8852,7 +9026,13 @@ document.addEventListener('input', function(e){
     var pos = e.target.selectionStart; pintarBiblioteca();
     var n = $('#bibQ'); if(n){ n.focus(); n.setSelectionRange(pos,pos); } return; }
   if(e.target.id === 'inHora' && borrador){ borrador.hora = e.target.value; return; }
-  if(e.target.id === 'inPlato' && borrador){ borrador.plato = e.target.value; return; }
+  if(e.target.id === 'inPlato' && borrador){
+    borrador.plato = e.target.value;
+    borrador.platoBusca = e.target.value;
+    /* Solo la lista: repintar la hoja entera perdería el foco del teclado. */
+    pintarPlatos();
+    return;
+  }
   if(e.target.id === 'inDesc'  && borrador){ borrador.desc  = e.target.value; return; }
   if((e.target.id === 'cuIni' || e.target.id === 'cuFin') && borradorCust){
     leerFormCust(); pintarFormCustodia(); return; }

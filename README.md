@@ -115,6 +115,35 @@ diferencia lo más pesado del arranque. Recortarlo toca 13 sitios que dependen
 del histórico completo (qué alimento es nuevo, cuál está aceptado, las
 estadísticas), así que necesita su propia pasada.
 
+## Alimentación
+
+**La ventana es móvil, de siete días.** No la semana natural: con semana
+natural, el lunes por la mañana el índice se quedaba a cero y no volvía a
+significar nada hasta el jueves. Una comida del domingo dejaba de contar por
+el calendario, no por la dieta.
+
+**Tus platos.** La pestaña `Platos` guarda plato → categorías y lleva años
+existiendo, pero solo como caché para no repreguntarle a la IA: nunca se
+ofrecía. Ahora es lo primero del formulario — sin escribir nada salen los que
+sueles dar *en esa comida*, y un toque deja la comida apuntada con sus grupos.
+En qué comida se suele comer cada plato **no se guarda**: sale de `Comidas`,
+que ya lleva el tipo y el nombre.
+
+**Moderar es una banda, no una cuota.** `banda_baja` y `banda_alta` en
+`Objetivos_Semana`: Baja / Moderada / Alta por ocasiones en siete días. Un tope
+semanal se lee como un presupuesto de pecados, y tres galletas sueltas no son
+una dieta basada en bollería. En el índice la puntuación baja con pendiente en
+vez de agotarse: un indicador clavado en cero deja de informar.
+
+**El consejo solo propone lo que pega con la comida** (columna `momentos`).
+Decía «para la merienda: pescado y legumbres»; nadie merienda lentejas, y un
+consejo que nadie sigue le quita credibilidad a los que sí valen. El hueco se
+sigue detectando por dentro: solo se filtra lo que se propone.
+
+Una ración cuenta **una vez por comida**, no por ingrediente: tres galletas en
+la misma merienda son una ocasión, y hummus con lentejas en el mismo plato es
+una ración de legumbres.
+
 ## Reglas del proyecto
 
 1. Se lee y se escribe **siempre por el nombre real de la cabecera**, nunca por posición.
