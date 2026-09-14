@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.24';
+const APP_VERSION = '0.9.25';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -197,7 +197,19 @@ const HEADERS = {
 
   /* Objetivos SEMANALES por grupo. `tipo`: min (a alcanzar) | max (a no superar).
      `peso` = cuánto pesa ese grupo en el índice semanal. Fila fuera = grupo sin objetivo. */
+  /**
+   * `momentos`: en qué comidas tiene sentido sugerir este grupo, separadas
+   *   por comas. Vacío = en todas. Sin esto la app aconsejaba «para la
+   *   merienda: pescado y legumbres», que es un consejo que nadie va a
+   *   seguir y que resta credibilidad a los que sí valen.
+   * `banda_baja` / `banda_alta`: solo para los de tipo `max`. Por debajo de
+   *   la baja la frecuencia es Baja; por encima de la alta, Alta; en medio,
+   *   Moderada. Sustituyen a la cuota: un tope semanal se lee como un
+   *   presupuesto de pecados, y tres galletas no son lo mismo que una dieta
+   *   basada en bollería.
+   */
   'Objetivos_Semana': ['grupo', 'nombre', 'emoji', 'objetivo', 'tipo', 'peso',
+                       'momentos', 'banda_baja', 'banda_alta',
                        'orden', 'activo', 'icono'],
 
   /* Las cinco comidas del día. Estaban clavadas en el código; aquí se les
@@ -428,20 +440,26 @@ const SEED = {
   ],
 
   /* Orientativos y editables. Los `max` no son castigos: son techos de referencia. */
+  /* grupo · nombre · emoji · objetivo · tipo · peso · momentos · banda_baja ·
+     banda_alta · orden · activo.
+     Los momentos son el criterio de SUGERENCIA, no de registro: se puede
+     apuntar pescado en el desayuno, simplemente la app no lo propone. */
   'Objetivos_Semana': [
-    ['verduras',       'Verdura',        '🥦', 14, 'min', 20, 1, true],
-    ['fruta',          'Fruta',          '🍓', 14, 'min', 18, 2, true],
-    ['legumbres',      'Legumbres',      '🫘', 3,  'min', 10, 3, true],
-    ['pescado',        'Pescado',        '🐟', 2,  'min', 10, 4, true],
-    ['huevos',         'Huevos',         '🥚', 3,  'min', 6,  5, true],
-    ['proteina_blanca','Pollo y pavo',   '🍗', 3,  'min', 6,  6, true],
-    ['frutos_secos',   'Frutos secos',   '🥜', 4,  'min', 6,  7, true],
-    ['lacteos',        'Lácteos',        '🥛', 10, 'min', 6,  8, true],
-    ['cereales',       'Cereales y pan', '🍞', 10, 'min', 4,  9, true],
-    ['carnes_rojas',   'Carne roja',     '🥩', 1,  'max', 4,  10, true],
-    ['ultraprocesado', 'Ultraprocesados','🍟', 3,  'max', 6,  11, true],
-    ['capricho',       'Caprichos',      '🍬', 4,  'max', 2,  12, true],
-    ['permitido',      'Comida libre',   '🍕', 2,  'max', 2,  13, true]
+    ['verduras',       'Verdura',        '🥦', 14, 'min', 20, 'comida,cena',                        '', '', 1,  true],
+    ['fruta',          'Fruta',          '🍓', 14, 'min', 18, '',                                   '', '', 2,  true],
+    ['legumbres',      'Legumbres',      '🫘', 3,  'min', 10, 'comida,cena',                        '', '', 3,  true],
+    ['pescado',        'Pescado',        '🐟', 2,  'min', 10, 'comida,cena',                        '', '', 4,  true],
+    ['huevos',         'Huevos',         '🥚', 3,  'min', 6,  'comida,cena,desayuno',               '', '', 5,  true],
+    ['proteina_blanca','Pollo y pavo',   '🍗', 3,  'min', 6,  'comida,cena',                        '', '', 6,  true],
+    ['frutos_secos',   'Frutos secos',   '🥜', 4,  'min', 6,  'almuerzo,merienda,desayuno',         '', '', 7,  true],
+    ['lacteos',        'Lácteos',        '🥛', 10, 'min', 6,  'desayuno,almuerzo,merienda,cena',    '', '', 8,  true],
+    ['cereales',       'Cereales y pan', '🍞', 10, 'min', 4,  '',                                   '', '', 9,  true],
+    /* Los de moderar ya no llevan cuota: llevan bandas. El `objetivo` se
+       queda por compatibilidad con lo que haya escrito, pero no puntúa. */
+    ['carnes_rojas',   'Carne roja',     '🥩', 1,  'max', 4,  '', 2,  5,  10, true],
+    ['ultraprocesado', 'Ultraprocesados','🍟', 3,  'max', 6,  '', 5,  12, 11, true],
+    ['capricho',       'Caprichos',      '🍬', 4,  'max', 2,  '', 5,  12, 12, true],
+    ['permitido',      'Comida libre',   '🍕', 2,  'max', 2,  '', 2,  5,  13, true]
   ],
 
   /* Biblioteca de arranque. Estado 'aprendizaje' por defecto: la app no

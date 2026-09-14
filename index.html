@@ -1443,6 +1443,14 @@ svg{display:block;flex-shrink:0}
 #fallo button.x{padding:0;width:28px;height:28px;display:flex;align-items:center;
   justify-content:center;background:none}
 
+/* La banda de frecuencia sustituye al «3 / 3». No hay rojo: una frecuencia
+   alta es información, no una falta. */
+.tb td.o.bd{font-size:10.5px;font-weight:700;letter-spacing:.2px;text-transform:uppercase;
+  border-radius:999px;padding:2px 0}
+.tb td.o.bd.baja{color:var(--ali-d)}
+.tb td.o.bd.moderada{color:var(--cal-d)}
+.tb td.o.bd.alta{color:var(--gas-d)}
+
 /* La cinta de «esto es de antes». Va pegada arriba, por encima de todo, y
    es deliberadamente discreta: informa, no alarma. */
 #desfase{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;
@@ -1605,7 +1613,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.24';
+var APP_VERSION = '0.9.25';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -3589,15 +3597,24 @@ function ich(lunes){
   var objNue = cfgNum('objetivo_nuevos', 2);
   var sNue = Math.min(100, nuevosDe(lunes).length / objNue * 100);
 
+  /* Los grupos a moderar puntúan por BANDA de frecuencia, no por cuota.
+     Con cuota, la tercera galleta de la semana valía lo mismo que la
+     vigésima: el indicador se agotaba y dejaba de informar justo cuando
+     más falta hacía. Con bandas, de «baja» a «alta» hay una pendiente, y
+     pasar de «alta» no puede bajar de ahí. */
   var lp = 0, lr = 0;
   objetivosSemana().forEach(function(o){
     if(String(o.tipo) !== 'max') return;
-    var obj = num(o.objetivo), p = num(o.peso) || 1;
+    var p = num(o.peso) || 1;
     lp += p;
-    var exceso = Math.max(0, racionesSemana(String(o.grupo), lunes) - obj);
-    /* El margen de tolerancia es el propio objetivo: pasarse del doble
-       es lo que agota la puntuación, no un solo capricho de más. */
-    lr += p * (1 - Math.min(1, exceso / Math.max(1, obj)));
+    var oc = racionesSemana(String(o.grupo), lunes);
+    var b = banda(o, oc);
+    var baja = num(o.banda_baja) || Math.max(1, num(o.objetivo) || 3);
+    var alta = num(o.banda_alta) || baja * 2.5;
+    var v = b.nivel === 'baja' ? 1
+          : b.nivel === 'moderada' ? 1 - 0.5 * ((oc - baja) / Math.max(1, alta - baja))
+          : 0.5 - 0.5 * Math.min(1, (oc - alta) / Math.max(1, alta));
+    lr += p * Math.max(0, v);
   });
   var sLim = lp ? (lr / lp * 100) : 100;
 
@@ -3872,8 +3889,10 @@ function siguienteComida(){
  * Devuelve listas ordenadas por urgencia real, no por peso teórico.
  */
 function consejoComida(){
-  var hoy = state.data.hoy, lun = lunesDe(hoy);
-  var diasPasados = diffDias(lun, hoy) + 1;
+  /* Ventana móvil, igual que el índice: lo que importa es si lleva cinco
+     días sin pescado, no en qué casilla del calendario cae hoy. */
+  var hoy = state.data.hoy, lun = addDays(hoy, -6);
+  var diasPasados = 7;
   var faltan = [], cubiertos = [], pasados = [];
 
   objetivosSemana().forEach(function(o){
@@ -3882,20 +3901,55 @@ function consejoComida(){
     var sem = racionesSemana(g, lun), dia = racionesDia(g, hoy);
 
     if(String(o.tipo) === 'max'){
-      if(sem > obj) pasados.push({ o:o, sem:sem, obj:obj });
+      var b = banda(o, sem);
+      if(b.nivel !== 'baja') pasados.push({ o:o, sem:sem, banda:b });
       return;
     }
-    /* Lo que tocaría llevar a estas alturas de la semana, no el total:
-       pedir 14 raciones de verdura un lunes no ayuda a nadie. */
-    var esperado = obj * (diasPasados / 7);
     if(dia > 0){ cubiertos.push({ o:o, dia:dia }); return; }
-    if(sem < esperado * 0.75) faltan.push({ o:o, sem:sem, obj:obj, deuda:esperado - sem });
+    /* La ventana es de siete días completos, así que se compara con el
+       objetivo entero, no con una parte proporcional. */
+    if(sem < obj * 0.75) faltan.push({ o:o, sem:sem, obj:obj, deuda:obj - sem });
   });
 
   faltan.sort(function(a,b){ return b.deuda - a.deuda; });
   cubiertos.sort(function(a,b){ return b.dia - a.dia; });
-  return { faltan:faltan, cubiertos:cubiertos, pasados:pasados,
-           comida:siguienteComida(), dias:diasPasados };
+
+  /* Y aquí lo que faltaba: un grupo solo se sugiere si pega en esa comida.
+     Decir «para la merienda: pescado y legumbres» no lo va a hacer nadie, y
+     un consejo que nadie sigue le quita credibilidad a los que sí valen.
+     Qué pega en cada momento lo dice el Sheet (columna `momentos`), no el
+     código: vacío significa «en cualquiera». */
+  var prox = siguienteComida();
+  var encajan = faltan.filter(function(f){ return pegaEn(f.o, prox); });
+  return { faltan:encajan, faltanTodos:faltan, cubiertos:cubiertos, pasados:pasados,
+           comida:prox, dias:diasPasados };
+}
+
+/** ¿Este grupo tiene sentido en esa comida? Sin `momentos`, en todas. */
+function pegaEn(o, tipoComida){
+  var m = String((o && o.momentos) || '').trim();
+  if(!m || !tipoComida) return true;
+  return m.toLowerCase().split(/[,;]/).map(function(x){ return x.trim(); })
+    .filter(Boolean).indexOf(String(tipoComida).toLowerCase()) >= 0;
+}
+
+/**
+ * La frecuencia de un grupo a moderar, en banda.
+ *
+ * Una cuota semanal se lee como un presupuesto de pecados: «te quedan 2 de
+ * 3». Tres galletas sueltas no son lo mismo que una dieta basada en
+ * bollería, y el número no sabe distinguirlas. La banda sí describe el
+ * patrón, que es lo que importa.
+ */
+function banda(o, ocasiones){
+  var baja = num(o.banda_baja), alta = num(o.banda_alta);
+  /* Sin bandas configuradas se derivan del objetivo, para que una fila
+     antigua del Sheet siga diciendo algo en vez de quedarse muda. */
+  if(!(baja > 0)) baja = Math.max(1, num(o.objetivo) || 3);
+  if(!(alta > baja)) alta = baja * 2.5;
+  if(ocasiones <= baja) return { nivel:'baja', t:'Baja', c:'ali' };
+  if(ocasiones <= alta) return { nivel:'moderada', t:'Moderada', c:'cal' };
+  return { nivel:'alta', t:'Alta', c:'gas' };
 }
 
 function pintarConsejo(){
@@ -3934,10 +3988,13 @@ function pintarConsejo(){
   } else if(!c.faltan.length){
     lineas.push('No falta ningún grupo a estas alturas de la semana.');
   }
-  c.pasados.slice(0,2).forEach(function(p){
-    lineas.push(String(p.o.nombre||p.o.grupo) + ': ya van ' +
-      String(Math.round(p.sem*10)/10).replace('.',',') + ' esta semana, de ' + p.obj + '.');
-  });
+  /* Se nombra la frecuencia, no un saldo gastado. */
+  c.pasados.filter(function(p){ return p.banda.nivel === 'alta'; }).slice(0,2)
+    .forEach(function(p){
+      lineas.push(String(p.o.nombre||p.o.grupo).toLowerCase() + ': ' +
+        Math.round(p.sem) + (Math.round(p.sem)===1?' vez':' veces') +
+        ' en siete días. Frecuencia alta.');
+    });
 
   h += lineas.map(function(l){ return '<p class="cons-p">'+esc(l)+'</p>'; }).join('');
   return h + '</div>';
@@ -3951,10 +4008,15 @@ function listaEs(a){
 }
 
 function pintarAlimentacion(){
-  var lun = state.aliLunes || lunesDe(state.data.hoy);
+  /* Ventana MÓVIL de siete días, no semana natural.
+     Con semana natural, el lunes por la mañana el índice se quedaba a cero
+     y no volvía a significar nada hasta el jueves: una comida del domingo
+     dejaba de contar por el calendario, no por la dieta. Siete días hacia
+     atrás siempre miden lo mismo. */
+  var lun = state.aliLunes || addDays(state.data.hoy, -6);
   state.aliLunes = lun;
   var dom = addDays(lun,6);
-  var esActual = lun === lunesDe(state.data.hoy);
+  var esActual = dom === state.data.hoy;
   var mismoMes = lun.slice(0,7)===dom.slice(0,7);
 
   /* Orden de la pantalla, de lo que se usa a diario a lo que se consulta:
@@ -3965,7 +4027,7 @@ function pintarAlimentacion(){
   var navSem = '<div class="ali-nav">' +
     '<button class="fl" id="aliPrev">'+svg('chevronI',17)+'</button>' +
     '<div class="rango">'+svg('calendario',18) +
-      '<div><b>'+(esActual?'Esta semana':'Semana del '+fechaCorta(lun))+'</b>' +
+      '<div><b>'+(esActual?'Últimos 7 días':'7 días hasta el '+fechaCorta(dom))+'</b>' +
       '<span>'+(+lun.split('-')[2])+(mismoMes?'':' '+MESES[+lun.split('-')[1]-1]) +
       ' – '+(+dom.split('-')[2])+' '+MESES[+dom.split('-')[1]-1]+'</span></div></div>' +
     '<button class="fl" id="aliNext"'+(esActual?' style="visibility:hidden"':'')+'>' +
@@ -3981,7 +4043,7 @@ function pintarAlimentacion(){
       {em:'🌿', nm:'Variedad',      v:i.comp.variedad, p:ICH_PESOS.variedad, c:'var(--ali-d)'},
       {em:'💚', nm:'Grupos saludables', v:i.comp.grupos, p:ICH_PESOS.grupos, c:'var(--ali-d)'},
       {em:'⭐', nm:'Nuevos alimentos', v:i.comp.nuevos, p:ICH_PESOS.nuevos, c:'var(--cal-d)'},
-      {em:'🛡️', nm:'Límites',       v:i.comp.limites,  p:ICH_PESOS.limites, c:'var(--sal-d)'}
+      {em:'🛡️', nm:'Moderación',    v:i.comp.limites,  p:ICH_PESOS.limites, c:'var(--sal-d)'}
     ];
     out += '<div class="ich-c"><div class="ich-top">' +
       '<div class="gauge">'+arcoGauge(i.total,104) +
@@ -4013,8 +4075,11 @@ function pintarAlimentacion(){
   }
 
   /* ---- Comidas del día ---- */
+  /* Si hoy cae dentro de la ventana, hoy es el día elegido aunque la
+     ventana no termine hoy: es el día del que se va a apuntar algo. */
+  var hoyDentro = state.data.hoy >= lun && state.data.hoy <= dom;
   var dia = (state.aliDia && state.aliDia>=lun && state.aliDia<=dom)
-    ? state.aliDia : (esActual ? state.data.hoy : lun);
+    ? state.aliDia : (hoyDentro ? state.data.hoy : lun);
   state.aliDia = dia;
   out += pintarDiaComidas(dia);
 
@@ -4045,8 +4110,16 @@ function pintarAlimentacion(){
         tds += '<td><span class="pt-d '+cls+'"></span></td>';
       }
       var tot = racionesSemana(g, lun), obj = num(o.objetivo);
-      var clsO = lim ? (tot>obj ? 'pas' : '') : (tot>=obj ? 'cum' : '');
       var totTx = String(Math.round(tot*10)/10).replace('.', ',');
+      /* Los de moderar enseñan BANDA, no «3 / 3». Un contador de cuota se
+         lee como un saldo que se gasta, y eso convierte una galleta en un
+         pecado contabilizado. La banda describe el patrón. */
+      if(lim){
+        var b = banda(o, tot);
+        return '<tr><td class="g"><em>'+ico(o,15,'•')+'</em>'+esc(o.nombre||g)+'</td>' +
+          tds + '<td class="o bd ' + b.nivel + '">'+esc(b.t)+'</td></tr>';
+      }
+      var clsO = tot>=obj ? 'cum' : '';
       return '<tr><td class="g"><em>'+ico(o,15,'•')+'</em>'+esc(o.nombre||g)+'</td>' +
         tds + '<td class="o '+clsO+'">'+totTx+' / '+obj+'</td></tr>';
     }
@@ -4061,7 +4134,7 @@ function pintarAlimentacion(){
                limites.map(filaGrupo).join('');
     }
     out += '<div class="tabla">' + navSem + '<table class="tb">' +
-      '<tr><th class="g">Grupo</th>'+cab+'<th class="o">Objetivo</th></tr>' +
+      '<tr><th class="g">Grupo</th>'+cab+'<th class="o">7 días</th></tr>' +
       filas + '</table></div>';
   }
 

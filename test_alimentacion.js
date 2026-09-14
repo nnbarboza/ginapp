@@ -31,13 +31,19 @@ const ALIMENTOS = [
 ].map(a => ({ id:a[0], nombre:a[1], grupo:a[2], emoji:a[3], estado:'aprendizaje',
               seccion:a[4]||'', activo:true }));
 
+/* grupo · nombre · emoji · objetivo · tipo · peso · momentos · banda_baja · banda_alta */
 const OBJ = [
-  ['verduras','Verduras','🥦',14,'min',20], ['fruta','Fruta','🍓',14,'min',18],
-  ['legumbres','Legumbres','🫘',3,'min',10], ['pescado','Pescado','🐟',2,'min',10],
-  ['proteina_blanca','Pollo y pavo','🍗',3,'min',6], ['lacteos','Lácteos','🥛',10,'min',6],
-  ['cereales','Cereales','🍞',10,'min',4],
-  ['capricho','Caprichos','🍬',4,'max',2], ['permitido','Comida libre','🍕',2,'max',2]
-].map(o => ({ grupo:o[0], nombre:o[1], emoji:o[2], objetivo:o[3], tipo:o[4], peso:o[5], activo:true }));
+  ['verduras','Verduras','🥦',14,'min',20,'comida,cena'],
+  ['fruta','Fruta','🍓',14,'min',18,''],
+  ['legumbres','Legumbres','🫘',3,'min',10,'comida,cena'],
+  ['pescado','Pescado','🐟',2,'min',10,'comida,cena'],
+  ['proteina_blanca','Pollo y pavo','🍗',3,'min',6,'comida,cena'],
+  ['lacteos','Lácteos','🥛',10,'min',6,'desayuno,almuerzo,merienda,cena'],
+  ['cereales','Cereales','🍞',10,'min',4,''],
+  ['capricho','Caprichos','🍬',4,'max',2,'',5,12],
+  ['permitido','Comida libre','🍕',2,'max',2,'',2,5]
+].map(o => ({ grupo:o[0], nombre:o[1], emoji:o[2], objetivo:o[3], tipo:o[4], peso:o[5],
+              momentos:o[6]||'', banda_baja:o[7]||'', banda_alta:o[8]||'', activo:true }));
 
 let seq = 0;
 function toma(fecha, hora, tipo, alimentoId, estado){
@@ -111,8 +117,90 @@ setTimeout(() => {
   const nav = [...d.querySelectorAll('#nav button')].find(b => b.dataset.s === 'alimentacion');
   click(nav);
 
-  console.log('\n--- CÁLCULO ---');
-  ok('la semana arranca en el lunes 17', w.state.aliLunes === LUN, w.state.aliLunes);
+  console.log('\n--- LA VENTANA ES MÓVIL, NO LA SEMANA NATURAL ---');
+  /* Con semana natural, el lunes por la mañana el índice se quedaba a cero y
+     no volvía a significar nada hasta el jueves: una comida del domingo
+     dejaba de contar por el calendario, no por la dieta. */
+  ok('arranca siete días antes de hoy, no el lunes',
+     w.state.aliLunes === '2026-08-13', w.state.aliLunes);
+  ok('y termina hoy', w.addDays(w.state.aliLunes, 6) === HOY,
+     w.addDays(w.state.aliLunes, 6));
+  ok('el lunes natural sería otro día', w.lunesDe(HOY) === LUN && LUN !== w.state.aliLunes);
+  ok('atrás mueve la ventana siete días, no salta a la semana anterior',
+     (click(d.querySelector('#aliPrev')), w.state.aliLunes === '2026-08-06'),
+     w.state.aliLunes);
+  click(d.querySelector('#aliNext'));
+  ok('y adelante la devuelve', w.state.aliLunes === '2026-08-13', w.state.aliLunes);
+
+  console.log('\n--- EL CONSEJO TIENE QUE PEGAR CON LA COMIDA ---');
+  /* Decía «para la merienda: pescado y legumbres». Nadie va a merendar
+     lentejas, y un consejo que nadie sigue le quita credibilidad a los que
+     sí valen. Qué pega en cada momento lo dice el Sheet, no el código. */
+  const objDe = g => w.objetivosSemana().find(o => o.grupo === g);
+  ok('el pescado no se sugiere en la merienda', !w.pegaEn(objDe('pescado'), 'merienda'));
+  ok('pero sí en la cena', w.pegaEn(objDe('pescado'), 'cena'));
+  ok('las legumbres tampoco en el desayuno', !w.pegaEn(objDe('legumbres'), 'desayuno'));
+  ok('la fruta pega en cualquier comida: no tiene momentos puestos',
+     w.pegaEn(objDe('fruta'), 'merienda') && w.pegaEn(objDe('fruta'), 'cena') &&
+     w.pegaEn(objDe('fruta'), 'desayuno'));
+  ok('los lácteos sí en la merienda', w.pegaEn(objDe('lacteos'), 'merienda'));
+  ok('sin comida concreta no se filtra nada', w.pegaEn(objDe('pescado'), ''));
+
+  /* De punta a punta: a las 17h toca merienda y la lista NO puede traer
+     pescado ni legumbres, aunque sean lo que más falta. */
+  const real = w.consejoComida;
+  w.siguienteComida = () => 'merienda';
+  let c = w.consejoComida();
+  ok('en la merienda no se cuela ningún grupo que no pegue',
+     c.faltan.every(f => w.pegaEn(f.o, 'merienda')),
+     c.faltan.map(f => f.o.grupo).join(','));
+  ok('y sin embargo el hueco sigue detectado por dentro',
+     c.faltanTodos.length >= c.faltan.length,
+     c.faltanTodos.length + ' vs ' + c.faltan.length);
+  w.siguienteComida = () => 'cena';
+  c = w.consejoComida();
+  ok('en la cena sí pueden salir', c.faltan.every(f => w.pegaEn(f.o, 'cena')));
+
+  console.log('\n--- MODERAR ES UNA BANDA, NO UNA CUOTA ---');
+  /* Una cuota se lee como un presupuesto de pecados: «te quedan 2 de 3».
+     Tres galletas sueltas no son una dieta basada en bollería. */
+  const cap = objDe('capricho');   /* banda_baja 5 · banda_alta 12 */
+  ok('cuatro ocasiones en siete días es frecuencia baja',
+     w.banda(cap, 4).nivel === 'baja', w.banda(cap, 4).nivel);
+  ok('ocho, moderada', w.banda(cap, 8).nivel === 'moderada', w.banda(cap, 8).nivel);
+  ok('quince, alta', w.banda(cap, 15).nivel === 'alta', w.banda(cap, 15).nivel);
+  ok('justo en el borde de abajo sigue siendo baja', w.banda(cap, 5).nivel === 'baja');
+  ok('y en el de arriba, moderada', w.banda(cap, 12).nivel === 'moderada');
+  ok('una fila vieja sin bandas no se queda muda: las deriva del objetivo',
+     w.banda({ objetivo:3 }, 2).nivel === 'baja' &&
+     w.banda({ objetivo:3 }, 20).nivel === 'alta',
+     w.banda({ objetivo:3 }, 20).nivel);
+
+  /* Y lo que de verdad le molestaba: pasarse no puede agotar el indicador. */
+  const conCaprichos = n => {
+    const guardadas = w.state.data.comidas;
+    const extra = [];
+    for(let k = 0; k < n; k++){
+      extra.push({ id:'x'+k, grupo_id:'gx'+k, fecha:HOY, hora:'18:00',
+        tipo_comida:'merienda', alimento_id:'al_chocolate', nombre:'Chocolate',
+        grupo:'capricho', estado_toma:'comio', creado_por:'papa' });
+    }
+    w.state.data.comidas = guardadas.concat(extra);
+    const r = w.ich(w.state.aliLunes);
+    w.state.data.comidas = guardadas;
+    return r;
+  };
+  const sin = conCaprichos(0), pocos = conCaprichos(6), muchos = conCaprichos(20);
+  ok('sin caprichos, la moderación está alta', sin.comp.limites >= 90, sin.comp.limites);
+  ok('con unos cuantos baja, pero no se hunde',
+     pocos.comp.limites < sin.comp.limites && pocos.comp.limites > 40,
+     pocos.comp.limites);
+  ok('con muchos baja más', muchos.comp.limites < pocos.comp.limites, muchos.comp.limites);
+  ok('y el indicador nunca se queda en cero: seguiría informando',
+     muchos.comp.limites >= 0 && muchos.total > 0,
+     muchos.comp.limites + ' / ' + muchos.total);
+
+  console.log('\n--- CÁLCULO ---');  console.log('\n--- CÁLCULO ---');
   ok('3 días con registro', w.diasConRegistro(LUN) === 3, w.diasConRegistro(LUN));
 
   // fruta: plátano(1) + manzana(1) + kiwi(1) = 3 · brócoli probó = 0,5 en verduras
