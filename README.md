@@ -141,6 +141,18 @@ sueles dar *en esa comida*, y un toque deja la comida apuntada con sus grupos.
 En qué comida se suele comer cada plato **no se guarda**: sale de `Comidas`,
 que ya lleva el tipo y el nombre.
 
+**Moderar se PESA; asegurar no.** Dos galletas dentro de un desayuno con
+leche y fruta no son una comida que es pizza y ya. Una ocasión de un grupo
+`max` vale *(1 / grupos de esa comida) × peso de la comida* — `peso` en
+`Tipos_Comida`: la comida y la cena 1, el desayuno 0,8, la merienda 0,6, el
+almuerzo 0,5. Los grupos `min` **no** se pesan: ahí lo que importa es que
+aparezca, y una ración de verdura es una ración vaya sola o acompañada. La
+asimetría es deliberada.
+
+**La tarjeta del día enseña los ALIMENTOS**, no las categorías: lo que quieres
+recordar es si desayunó tortita o bocata. Los grupos se miran en la tabla del
+final. Las categorías solo salen cuando no hay alimentos que enseñar.
+
 **Moderar es una banda, no una cuota.** `banda_baja` y `banda_alta` en
 `Objetivos_Semana`: Baja / Moderada / Alta por ocasiones en siete días. Un tope
 semanal se lee como un presupuesto de pecados, y tres galletas sueltas no son

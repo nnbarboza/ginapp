@@ -214,13 +214,63 @@ setTimeout(() => {
      w.banda({ objetivo:3 }, 20).nivel === 'alta',
      w.banda({ objetivo:3 }, 20).nivel);
 
-  /* Y lo que de verdad le molestaba: pasarse no puede agotar el indicador. */
+  console.log('\n--- DOS GALLETAS NO SON UNA PIZZA ---');
+  /* Contando ocasiones a secas, unas galletas dentro de un desayuno completo
+     pesaban igual que una comida que es pizza y ya. Ahora se pesa por cuánto
+     del plato fue y por cuánto pesa esa comida. */
+  const conComidas = filas => {
+    const guardadas = w.state.data.comidas;
+    w.state.data.comidas = filas;
+    const r = { oc: w.ocasionesDia('capricho', HOY),
+                ocP: w.ocasionesDia('permitido', HOY),
+                crudo: w.racionesDia('capricho', HOY) };
+    w.state.data.comidas = guardadas;
+    return r;
+  };
+  const fl = (gid, tipo, grupo) => ({ id:gid+grupo, grupo_id:gid, fecha:HOY,
+    hora:'09:00', tipo_comida:tipo, alimento_id:'', nombre:grupo, grupo:grupo,
+    estado_toma:'comio', creado_por:'papa' });
+
+  /* Desayuno completo: leche + fruta + galletas. Las galletas son un tercio. */
+  const desayuno = conComidas([ fl('d1','desayuno','lacteos'),
+                                fl('d1','desayuno','fruta'),
+                                fl('d1','desayuno','capricho') ]);
+  /* Merienda que es SOLO galletas. */
+  const meriSola = conComidas([ fl('m1','merienda','capricho') ]);
+  /* Una comida que es pizza y ya. */
+  const pizza = conComidas([ fl('c1','comida','permitido') ]);
+
+  ok('contando a pelo, las tres son 1 ocasión', desayuno.crudo === 1, desayuno.crudo);
+  ok('pesado, las galletas de un desayuno completo pesan poco',
+     desayuno.oc > 0 && desayuno.oc < 0.3, desayuno.oc);
+  ok('una merienda que es solo galletas pesa más', meriSola.oc > desayuno.oc,
+     meriSola.oc + ' vs ' + desayuno.oc);
+  ok('pero menos que una comida entera: una merienda no es una comida',
+     meriSola.oc < pizza.ocP, meriSola.oc + ' vs ' + pizza.ocP);
+  ok('y una comida ultraprocesada pesa 1 entero', pizza.ocP === 1, pizza.ocP);
+  ok('así que dos galletas de desayuno NO son una pizza',
+     pizza.ocP > desayuno.oc * 3, pizza.ocP + ' vs ' + desayuno.oc);
+
+  /* La asimetría es deliberada: lo que se quiere ASEGURAR no se pesa. Una
+     ración de verdura es una ración, vaya sola o acompañada. */
+  ok('los grupos de asegurar NO se pesan',
+     (function(){
+       const g = w.state.data.comidas;
+       w.state.data.comidas = [ fl('v1','comida','verduras'),
+                                fl('v1','comida','cereales'),
+                                fl('v1','comida','pescado') ];
+       const r = w.racionesDia('verduras', HOY);
+       w.state.data.comidas = g;
+       return r === 1;
+     })());
+
+  /* Y pasarse sigue sin agotar el indicador. */
   const conCaprichos = n => {
     const guardadas = w.state.data.comidas;
     const extra = [];
     for(let k = 0; k < n; k++){
       extra.push({ id:'x'+k, grupo_id:'gx'+k, fecha:HOY, hora:'18:00',
-        tipo_comida:'merienda', alimento_id:'al_chocolate', nombre:'Chocolate',
+        tipo_comida:'comida', alimento_id:'al_chocolate', nombre:'Chocolate',
         grupo:'capricho', estado_toma:'comio', creado_por:'papa' });
     }
     w.state.data.comidas = guardadas.concat(extra);
@@ -228,7 +278,7 @@ setTimeout(() => {
     w.state.data.comidas = guardadas;
     return r;
   };
-  const sin = conCaprichos(0), pocos = conCaprichos(6), muchos = conCaprichos(20);
+  const sin = conCaprichos(0), pocos = conCaprichos(9), muchos = conCaprichos(30);
   ok('sin caprichos, la moderación está alta', sin.comp.limites >= 90, sin.comp.limites);
   ok('con unos cuantos baja, pero no se hunde',
      pocos.comp.limites < sin.comp.limites && pocos.comp.limites > 40,
@@ -349,7 +399,9 @@ setTimeout(() => {
   ]);
   const q2 = w.queLeDoy();
   ok('con dos dulces hoy, lo dice', q2.sobra.length === 1, q2.sobra.map(x=>x.o.grupo).join(','));
-  ok('contando los de HOY, no los de la semana', q2.sobra[0].hoy === 2, q2.sobra[0].hoy);
+  ok('contando los de HOY, no los de la semana', q2.sobra[0].veces === 2, q2.sobra[0].veces);
+  ok('y el peso mira de qué comidas eran',
+     q2.sobra[0].hoy > 0 && q2.sobra[0].hoy < 2, q2.sobra[0].hoy);
   w.state.data.comidas = guardadas;
 
   console.log('\n--- Y EN PANTALLA ---');
@@ -584,16 +636,37 @@ setTimeout(() => {
     ok('recuerda el grupo_id', w.borrador.grupo_id === '2026-08-19-comida');
     ok('ofrece borrarla', !!d.querySelector('#borrarComida'));
 
-    console.log('\n--- LA CARD DEL DÍA ---');
+    console.log('\n--- LA CARD DEL DÍA ENSEÑA QUÉ COMIÓ ---');
+    /* Salían las categorías —«Lácteos · Cereales»—, que no dicen nada cuando
+       lo que quieres recordar es si desayunó tortita o bocata. Para ver los
+       grupos está la tabla del final, que es donde se mira eso. */
     const res = w.resumenComida({ items:[
       { alimento_id:'', nombre:'Verduras', grupo:'verduras' },
       { alimento_id:'al_natillas', nombre:'Natillas', grupo:'capricho' },
       { alimento_id:'al_tomate', nombre:'Tomate', grupo:'verduras' } ]});
-    ok('la categoría de un alimento cuenta como cualquier otra',
-       res.indexOf('Caprichos') >= 0, res);
-    ok('y no se esconde detrás de un «+N más»', res.indexOf('+1 más') < 0, res);
-    ok('una categoría repetida sale una sola vez',
-       res.split('Verduras').length - 1 === 1, res);
+    ok('salen los alimentos, no las categorías',
+       res.indexOf('Natillas') >= 0 && res.indexOf('Tomate') >= 0, res);
+    ok('y no las etiquetas de grupo',
+       res.indexOf('Caprichos') < 0 && res.indexOf('Verduras') < 0, res);
+    ok('un alimento repetido sale una sola vez',
+       w.resumenComida({ items:[
+         { alimento_id:'al_tomate', nombre:'Tomate', grupo:'verduras' },
+         { alimento_id:'al_tomate2', nombre:'tomate', grupo:'verduras' } ]})
+         .split('omate').length - 1 === 1);
+    ok('con más de cuatro, el resto se resume',
+       w.resumenComida({ items:[1,2,3,4,5,6].map(function(n){
+         return { alimento_id:'a'+n, nombre:'Cosa '+n, grupo:'fruta' }; }) })
+         .indexOf('+2 más') >= 0);
+
+    /* Pero una comida apuntada SOLO con checks no tiene alimentos que
+       enseñar: ahí las categorías son lo único que hay. */
+    const soloChecks = w.resumenComida({ items:[
+      { alimento_id:'', nombre:'Verduras', grupo:'verduras' },
+      { alimento_id:'', nombre:'Legumbres', grupo:'legumbres' } ]});
+    ok('sin alimentos, se enseñan las categorías: es lo único que hay',
+       soloChecks.indexOf('Verdura') >= 0 && soloChecks.indexOf('Legumbres') >= 0,
+       soloChecks);
+    ok('y sin nada, se dice', w.resumenComida({ items:[] }).indexOf('Sin categorías') >= 0);
 
     console.log('\n--- CADA COMIDA SE APUNTA COMO ES ---');
   /* El desayuno, el almuerzo y la merienda no son platos: son cosas sueltas

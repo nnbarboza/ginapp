@@ -550,7 +550,14 @@ svg{display:block;flex-shrink:0}
   align-items:center;line-height:1.3}
 .cm .gp{font-style:normal;background:var(--ali-s);color:var(--ali-d);border-radius:5px;
   padding:2px 6px;font-weight:600}
+/* Los ALIMENTOS, que es lo que se quiere recordar de un vistazo. En texto
+   llano, no en píldoras: son nombres largos y cuatro píldoras seguidas no
+   caben ni se leen. Las píldoras verdes quedan para las categorías, que solo
+   salen cuando no hay alimentos que enseñar. */
+.cm .al{font-style:normal;color:var(--t2);font-weight:500}
+.cm .al + .al::before{content:' · ';color:var(--t3);font-weight:400}
 .cm .ex{color:var(--t3)}
+.cm .al + .ex::before{content:' ';}
 .cm .hr{font-size:11.5px;font-weight:700;color:var(--t3);font-variant-numeric:tabular-nums;
   flex-shrink:0}
 .cm .ed,.cm .ad{color:var(--t3);flex-shrink:0;display:flex}
@@ -1663,7 +1670,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.28';
+var APP_VERSION = '0.9.29';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1887,12 +1894,34 @@ function trasCargar(){
   guardarLogos();
   pintarLogos();
   _idxCustodia = null;
+  normalizarGrupos();
   /* Los memos que se calculan una vez por carga. Estaban limpiándose solo
      en recargar(), y desde que hay caché local, recarga en silencio y
      guardado optimista, esa ya no es la única puerta de entrada: aquí sí
      pasan todas. */
   state._primeraVez = null;
   state._usosPlato = null;
+}
+
+/**
+ * Pasa por los alias los grupos de lo YA registrado.
+ *
+ * Sin esto, fundir «carne roja» en «proteína animal» solo valdría para lo que
+ * se apunte a partir de ahora: las filas viejas seguirían diciendo
+ * `carnes_rojas`, un grupo que ya no existe, y dejarían de contar sin avisar.
+ *
+ * Es una normalización en memoria, no una migración: el Sheet no se toca y
+ * nada de esto se guarda. La pestaña sigue siendo la fuente de verdad.
+ */
+function normalizarGrupos(){
+  function nrm(g){
+    var k = String(g||'').trim().toLowerCase();
+    k = GRUPOS_ALIAS[k] || k;
+    return GRUPOS.indexOf(k) >= 0 ? k : String(g||'');
+  }
+  (state.data.comidas || []).forEach(function(c){ c.grupo = nrm(c.grupo); });
+  (state.data.alimentos || []).forEach(function(a){ a.grupo = nrm(a.grupo); });
+  (state.data.objetivos_semana || []).forEach(function(o){ o.grupo = nrm(o.grupo); });
 }
 
 /* ---------- los dos logos ----------
@@ -2260,8 +2289,16 @@ function ultimoGasto(){
 /* ============================================================
    ALIMENTACIÓN
    ============================================================ */
+/**
+ * El resumen de la tarjeta de Inicio.
+ *
+ * Usaba la semana NATURAL, así que un lunes solo contaba ese día: nunca
+ * llegaba a los tres días mínimos y la tarjeta decía «faltan 2 días para
+ * calcular el índice» justo cuando más se mira. Es el mismo fallo que ya se
+ * arregló en el índice; aquí se había quedado.
+ */
 function resumenSemana(){
-  var lun = lunesDe(state.data.hoy), dom = addDays(lun,6);
+  var lun = addDays(state.data.hoy, -6), dom = state.data.hoy;
   var cs = state.data.comidas.filter(function(c){
     var f=fechaKey(c.fecha); return f>=lun && f<=dom;
   });
@@ -2955,7 +2992,9 @@ function pintarSecciones(){
           '<div class="sec-s">'+rs.diasConRegistro+' días registrados</div>';
   } else if(rs.diasConRegistro){
     ali = '<div class="vac"><b>'+rs.registrosHoy+' registros hoy</b>Faltan ' +
-          (rs.minDias-rs.diasConRegistro)+' días para calcular el índice de la semana.</div>';
+          (rs.minDias-rs.diasConRegistro)+
+          ((rs.minDias-rs.diasConRegistro)===1?' día':' días')+
+          ' para calcular el índice.</div>';
   } else {
     ali = '<div class="vac"><b>Sin registros</b>Aún no hay nada apuntado esta semana.</div>';
   }
@@ -3356,12 +3395,12 @@ var VALOR_TOMA = { comio:1, probo:0.5, rechazo:0 };
    —tortita de arroz, babybel, mini bocata— y pedir "el plato" ahí es pedir
    un nombre que no existe. Lo manda el Sheet; esto es solo el respaldo. */
 var TIPOS_COMIDA_FB = [
-  {id:'desayuno', nom:'Desayuno', em:'🥣', entrada:'alimentos'},
-  {id:'almuerzo', nom:'Almuerzo', em:'🍎', entrada:'alimentos'},
-  {id:'comida',   nom:'Comida',   em:'🍽️', entrada:'plato'},
-  {id:'merienda', nom:'Merienda', em:'🍪', entrada:'alimentos'},
-  {id:'cena',     nom:'Cena',     em:'🌙', entrada:'plato'},
-  {id:'otro',     nom:'Otra',     em:'🍴', entrada:'plato'}
+  {id:'desayuno', nom:'Desayuno', em:'🥣', entrada:'alimentos', peso:0.8},
+  {id:'almuerzo', nom:'Almuerzo', em:'🍎', entrada:'alimentos', peso:0.5},
+  {id:'comida',   nom:'Comida',   em:'🍽️', entrada:'plato',     peso:1},
+  {id:'merienda', nom:'Merienda', em:'🍪', entrada:'alimentos', peso:0.6},
+  {id:'cena',     nom:'Cena',     em:'🌙', entrada:'plato',     peso:1},
+  {id:'otro',     nom:'Otra',     em:'🍴', entrada:'plato',     peso:0.6}
 ].map(function(t){ t._icono = 'com_' + t.id + '.webp'; return t; });
 var TIPOS_COMIDA = TIPOS_COMIDA_FB;
 
@@ -3481,7 +3520,7 @@ function modoEntrada(tipo){
 function tipoComida(id){
   return TIPOS_COMIDA.filter(function(x){ return x.id === String(id); })[0] ||
          TIPOS_COMIDA_FB.filter(function(x){ return x.id === String(id); })[0] ||
-         { id:'otro', nom:'Otra', em:'🍴', emoji:'🍴', icono:'', entrada:'plato' };
+         { id:'otro', nom:'Otra', em:'🍴', emoji:'🍴', icono:'', entrada:'plato', peso:1 };
 }
 
 /** Refresca TIPOS_COMIDA con lo que diga el Sheet. Se llama tras cargar. */
@@ -3498,6 +3537,7 @@ function tiposComidaDelSheet(){
     return { id:String(r.id), nom:String(r.nombre||fb.nom||r.id),
              em:String(r.emoji||fb.em||'🍴'), emoji:String(r.emoji||fb.em||'🍴'),
              entrada:String(r.entrada||fb.entrada||'plato').toLowerCase(),
+             peso:(num(r.peso) > 0 ? num(r.peso) : (fb.peso || 1)),
              icono:String(r.icono||''), _icono:String(r._icono||'') };
   });
 }
@@ -3537,12 +3577,18 @@ function objetivosSemana(){ return state.data.objetivos_semana || []; }
    «Hidratos» y `capricho` es «Dulces, bollería y galletas». Renombrar el id
    obligaría a reescribir cada fila de Comidas y Alimentos que ya lo usa. */
 var GRUPOS = ['verduras', 'fruta', 'legumbres', 'pescado', 'proteina_blanca',
-              'carnes_rojas', 'carnes_procesadas', 'huevos', 'lacteos',
+              'carnes_procesadas', 'huevos', 'lacteos',
               'frutos_secos', 'cereales', 'ultraprocesado', 'capricho',
               'bebidas_azucaradas', 'permitido', 'bebidas', 'otros'];
 var GRUPOS_ALIAS = { proteina:'proteina_blanca', libre:'permitido',
   cereales_integrales:'cereales', verdura:'verduras', agua:'bebidas',
-  bebida:'bebidas', lacteo:'lacteos', carne_roja:'carnes_rojas',
+  bebida:'bebidas', lacteo:'lacteos',
+  /* La carne roja se funde en «Proteína animal» con el pollo y el pavo. Lo
+     que se vigila aparte es la PROCESADA: frankfurts, hamburguesas, embutidos. */
+  carnes_rojas:'proteina_blanca', carne_roja:'proteina_blanca',
+  ternera:'proteina_blanca', cerdo:'proteina_blanca',
+  frankfurt:'carnes_procesadas', salchicha:'carnes_procesadas',
+  hamburguesa:'carnes_procesadas',
   huevo:'huevos', fruto_seco:'frutos_secos', frutosecos:'frutos_secos',
   pasta:'cereales', arroz:'cereales', legumbre:'legumbres', tuberculos:'cereales',
   carne_blanca:'proteina_blanca', carne:'proteina_blanca', dulce:'capricho',
@@ -3619,6 +3665,60 @@ function racionesDia(grupo, f){
   var n = 0;
   Object.keys(porComida).forEach(function(k){ n += porComida[k]; });
   return n;
+}
+
+/**
+ * Lo mismo, pero PESADO. Solo para los grupos de «sin pasarse».
+ *
+ * Dos galletas dentro de un desayuno con leche y fruta no son lo mismo que
+ * una comida que es pizza y ya. Contando ocasiones a secas pesaban igual, y
+ * eso hacía que un desayuno normal contara como un exceso.
+ *
+ * Dos multiplicadores, los dos discutibles y los dos en el Sheet:
+ *
+ *   · CUÁNTO del plato fue  → la parte que le toca dentro de esa comida. Si
+ *     el grupo es una de cuatro cosas, cuenta un cuarto; si fue lo único,
+ *     entero. Es lo que separa «galletas de postre» de «merendar galletas».
+ *   · CUÁNTO pesa esa comida → `peso` en Tipos_Comida. Una merienda no es una
+ *     comida; sin esto, merendar galletas contaba como comer pizza.
+ *
+ * Los grupos de asegurar (`min`) NO se pesan: ahí lo que importa es que
+ * aparezca. Una ración de verdura es una ración de verdura, vaya sola o
+ * acompañada. La asimetría es deliberada.
+ */
+function ocasionesDia(grupo, f){
+  var porComida = {};
+  state.data.comidas.forEach(function(c){
+    if(fechaKey(c.fecha) !== f) return;
+    var k = String(c.grupo_id || c.id);
+    if(!porComida[k]) porComida[k] = { grupos:{}, tipo:String(c.tipo_comida||''), v:0 };
+    porComida[k].grupos[String(c.grupo)] = true;
+    if(String(c.grupo) === grupo){
+      var v = VALOR_TOMA[String(c.estado_toma||'comio')] || 0;
+      if(v > porComida[k].v) porComida[k].v = v;
+    }
+  });
+  var n = 0;
+  Object.keys(porComida).forEach(function(k){
+    var m = porComida[k];
+    if(!m.v) return;
+    var cuantos = Object.keys(m.grupos).length || 1;
+    n += m.v * (1 / cuantos) * pesoComida(m.tipo);
+  });
+  return Math.round(n * 100) / 100;
+}
+
+/** Cuánto pesa una comida frente a otra. Lo dice el Sheet; 1 si no. */
+function pesoComida(tipo){
+  var t = tipo ? tipoComida(tipo) : null;
+  var p = t ? num(t.peso) : 0;
+  return p > 0 ? p : 1;
+}
+
+function ocasionesSemana(grupo, lunes){
+  var n = 0;
+  for(var i=0;i<7;i++) n += ocasionesDia(grupo, addDays(lunes,i));
+  return Math.round(n*10)/10;
 }
 function racionesSemana(grupo, lunes){
   var n = 0;
@@ -3700,7 +3800,7 @@ function ich(lunes){
     if(String(o.tipo) !== 'max') return;
     var p = num(o.peso) || 1;
     lp += p;
-    var oc = racionesSemana(String(o.grupo), lunes);
+    var oc = ocasionesSemana(String(o.grupo), lunes);
     var b = banda(o, oc);
     var baja = num(o.banda_baja) || Math.max(1, num(o.objetivo) || 3);
     var alta = num(o.banda_alta) || baja * 2.5;
@@ -3994,8 +4094,9 @@ function consejoComida(){
     var sem = racionesSemana(g, lun), dia = racionesDia(g, hoy);
 
     if(String(o.tipo) === 'max'){
-      var b = banda(o, sem);
-      if(b.nivel !== 'baja') pasados.push({ o:o, sem:sem, banda:b });
+      var oc = ocasionesSemana(g, lun);
+      var b = banda(o, oc);
+      if(b.nivel !== 'baja') pasados.push({ o:o, sem:oc, banda:b });
       return;
     }
     if(dia > 0){ cubiertos.push({ o:o, dia:dia }); return; }
@@ -4060,7 +4161,10 @@ function queLeDoy(){
     var d1 = racionesUltimos(g, 1);
 
     if(String(o.tipo) === 'max'){
-      if(d1 >= 2) out.sobra.push({ o:o, hoy:d1 });
+      /* Pesado: dos galletas dentro de un desayuno completo no son lo mismo
+         que una merienda que es solo galletas. */
+      var oc1 = ocasionesDia(g, state.data.hoy);
+      if(oc1 >= 1) out.sobra.push({ o:o, hoy:oc1, veces:racionesUltimos(g,1) });
       return;
     }
     if(!obj) return;
@@ -4157,7 +4261,8 @@ function pintarConsejo(){
     lineas.push('La semana va equilibrada. Lo que apetezca.');
   }
   c.sobra.slice(0,2).forEach(function(p){
-    lineas.push('Hoy ya van ' + Math.round(p.hoy) + ' de ' +
+    lineas.push('Hoy ya lleva ' + p.veces +
+      (p.veces === 1 ? ' vez' : ' veces') + ' ' +
       String(p.o.nombre||p.o.grupo).toLowerCase() + '.');
   });
 
@@ -4278,7 +4383,7 @@ function pintarAlimentacion(){
          lee como un saldo que se gasta, y eso convierte una galleta en un
          pecado contabilizado. La banda describe el patrón. */
       if(lim){
-        var b = banda(o, tot);
+        var b = banda(o, ocasionesSemana(g, lun));
         return '<tr><td class="g"><em>'+ico(o,15,'•')+'</em>'+esc(o.nombre||g)+'</td>' +
           tds + '<td class="o bd ' + b.nivel + '">'+esc(b.t)+'</td></tr>';
       }
@@ -4355,7 +4460,7 @@ function colorComida(items){
    comida dice QUÉ comió, nunca si estuvo bien. */
 var COLOR_GRUPO = {
   verduras:'#4C9A5C', fruta:'#E08A3C', legumbres:'#A2704A', pescado:'#4FA3B0',
-  proteina_blanca:'#C99A5B', carnes_rojas:'#8C5A5A', huevos:'#DDB341',
+  proteina_blanca:'#C99A5B', carnes_procesadas:'#8C5A5A', huevos:'#DDB341',
   lacteos:'#7C86C4', frutos_secos:'#8A6A4B', cereales:'#C9A44C',
   ultraprocesado:'#9AA6B2', capricho:'#C58BB0', permitido:'#8894A6',
   agua:'#6FA8D6', otros:'#9AA6B2'
@@ -4439,23 +4544,46 @@ function pintarDiaComidas(f){
  * muro de texto y tapaba lo único que se lee de un vistazo — qué comió
  * y de qué grupos fue.
  */
+/**
+ * Lo que se lee bajo cada comida del día: QUÉ COMIÓ.
+ *
+ * Antes salían las categorías —«Lácteos · Cereales»—, que no dicen nada
+ * cuando lo que quieres recordar es si desayunó tortita o bocata. Para ver
+ * los grupos está la tabla del final, que es donde se mira eso.
+ *
+ * Las categorías solo aparecen cuando no hay alimentos concretos: en una
+ * comida apuntada como plato con checks, es lo único que hay.
+ */
 function resumenComida(c){
-  /* Las categorías de TODA la comida, vengan de un check o de un
-     alimento: para los objetivos valen lo mismo, así que esconder las
-     de los alimentos detrás de un "+2 más" ocultaba justo lo que se
-     mira de un vistazo. Cada una sale una vez. */
-  var vistos = {}, grupos = [];
+  var vistos = {}, nombres = [];
   c.items.forEach(function(it){
-    var g = String(it.grupo);
-    if(vistos[g]) return;
-    vistos[g] = true;
-    var o = objGrupo(g);
-    grupos.push(String((o && o.nombre) || g));
+    if(!it.alimento_id) return;              /* un check no es un alimento */
+    var n = String(it.nombre||'').trim();
+    if(!n || vistos[n.toLowerCase()]) return;
+    vistos[n.toLowerCase()] = true;
+    nombres.push(n);
   });
-  var out = grupos.slice(0,3).map(function(g){
-    return '<i class="gp">'+esc(g)+'</i>'; }).join('');
-  if(grupos.length > 3) out += '<span class="ex">+'+(grupos.length-3)+' más</span>';
-  return out || '<span class="ex">Sin categorías</span>';
+
+  if(!nombres.length){
+    /* Sin alimentos, las categorías: es lo único que se apuntó. */
+    var vg = {}, grupos = [];
+    c.items.forEach(function(it){
+      var g = String(it.grupo);
+      if(vg[g]) return;
+      vg[g] = true;
+      var o = objGrupo(g);
+      grupos.push(String((o && o.nombre) || g));
+    });
+    var og = grupos.slice(0,3).map(function(g){
+      return '<i class="gp">'+esc(g)+'</i>'; }).join('');
+    if(grupos.length > 3) og += '<span class="ex">+'+(grupos.length-3)+' más</span>';
+    return og || '<span class="ex">Sin categorías</span>';
+  }
+
+  var out = nombres.slice(0,4).map(function(n){
+    return '<i class="al">'+esc(n)+'</i>'; }).join('');
+  if(nombres.length > 4) out += '<span class="ex">+'+(nombres.length-4)+' más</span>';
+  return out;
 }
 
 function listaComidas(f){

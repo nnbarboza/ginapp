@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.28';
+const APP_VERSION = '0.9.29';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -222,7 +222,13 @@ const HEADERS = {
    *               no existe.
    * Vacío = plato, que es como funcionaba antes de existir la columna.
    */
-  'Tipos_Comida': ['id', 'nombre', 'emoji', 'icono', 'entrada', 'orden', 'activo'],
+  /**
+   * `peso`: cuánto pesa esa comida frente a otra a la hora de moderar. Una
+   *   merienda no es una comida: sin esto, merendar galletas contaba igual
+   *   que comer pizza. Vacío o 0 = 1.
+   */
+  'Tipos_Comida': ['id', 'nombre', 'emoji', 'icono', 'entrada', 'peso',
+                   'orden', 'activo'],
 
   /* Imágenes sueltas que no cuelgan de ninguna fila: los dos logos y los
      iconos del resumen semanal de alimentación. `nota` explica cuál es
@@ -334,7 +340,7 @@ const HEADERS = {
  * es interno y el nombre vive en el Sheet.
  */
 const GRUPOS = ['verduras', 'fruta', 'legumbres', 'pescado', 'proteina_blanca',
-                'carnes_rojas', 'carnes_procesadas', 'huevos', 'lacteos',
+                'carnes_procesadas', 'huevos', 'lacteos',
                 'frutos_secos', 'cereales', 'ultraprocesado', 'capricho',
                 'bebidas_azucaradas', 'permitido', 'bebidas', 'otros'];
 
@@ -347,7 +353,18 @@ const GRUPO_BEBIDAS = 'bebidas';
 const GRUPOS_ALIAS = { 'proteina': 'proteina_blanca', 'libre': 'permitido',
                        'cereales_integrales': 'cereales', 'verdura': 'verduras',
                        'agua': 'bebidas', 'bebida': 'bebidas', 'lacteo': 'lacteos',
-                       'carne_roja': 'carnes_rojas', 'huevo': 'huevos',
+                       /* La carne roja se funde en «Proteína animal» junto con el
+                          pollo y el pavo: separarlas no cambiaba ninguna
+                          decisión. Lo que sí se vigila aparte es la carne
+                          PROCESADA —frankfurts, hamburguesas, embutidos—, que
+                          es otra cosa. */
+                       'carnes_rojas': 'proteina_blanca',
+                       'carne_roja': 'proteina_blanca',
+                       'ternera': 'proteina_blanca', 'cerdo': 'proteina_blanca',
+                       'frankfurt': 'carnes_procesadas',
+                       'salchicha': 'carnes_procesadas',
+                       'hamburguesa': 'carnes_procesadas',
+                       'huevo': 'huevos',
                        'tuberculos': 'cereales', 'pasta': 'cereales', 'arroz': 'cereales',
                        'carne_blanca': 'proteina_blanca', 'dulce': 'capricho',
                        'fruto_seco': 'frutos_secos', 'frutosecos': 'frutos_secos',
@@ -416,13 +433,14 @@ const SEED = {
   /* Ninguno de estos colores puede confundirse con el azul de papá (#2878D4),
      el rojo de mamá (#E4575B) ni el lila de Gina (#8B62D9): en la rejilla del
      mes conviven la casa de la custodia y los puntos de los eventos. */
+  /* id · nombre · emoji · icono · entrada · peso · orden · activo */
   'Tipos_Comida': [
-    ['desayuno', 'Desayuno', '🥣',  '', 'alimentos', 1, true],
-    ['almuerzo', 'Almuerzo', '🍎',  '', 'alimentos', 2, true],
-    ['comida',   'Comida',   '🍽️', '', 'plato',     3, true],
-    ['merienda', 'Merienda', '🍪',  '', 'alimentos', 4, true],
-    ['cena',     'Cena',     '🌙',  '', 'plato',     5, true],
-    ['otro',     'Otra',     '🍴',  '', 'plato',     6, true]
+    ['desayuno', 'Desayuno', '🥣',  '', 'alimentos', 0.8, 1, true],
+    ['almuerzo', 'Almuerzo', '🍎',  '', 'alimentos', 0.5, 2, true],
+    ['comida',   'Comida',   '🍽️', '', 'plato',     1,   3, true],
+    ['merienda', 'Merienda', '🍪',  '', 'alimentos', 0.6, 4, true],
+    ['cena',     'Cena',     '🌙',  '', 'plato',     1,   5, true],
+    ['otro',     'Otra',     '🍴',  '', 'plato',     0.6, 6, true]
   ],
 
   /* La columna `fichero` se rellena a mano con el nombre de un PNG/SVG que
@@ -477,7 +495,7 @@ const SEED = {
     ['legumbres',      'Legumbres',      '🫘', 3,  'min', 10, 'comida,cena',                     '', '', 3,  true],
     ['pescado',        'Pescado',        '🐟', 2,  'min', 10, 'comida,cena',                     '', '', 4,  true],
     ['huevos',         'Huevos',         '🥚', 3,  'min', 6,  'comida,cena,desayuno',            '', '', 5,  true],
-    ['proteina_blanca','Pollo y pavo',   '🍗', 3,  'min', 6,  'comida,cena',                     '', '', 6,  true],
+    ['proteina_blanca','Proteína animal','🍗', 4,  'min', 6,  'comida,cena',                     '', '', 6,  true],
     ['frutos_secos',   'Frutos secos',   '🥜', 4,  'min', 6,  'almuerzo,merienda,desayuno',      '', '', 7,  true],
     ['lacteos',        'Lácteos',        '🥛', 10, 'min', 6,  'desayuno,almuerzo,merienda,cena', '', '', 8,  true],
     /* El id sigue siendo `cereales`: lo que cambia es el nombre. «Hidratos»
@@ -541,9 +559,12 @@ const SEED = {
     ['al_pavo',       'Pavo',            'proteina_blanca', '🦃', 'aprendizaje', '', 61, 'seed', true],
     ['al_jamoncocido','Jamón cocido',    'proteina_blanca', '🍖', 'aprendizaje', '', 62, 'seed', true],
 
-    ['al_ternera',    'Ternera',         'carnes_rojas',    '🥩', 'aprendizaje', '', 70, 'seed', true],
-    ['al_cerdo',      'Cerdo',           'carnes_rojas',    '🥓', 'aprendizaje', '', 71, 'seed', true],
-    ['al_jamonserr',  'Jamón serrano',   'carnes_rojas',    '🍖', 'aprendizaje', '', 72, 'seed', true],
+    ['al_ternera',    'Ternera',         'proteina_blanca', '🥩', 'aprendizaje', '', 70, 'seed', true],
+    ['al_cerdo',      'Cerdo',           'proteina_blanca', '🥓', 'aprendizaje', '', 71, 'seed', true],
+    /* El jamón serrano y el embutido van a PROCESADAS, que es lo que son. */
+    ['al_jamonserr',  'Jamón serrano',   'carnes_procesadas', '🍖', 'aprendizaje', '', 72, 'seed', true],
+    ['al_frankfurt',  'Frankfurt',       'carnes_procesadas', '🌭', 'aprendizaje', '', 73, 'seed', true],
+    ['al_hamburguesa','Hamburguesa',     'carnes_procesadas', '🍔', 'aprendizaje', '', 74, 'seed', true],
 
     ['al_huevo',      'Huevo',           'huevos',          '🥚', 'aprendizaje', '', 80, 'seed', true],
     ['al_tortilla',   'Tortilla',        'huevos',          '🍳', 'aprendizaje', '', 81, 'seed', true],
@@ -3813,13 +3834,31 @@ function reajustarGrupos(aplicar) {
     cambios++;
   });
 
-  /* La carne roja sale de «sin pasarse»: no es lo mismo que la procesada, y
-     ponerle el nombre nuevo dejaría un filete etiquetado como embutido. Se
-     desactiva, así lo ya registrado sigue leyéndose y deja de puntuar. */
+  /* La carne roja se funde en «Proteína animal» con el pollo y el pavo:
+     separarlas no cambiaba ninguna decisión. Lo que sí se vigila aparte es la
+     PROCESADA, que es otra cosa. La fila se desactiva, y lo ya registrado como
+     carne roja cuenta como proteína animal gracias al alias. */
   const roja = hay['carnes_rojas'];
   if (roja && _truthy(roja.activo)) {
-    Logger.log((hace ? '🔕 ' : '· desactivaría ') + 'carnes_rojas (la sustituye carnes_procesadas)');
+    Logger.log((hace ? '🔕 ' : '· desactivaría ') +
+      'carnes_rojas (se funde en proteina_blanca = «Proteína animal»)');
     if (hace) { roja.activo = false; _upsert('Objetivos_Semana', 'grupo', roja); }
+    cambios++;
+  }
+
+  /* Los alimentos que estaban en carne roja pasan a proteína animal. Sin esto
+     quedarían apuntando a un grupo desactivado y dejarían de contar. */
+  const alRoja = _readSheet('Alimentos').filter(function (a) {
+    return String(a.grupo) === 'carnes_rojas';
+  });
+  if (alRoja.length) {
+    Logger.log((hace ? '🔀 ' : '· movería ') + alRoja.length +
+      ' alimento(s) de carne roja a proteína animal: ' +
+      alRoja.map(function (a) { return a.nombre; }).join(', '));
+    if (hace) alRoja.forEach(function (a) {
+      a.grupo = 'proteina_blanca';
+      _upsert('Alimentos', 'id', a);
+    });
     cambios++;
   }
 
