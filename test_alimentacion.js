@@ -263,14 +263,46 @@ setTimeout(() => {
   ok('y cada número también',
      tira.every(t => t.nu === String(+t.f.split('-')[2])),
      tira.map(t => t.f + '=' + t.nu).join(' '));
-  ok('el último día de la tira es hoy', tira[6].f === HOY, tira[6].f);
-  ok('hoy, miércoles, sale como X', tira[6].dw === 'X', tira[6].dw);
 
+  console.log('\n--- LA TIRA ES LUNES A DOMINGO, CON SU PROPIA SEMANA ---');
+  /* Compartía la ventana móvil del índice y eso dejaba hoy siempre pegado al
+     borde derecho: se leía como la semana pasada. Para MEDIR, siete días
+     hacia atrás es lo correcto; para NAVEGAR por días, no. */
+  ok('empieza en lunes', tira[0].dw === 'L', tira[0].dw);
+  ok('y acaba en domingo', tira[6].dw === 'D', tira[6].dw);
+  ok('es la semana natural de hoy', tira[0].f === LUN, tira[0].f);
+  ok('hoy, miércoles, cae en medio y no al final',
+     tira[2].f === HOY && tira[2].dw === 'X', tira[2].f + ' ' + tira[2].dw);
+  ok('el día elegido es hoy', d.querySelector('#aliCuerpo .dt.on').textContent.indexOf('19') >= 0,
+     d.querySelector('#aliCuerpo .dt.on').textContent);
+
+  /* Y la ventana del índice sigue siendo la móvil: son dos cosas distintas. */
+  ok('la ventana del índice NO es la semana natural',
+     w.state.aliLunes === '2026-08-13' && w.state.aliLunes !== LUN, w.state.aliLunes);
   const th = [...d.querySelectorAll('#aliCuerpo .tb th')].slice(1, 8)
     .map(x => x.textContent.replace(/[0-9]+/g, ''));
-  ok('la cabecera de la tabla usa las mismas letras',
-     th.join('') === tira.map(t => t.dw).join(''),
-     th.join('') + ' vs ' + tira.map(t=>t.dw).join(''));
+  ok('la tabla del final sigue midiendo los últimos siete días',
+     th.join('') === 'JVSDLMX', th.join(''));
+
+  /* Navegación propia: mover la tira no mueve el índice. */
+  const ventanaAntes = w.state.aliLunes;
+  click(d.querySelector('#semAnt'));
+  const tira2 = [...d.querySelectorAll('#aliCuerpo .dtira [data-alidia]')]
+    .map(b => b.dataset.alidia);
+  ok('atrás salta a la semana natural anterior', tira2[0] === '2026-08-10', tira2[0]);
+  ok('que sigue siendo lunes a domingo',
+     tira2[6] === '2026-08-16', tira2[6]);
+  ok('y NO mueve la ventana del índice', w.state.aliLunes === ventanaAntes,
+     w.state.aliLunes + ' vs ' + ventanaAntes);
+  ok('cuando no es la semana de hoy, se dice de qué semana es',
+     !!d.querySelector('#aliCuerpo .dtira-t'),
+     (d.querySelector('#aliCuerpo .dtira-t')||{}).textContent);
+  click(d.querySelector('#semSig'));
+  ok('y adelante vuelve a la de hoy',
+     [...d.querySelectorAll('#aliCuerpo .dtira [data-alidia]')][0].dataset.alidia === LUN,
+     [...d.querySelectorAll('#aliCuerpo .dtira [data-alidia]')][0].dataset.alidia);
+  ok('volviendo a hoy no se anuncia la semana: es la de siempre',
+     !d.querySelector('#aliCuerpo .dtira-t'));
 
   console.log('\n--- QUÉ LE DOY AHORA: TRES VENTANAS ---');
   /* Tres preguntas distintas: qué lleva HOY (para no insistir con lo mismo),
@@ -462,7 +494,14 @@ setTimeout(() => {
   ok('precarga la hora', /^\d{2}:\d{2}$/.test(w.borrador.hora), w.borrador.hora);
   ok('empieza vacía', w.borrador.items.length === 0);
   ok('el botón de guardar está desactivado', d.querySelector('#guardarComida').disabled);
-  ok('pide el plato por su nombre', !!d.querySelector('#inPlato'));
+  /* Cada comida se apunta como es: la comida y la cena por plato, el
+     desayuno, el almuerzo y la merienda por alimentos sueltos. Qué campo
+     sale depende del tipo, no de que siempre salga el mismo. */
+  ok('pide lo que toca según el tipo de comida',
+     w.modoEntrada(w.borrador.tipo_comida) === 'plato'
+       ? !!d.querySelector('#inPlato')
+       : !!d.querySelector('#inBusca'),
+     w.borrador.tipo_comida + ' → ' + w.modoEntrada(w.borrador.tipo_comida));
 
   /* La comida son sus CATEGORÍAS. Los alimentos son lo que se añade
      (bebida, snack): opcionales, y no hay por qué dar de alta
@@ -556,11 +595,39 @@ setTimeout(() => {
     ok('una categoría repetida sale una sola vez',
        res.split('Verduras').length - 1 === 1, res);
 
-    console.log('\n--- TUS PLATOS: UN TOQUE, NO OCHO ---');
-  /* La pestaña Platos ya guardaba plato → categorías, pero solo como caché
-     para no repreguntar a la IA: nunca se ofrecía. Así que cada arroz con
-     tomate había que montarlo otra vez teniendo la respuesta guardada. */
-  w.abrirComida('', 'desayuno');
+    console.log('\n--- CADA COMIDA SE APUNTA COMO ES ---');
+  /* El desayuno, el almuerzo y la merienda no son platos: son cosas sueltas
+     —tortita de arroz, babybel, mini bocata—. Pedir "el plato" ahí es pedir
+     un nombre que no existe y acabas inventándotelo. */
+  ok('la comida va por plato', w.modoEntrada('comida') === 'plato');
+  ok('la cena también', w.modoEntrada('cena') === 'plato');
+  ok('el desayuno por alimentos', w.modoEntrada('desayuno') === 'alimentos');
+  ok('el almuerzo también', w.modoEntrada('almuerzo') === 'alimentos');
+  ok('y la merienda', w.modoEntrada('merienda') === 'alimentos');
+  ok('un tipo sin columna `entrada` sigue yendo por plato, como siempre',
+     w.modoEntrada('inventado') === 'plato');
+
+  w.abrirComida('', 'merienda');
+  ok('en la merienda se pregunta qué comió, no el plato',
+     hoja().indexOf('Qué comió') >= 0 && hoja().indexOf('El plato') < 0,
+     hoja().slice(0,200));
+  ok('con el buscador de alimentos arriba', !!d.querySelector('#inBusca'));
+  ok('y su ejemplo es una merienda de verdad',
+     d.querySelector('#inBusca').placeholder.indexOf('babybel') >= 0,
+     d.querySelector('#inBusca').placeholder);
+  ok('no se ofrecen platos: ahí no hay plato', !d.querySelector('#pltWrap'));
+  ok('solo hay UN buscador, no dos con el mismo id',
+     d.querySelectorAll('#hojaC #inBusca').length === 1,
+     d.querySelectorAll('#hojaC #inBusca').length);
+
+  /* Pero si ese día SÍ hubo un plato con nombre, hay salida. */
+  ok('se puede ponerle nombre de plato', !!d.querySelector('#ponerPlato'));
+  click(d.querySelector('#ponerPlato'));
+  ok('y entonces aparece el campo del plato', !!d.querySelector('#inPlato'));
+  ok('con sus platos guardados', !!d.querySelector('#pltWrap'));
+
+  console.log('\n--- TUS PLATOS: UN TOQUE, NO OCHO ---');
+  w.abrirComida('', 'comida');
   ok('sin escribir nada ya se ofrecen platos',
      d.querySelectorAll('#pltWrap [data-plato]').length > 0,
      d.querySelectorAll('#pltWrap [data-plato]').length);
@@ -568,17 +635,17 @@ setTimeout(() => {
      d.querySelector('#pltWrap').textContent.indexOf('Lo de siempre') >= 0,
      d.querySelector('#pltWrap').textContent.slice(0,60));
 
-  /* Lo que se desayuna y lo que se cena no se parecen en nada. */
-  const primerosDe = t => { w.abrirComida('', t);
-    return [...d.querySelectorAll('#pltWrap [data-plato]')].map(b => b.dataset.plato); };
+  /* Lo que se desayuna y lo que se cena no se parecen en nada. El orden se
+     comprueba en la función: en pantalla el desayuno ya no lista platos. */
+  const idsDe = t => w.buscarPlatos('', t).map(x => x.clave);
   ok('en desayuno manda lo del desayuno',
-     primerosDe('desayuno')[0] === 'leche con galletas', primerosDe('desayuno')[0]);
+     idsDe('desayuno')[0] === 'leche con galletas', idsDe('desayuno')[0]);
   ok('en comida, lo de la comida',
-     primerosDe('comida')[0] === 'arroz con tomate y huevo', primerosDe('comida')[0]);
+     idsDe('comida')[0] === 'arroz con tomate y huevo', idsDe('comida')[0]);
   ok('pero el resto NO desaparece: se ordena, no se filtra',
-     primerosDe('desayuno').length >= 3, primerosDe('desayuno').join(','));
+     idsDe('desayuno').length >= 3, idsDe('desayuno').join(','));
   ok('un plato sin categorías no se ofrece: marcarlo no aportaría nada',
-     primerosDe('comida').indexOf('algo raro') < 0, primerosDe('comida').join(','));
+     idsDe('comida').indexOf('algo raro') < 0, idsDe('comida').join(','));
 
   console.log('\n--- APLICAR UN PLATO ---');
   w.abrirComida('', 'comida');
@@ -610,7 +677,6 @@ setTimeout(() => {
      d.querySelector('#pltWrap').textContent.indexOf('casan') >= 0,
      d.querySelector('#pltWrap').textContent.slice(0,40));
 
-  /* Buscar sin acentos y con mayúsculas tiene que funcionar igual. */
   inp.value = 'MERLUZA';
   inp.dispatchEvent(new w.Event('input', { bubbles:true }));
   ok('da igual cómo se escriba',
@@ -850,7 +916,9 @@ setTimeout(() => {
        aciertan solos (ahora, casa, quien tiene la custodia), así que
        ponerlos antes obligaba a pasar por tres preguntas ya resueltas para
        llegar a la única que hay que contestar. */
-    w.abrirComida('');
+    /* Con tipo explícito: sin él, abrirComida lo saca de la hora del reloj y
+       el formulario cambia según cuándo corras el test. */
+    w.abrirComida('', 'comida');
     const orden = ['Qué comida es','El plato','Hora','Dónde','A cargo de',
                    'Bebidas','Postres','Y además','Qué categorías cuenta'];
     const txt = hoja();
@@ -894,7 +962,7 @@ setTimeout(() => {
         d.querySelector('.gchip[data-g="capricho"]').className.indexOf('on') < 0));
 
     console.log('\n--- EL NOMBRE DEL PLATO ---');
-    w.abrirComida('');
+    w.abrirComida('', 'comida');
     d.querySelector('#inPlato').value = 'Tequeños con guacamole';
     d.querySelector('#inPlato').dispatchEvent(new w.Event('input',{bubbles:true}));
     click(d.querySelector('.gchip[data-g="verduras"]'));

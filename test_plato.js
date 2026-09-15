@@ -107,11 +107,15 @@ function abrir(comidas, ia){
 }
 const espera = ms => new Promise(r => setTimeout(r, ms));
 
+/* Por defecto, COMIDA: sin tipo, abrirComida lo saca de la hora del reloj,
+   y desde que el desayuno y la merienda se apuntan con alimentos sueltos
+   eso cambiaba el formulario según a qué hora corrieras el test. Este
+   fichero va de platos, así que el tipo tiene que ser uno de plato. */
 async function formulario(comidas, ia, tipo){
   const A = abrir(comidas, ia);
   await espera(700);
   A.w.ir('alimentacion');
-  A.w.abrirComida('', tipo);
+  A.w.abrirComida('', tipo || 'comida');
   await espera(60);
   return A;
 }

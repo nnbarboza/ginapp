@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.27';
+const APP_VERSION = '0.9.28';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -214,7 +214,15 @@ const HEADERS = {
 
   /* Las cinco comidas del día. Estaban clavadas en el código; aquí se les
      puede cambiar el nombre, el emoji o ponerles un icono propio. */
-  'Tipos_Comida': ['id', 'nombre', 'emoji', 'icono', 'orden', 'activo'],
+  /**
+   * `entrada`: cómo se apunta esa comida.
+   *   plato     → lo normal es un plato con nombre ("Arroz con tomate")
+   *   alimentos → lo normal son cosas sueltas (tortita de arroz, babybel,
+   *               mini bocata). Pedir "el plato" ahí es pedir un nombre que
+   *               no existe.
+   * Vacío = plato, que es como funcionaba antes de existir la columna.
+   */
+  'Tipos_Comida': ['id', 'nombre', 'emoji', 'icono', 'entrada', 'orden', 'activo'],
 
   /* Imágenes sueltas que no cuelgan de ninguna fila: los dos logos y los
      iconos del resumen semanal de alimentación. `nota` explica cuál es
@@ -317,9 +325,18 @@ const HEADERS = {
 
 /* Grupos alimentarios válidos. `nuevo_alimento` NO está aquí a propósito:
    que un alimento sea nuevo es un dato derivado (primera aparición en Comidas). */
+/**
+ * Los ids NO cambian aunque cambie el nombre que se lee.
+ *
+ * `cereales` se llama ahora «Hidratos» y `capricho`, «Dulces, bollería y
+ * galletas». Renombrar el id habría obligado a reescribir cada fila de
+ * Comidas y de Alimentos que ya los usa, y a cambio no se gana nada: el id
+ * es interno y el nombre vive en el Sheet.
+ */
 const GRUPOS = ['verduras', 'fruta', 'legumbres', 'pescado', 'proteina_blanca',
-                'carnes_rojas', 'huevos', 'lacteos', 'frutos_secos', 'cereales',
-                'ultraprocesado', 'capricho', 'permitido', 'bebidas', 'otros'];
+                'carnes_rojas', 'carnes_procesadas', 'huevos', 'lacteos',
+                'frutos_secos', 'cereales', 'ultraprocesado', 'capricho',
+                'bebidas_azucaradas', 'permitido', 'bebidas', 'otros'];
 
 /* Las bebidas son alimentos como los demás — cuentan para la variedad y
    se buscan igual — pero salen en su propia sección del buscador porque
@@ -335,7 +352,17 @@ const GRUPOS_ALIAS = { 'proteina': 'proteina_blanca', 'libre': 'permitido',
                        'carne_blanca': 'proteina_blanca', 'dulce': 'capricho',
                        'fruto_seco': 'frutos_secos', 'frutosecos': 'frutos_secos',
                        'legumbre': 'legumbres', 'carne': 'proteina_blanca',
-                       'frutas': 'fruta', 'pescados': 'pescado', 'cereal': 'cereales' };
+                       'frutas': 'fruta', 'pescados': 'pescado', 'cereal': 'cereales',
+                       /* Nombres nuevos que apuntan a ids que ya existían: así
+                          «hidratos» o «dulces» valen si alguien los escribe. */
+                       'hidratos': 'cereales', 'hidrato': 'cereales',
+                       'dulces': 'capricho', 'bolleria': 'capricho',
+                       'galletas': 'capricho', 'caprichos': 'capricho',
+                       'bebida_azucarada': 'bebidas_azucaradas',
+                       'azucaradas': 'bebidas_azucaradas',
+                       'carne_procesada': 'carnes_procesadas',
+                       'procesadas': 'carnes_procesadas',
+                       'embutido': 'carnes_procesadas', 'embutidos': 'carnes_procesadas' };
 
 const ESTADOS_ALIMENTO = ['aceptado', 'aprendizaje', 'rechazado'];
 const ESTADOS_TOMA = ['comio', 'probo', 'rechazo'];
@@ -390,12 +417,12 @@ const SEED = {
      el rojo de mamá (#E4575B) ni el lila de Gina (#8B62D9): en la rejilla del
      mes conviven la casa de la custodia y los puntos de los eventos. */
   'Tipos_Comida': [
-    ['desayuno', 'Desayuno', '🥣',  '', 1, true],
-    ['almuerzo', 'Almuerzo', '🍎',  '', 2, true],
-    ['comida',   'Comida',   '🍽️', '', 3, true],
-    ['merienda', 'Merienda', '🍪',  '', 4, true],
-    ['cena',     'Cena',     '🌙',  '', 5, true],
-    ['otro',     'Otra',     '🍴',  '', 6, true]
+    ['desayuno', 'Desayuno', '🥣',  '', 'alimentos', 1, true],
+    ['almuerzo', 'Almuerzo', '🍎',  '', 'alimentos', 2, true],
+    ['comida',   'Comida',   '🍽️', '', 'plato',     3, true],
+    ['merienda', 'Merienda', '🍪',  '', 'alimentos', 4, true],
+    ['cena',     'Cena',     '🌙',  '', 'plato',     5, true],
+    ['otro',     'Otra',     '🍴',  '', 'plato',     6, true]
   ],
 
   /* La columna `fichero` se rellena a mano con el nombre de un PNG/SVG que
@@ -445,21 +472,25 @@ const SEED = {
      Los momentos son el criterio de SUGERENCIA, no de registro: se puede
      apuntar pescado en el desayuno, simplemente la app no lo propone. */
   'Objetivos_Semana': [
-    ['verduras',       'Verdura',        '🥦', 14, 'min', 20, 'comida,cena',                        '', '', 1,  true],
-    ['fruta',          'Fruta',          '🍓', 14, 'min', 18, '',                                   '', '', 2,  true],
-    ['legumbres',      'Legumbres',      '🫘', 3,  'min', 10, 'comida,cena',                        '', '', 3,  true],
-    ['pescado',        'Pescado',        '🐟', 2,  'min', 10, 'comida,cena',                        '', '', 4,  true],
-    ['huevos',         'Huevos',         '🥚', 3,  'min', 6,  'comida,cena,desayuno',               '', '', 5,  true],
-    ['proteina_blanca','Pollo y pavo',   '🍗', 3,  'min', 6,  'comida,cena',                        '', '', 6,  true],
-    ['frutos_secos',   'Frutos secos',   '🥜', 4,  'min', 6,  'almuerzo,merienda,desayuno',         '', '', 7,  true],
-    ['lacteos',        'Lácteos',        '🥛', 10, 'min', 6,  'desayuno,almuerzo,merienda,cena',    '', '', 8,  true],
-    ['cereales',       'Cereales y pan', '🍞', 10, 'min', 4,  '',                                   '', '', 9,  true],
-    /* Los de moderar ya no llevan cuota: llevan bandas. El `objetivo` se
-       queda por compatibilidad con lo que haya escrito, pero no puntúa. */
-    ['carnes_rojas',   'Carne roja',     '🥩', 1,  'max', 4,  '', 2,  5,  10, true],
-    ['ultraprocesado', 'Ultraprocesados','🍟', 3,  'max', 6,  '', 5,  12, 11, true],
-    ['capricho',       'Caprichos',      '🍬', 4,  'max', 2,  '', 5,  12, 12, true],
-    ['permitido',      'Comida libre',   '🍕', 2,  'max', 2,  '', 2,  5,  13, true]
+    ['verduras',       'Verdura',        '🥦', 14, 'min', 20, 'comida,cena',                     '', '', 1,  true],
+    ['fruta',          'Fruta',          '🍓', 14, 'min', 18, '',                                '', '', 2,  true],
+    ['legumbres',      'Legumbres',      '🫘', 3,  'min', 10, 'comida,cena',                     '', '', 3,  true],
+    ['pescado',        'Pescado',        '🐟', 2,  'min', 10, 'comida,cena',                     '', '', 4,  true],
+    ['huevos',         'Huevos',         '🥚', 3,  'min', 6,  'comida,cena,desayuno',            '', '', 5,  true],
+    ['proteina_blanca','Pollo y pavo',   '🍗', 3,  'min', 6,  'comida,cena',                     '', '', 6,  true],
+    ['frutos_secos',   'Frutos secos',   '🥜', 4,  'min', 6,  'almuerzo,merienda,desayuno',      '', '', 7,  true],
+    ['lacteos',        'Lácteos',        '🥛', 10, 'min', 6,  'desayuno,almuerzo,merienda,cena', '', '', 8,  true],
+    /* El id sigue siendo `cereales`: lo que cambia es el nombre. «Hidratos»
+       es más amplio y mete la patata y el arroz sin forzar la palabra. */
+    ['cereales',       'Hidratos',       '🍞', 10, 'min', 4,  '',                                '', '', 9,  true],
+
+    /* Los de moderar: bandas de frecuencia, no cuota. El `objetivo` se queda
+       por compatibilidad con lo que ya estuviera escrito, pero no puntúa. */
+    ['capricho',           'Dulces, bollería y galletas', '🍪', 4, 'max', 6, '', 5, 12, 10, true],
+    ['bebidas_azucaradas', 'Bebidas azucaradas',          '🥤', 2, 'max', 6, '', 1, 4,  11, true],
+    ['carnes_procesadas',  'Carnes procesadas',           '🥓', 2, 'max', 5, '', 2, 5,  12, true],
+    ['ultraprocesado',     'Ultraprocesados',             '🍟', 3, 'max', 6, '', 5, 12, 13, true],
+    ['permitido',          'Comida libre',                '🍕', 2, 'max', 2, '', 2, 5,  14, true]
   ],
 
   /* Biblioteca de arranque. Estado 'aprendizaje' por defecto: la app no
@@ -3713,6 +3744,88 @@ function _menuAlimentos(r) {
   });
   out.otros = otros;
   return out;
+}
+
+
+/**
+ * Pone al día Objetivos_Semana con la semilla, ACTUALIZANDO lo que ya está.
+ *
+ * completarCatalogos() solo añade filas que faltan, nunca toca las que hay.
+ * Por eso al añadir `momentos` y las bandas, las filas antiguas se quedaron
+ * con la columna creada y vacía — y `momentos` vacío significa «vale en
+ * cualquier comida», así que la app seguía recomendando legumbres para
+ * merendar. La columna estaba; lo que faltaba era el dato.
+ *
+ * Qué hace, por columna:
+ *   nombre · emoji · momentos · banda_baja · banda_alta · orden → de la semilla
+ *   objetivo · peso · activo  → SE RESPETAN si ya están puestos, porque son
+ *                               justo los que se ajustan a mano.
+ *
+ * Informa por defecto. Solo escribe con reajustarGrupos(true).
+ */
+function reajustarGrupos(aplicar) {
+  const hace = aplicar === true;
+  const sh = SS.getSheetByName('Objetivos_Semana');
+  if (!sh) { Logger.log('❌ No existe Objetivos_Semana. Corre setup().'); return; }
+
+  const semilla = {};
+  SEED['Objetivos_Semana'].forEach(function (arr) {
+    const o = {};
+    HEADERS['Objetivos_Semana'].forEach(function (col, i) { o[col] = arr[i]; });
+    semilla[String(o.grupo)] = o;
+  });
+
+  const actuales = _readSheet('Objetivos_Semana');
+  const hay = {};
+  actuales.forEach(function (r) { hay[String(r.grupo).trim()] = r; });
+
+  let cambios = 0;
+  Object.keys(semilla).forEach(function (g) {
+    const nuevo = semilla[g], viejo = hay[g];
+    if (!viejo) {
+      Logger.log((hace ? '➕ ' : '· añadiría ') + g + '  «' + nuevo.nombre + '»');
+      if (hace) _upsert('Objetivos_Semana', 'grupo', nuevo);
+      cambios++;
+      return;
+    }
+    /* Lo que se ajusta a mano no se pisa. */
+    const fila = {
+      grupo: g,
+      nombre: nuevo.nombre, emoji: nuevo.emoji,
+      objetivo: (viejo.objetivo === '' || viejo.objetivo == null) ? nuevo.objetivo : viejo.objetivo,
+      tipo: nuevo.tipo,
+      peso: (viejo.peso === '' || viejo.peso == null) ? nuevo.peso : viejo.peso,
+      momentos: nuevo.momentos,
+      banda_baja: nuevo.banda_baja, banda_alta: nuevo.banda_alta,
+      orden: nuevo.orden,
+      activo: (viejo.activo === '' || viejo.activo == null) ? true : _truthy(viejo.activo),
+      icono: viejo.icono || ''
+    };
+    const dif = [];
+    ['nombre', 'momentos', 'banda_baja', 'banda_alta', 'orden'].forEach(function (c) {
+      if (String(viejo[c] == null ? '' : viejo[c]) !== String(fila[c] == null ? '' : fila[c])) {
+        dif.push(c + ': «' + (viejo[c] == null ? '' : viejo[c]) + '» → «' + fila[c] + '»');
+      }
+    });
+    if (!dif.length) return;
+    Logger.log((hace ? '✏️ ' : '· cambiaría ') + g + '  ' + dif.join(' · '));
+    if (hace) _upsert('Objetivos_Semana', 'grupo', fila);
+    cambios++;
+  });
+
+  /* La carne roja sale de «sin pasarse»: no es lo mismo que la procesada, y
+     ponerle el nombre nuevo dejaría un filete etiquetado como embutido. Se
+     desactiva, así lo ya registrado sigue leyéndose y deja de puntuar. */
+  const roja = hay['carnes_rojas'];
+  if (roja && _truthy(roja.activo)) {
+    Logger.log((hace ? '🔕 ' : '· desactivaría ') + 'carnes_rojas (la sustituye carnes_procesadas)');
+    if (hace) { roja.activo = false; _upsert('Objetivos_Semana', 'grupo', roja); }
+    cambios++;
+  }
+
+  if (!cambios) { Logger.log('✅ Los grupos ya están al día.'); return; }
+  if (hace) { _invalidar(); Logger.log('✅ ' + cambios + ' filas ajustadas.'); }
+  else Logger.log('ℹ️ Nada escrito. Corre reajustarGrupos(true) para aplicarlo.');
 }
 
 /**

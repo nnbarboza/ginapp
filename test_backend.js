@@ -37,9 +37,18 @@ global.Utilities = {
 global.SpreadsheetApp = {
   openById: () => FAKE_SS, getActiveSpreadsheet: () => FAKE_SS, flush: () => {}
 };
+/* getSheetByName devolvía null para TODO, así que cualquier handler que
+   empiece comprobando que la pestaña existe salía por la puerta antes de
+   hacer nada — y el test pasaba sin probar nada. Devuelve una hoja de
+   mentira: lo que se lee y se escribe sigue yendo a TABLAS. */
+const HOJA_FALSA = {
+  getLastRow: () => 2, getLastColumn: () => 1, getDataRange: () => ({ getValues: () => [] }),
+  getRange: () => ({ getValues: () => [], setValues(){ return this; }, setValue(){ return this; } }),
+  appendRow: () => {}, deleteRow: () => {}, getName: () => 'falsa'
+};
 const FAKE_SS = {
   getId: () => 'fake', getSpreadsheetTimeZone: () => 'Europe/Madrid',
-  getSheetByName: () => null, insertSheet: () => null, getSheets: () => []
+  getSheetByName: () => HOJA_FALSA, insertSheet: () => HOJA_FALSA, getSheets: () => []
 };
 global.DriveApp = { getFileById: () => { throw new Error('sin Drive'); } };
 /* Una CacheService de mentira pero con memoria: sin esto no se puede probar
@@ -190,6 +199,63 @@ CACHE = {};
 _bootGuardar('{"ok":true}');
 _invalidar();
 ok('guardar un gasto deja la caché sin efecto', _bootLeer() === null);
+
+console.log('\n--- REAJUSTAR LOS GRUPOS ---');
+/* completarCatalogos solo AÑADE filas que faltan. Al meter `momentos`, las
+   filas que ya estaban se quedaron con la columna creada y vacía — y vacío
+   significa «vale en cualquier comida», así que la app seguía recomendando
+   legumbres para merendar. La columna estaba; faltaba el dato. */
+TABLAS['Objetivos_Semana'] = [
+  { grupo:'cereales', nombre:'Cereales y pan', emoji:'🍞', objetivo:12, tipo:'min',
+    peso:4, momentos:'', banda_baja:'', banda_alta:'', orden:9, activo:true },
+  { grupo:'legumbres', nombre:'Legumbres', emoji:'🫘', objetivo:3, tipo:'min',
+    peso:10, momentos:'', banda_baja:'', banda_alta:'', orden:3, activo:true },
+  { grupo:'carnes_rojas', nombre:'Carne roja', emoji:'🥩', objetivo:1, tipo:'max',
+    peso:4, momentos:'', banda_baja:'', banda_alta:'', orden:10, activo:true }
+];
+const og = () => TABLAS['Objetivos_Semana'];
+const fila = g => og().filter(x => x.grupo === g)[0];
+
+/* Primero, sin aplicar: no puede tocar nada. */
+const antesJSON = JSON.stringify(og());
+reajustarGrupos();
+ok('sin parámetro solo informa, no escribe', JSON.stringify(og()) === antesJSON);
+
+reajustarGrupos(true);
+ok('rellena los momentos que estaban vacíos',
+   fila('legumbres').momentos === 'comida,cena', fila('legumbres').momentos);
+ok('«Cereales y pan» pasa a llamarse Hidratos',
+   fila('cereales').nombre === 'Hidratos', fila('cereales').nombre);
+ok('pero el id NO cambia: reescribir Comidas y Alimentos no compensa',
+   fila('cereales').grupo === 'cereales');
+
+/* Lo que se ajusta a mano no se pisa: son justo esas dos columnas. */
+ok('respeta el objetivo que habías puesto tú', fila('cereales').objetivo === 12,
+   fila('cereales').objetivo);
+ok('y el peso', fila('legumbres').peso === 10, fila('legumbres').peso);
+
+ok('añade los grupos nuevos de moderar',
+   !!fila('bebidas_azucaradas') && !!fila('carnes_procesadas'),
+   og().map(x => x.grupo).join(','));
+ok('con sus bandas, no con cuota',
+   _n(fila('bebidas_azucaradas').banda_baja) > 0 &&
+   _n(fila('bebidas_azucaradas').banda_alta) > _n(fila('bebidas_azucaradas').banda_baja),
+   fila('bebidas_azucaradas').banda_baja + '–' + fila('bebidas_azucaradas').banda_alta);
+ok('los caprichos pasan a llamarse dulces y galletas',
+   String(fila('capricho').nombre).toLowerCase().indexOf('dulces') === 0,
+   fila('capricho').nombre);
+
+/* La carne roja NO se renombra a procesada: son cosas distintas y un filete
+   quedaría etiquetado como embutido. Se desactiva. */
+ok('la carne roja se desactiva, no se renombra',
+   !_truthy(fila('carnes_rojas').activo) && fila('carnes_rojas').nombre === 'Carne roja',
+   fila('carnes_rojas').nombre + ' activo=' + fila('carnes_rojas').activo);
+ok('y lo ya registrado como carne roja sigue existiendo', !!fila('carnes_rojas'));
+
+/* Es idempotente: correrlo dos veces no cambia nada más. */
+const trasUno = JSON.stringify(og());
+reajustarGrupos(true);
+ok('correrlo otra vez no cambia nada', JSON.stringify(og()) === trasUno);
 
 console.log('\n--- RECURRENTES ---');
 /* El cole: 180 € el día 1 de cada mes desde junio. Hoy es 19 de agosto en

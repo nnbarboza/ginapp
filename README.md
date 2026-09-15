@@ -63,6 +63,7 @@ Subir siempre a la vez `APP_VERSION` (en `index.html` y `Code.gs`) y `CACHE`
 | `diagnosticar()` | Estado de cada pestaña: columnas que faltan o sobran, nº de filas. Primer sitio donde mirar. |
 | `verCustodia('2026-09')` | Imprime el mes día a día para comprobar el patrón y la fecha ancla. |
 | `verMenu('2026-09')` | Estado del menú del comedor: filas, fechas ilegibles, grupos mal escritos y cuántas llegan a la app. Ver `MENU_COLE.md`. |
+| `reajustarGrupos()` | Pone Objetivos_Semana al día con la semilla **actualizando las filas que ya existen** — `completarCatalogos` solo añade las que faltan, por eso `momentos` se quedó vacío y la app recomendaba legumbres para merendar. Respeta `objetivo`, `peso` y `activo`, que son los que se ajustan a mano. Solo informa; escribe con `reajustarGrupos(true)`. |
 | `verRecurrentes()` | Las reglas de lo que se repite cada mes y qué filas están pendientes de crearse. Solo informa. |
 | `verificarIntegridad()` | Busca referencias rotas entre pestañas. Solo informa. |
 | `limpiarActividad(true)` | Recorta el feed de actividad. Sin `true` solo informa. |
@@ -121,6 +122,17 @@ estadísticas), así que necesita su propia pasada.
 natural, el lunes por la mañana el índice se quedaba a cero y no volvía a
 significar nada hasta el jueves. Una comida del domingo dejaba de contar por
 el calendario, no por la dieta.
+
+**Cada comida se apunta como es.** Columna `entrada` en `Tipos_Comida`:
+`plato` (comida, cena) o `alimentos` (desayuno, almuerzo, merienda). El
+desayuno y la merienda no son platos —tortita de arroz, babybel, mini
+bocata—, y pedir «el plato» ahí es pedir un nombre que no existe. Vacío =
+plato, como antes de existir la columna.
+
+**Los ids de grupo no cambian aunque cambie el nombre.** `cereales` se lee
+«Hidratos» y `capricho`, «Dulces, bollería y galletas». Renombrar el id
+obligaría a reescribir cada fila de `Comidas` y `Alimentos` que ya lo usa, y
+el id es interno.
 
 **Tus platos.** La pestaña `Platos` guarda plato → categorías y lleva años
 existiendo, pero solo como caché para no repreguntarle a la IA: nunca se

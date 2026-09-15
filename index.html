@@ -1448,6 +1448,33 @@ svg{display:block;flex-shrink:0}
 #fallo button.x{padding:0;width:28px;height:28px;display:flex;align-items:center;
   justify-content:center;background:none}
 
+/* Guardar el plato en la biblioteca era un efecto secundario invisible de
+   tocar «Deducir». Ahora se ve y se decide. */
+/* La tira de días, con sus flechas. La semana natural se navega aquí; la
+   ventana de siete días del índice es otra cosa y vive más abajo. */
+.dtira-w{display:flex;align-items:center;gap:4px}
+.dtira-w .dtira{flex:1;min-width:0}
+.dtira-w .fl{width:26px;height:26px;border-radius:50%;background:var(--surface2);
+  color:var(--t2);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;cursor:pointer}
+.dtira-w .fl:active{transform:scale(.92)}
+.dtira-t{text-align:center;font-size:11px;color:var(--t3);font-weight:600;margin-top:5px}
+
+.sw-plato{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;
+  background:var(--surface2);border-radius:var(--r-in);padding:10px 12px;
+  text-align:left;cursor:pointer}
+.sw-plato .bx{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);
+  background:var(--surface);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;color:#fff}
+.sw-plato.on .bx{background:var(--ali-d);border-color:var(--ali-d)}
+.sw-plato .tx b{display:block;font-size:13px;font-weight:600;letter-spacing:-.15px}
+.sw-plato .tx span{display:block;font-size:11.5px;color:var(--t2);margin-top:1px}
+
+/* La salida cuando la comida va por alimentos pero ese día SÍ hubo un plato
+   con nombre. Discreta: es la excepción, no el camino. */
+.lk-plato{display:flex;align-items:center;gap:6px;margin-top:12px;background:none;
+  color:var(--t2);font-size:12.5px;font-weight:600;cursor:pointer;padding:4px 0}
+
 /* ---------- tus platos ----------
    Va pegado al campo del nombre, sin tarjeta propia: es una continuación
    del campo, no otra sección. */
@@ -1636,7 +1663,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.27';
+var APP_VERSION = '0.9.28';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -3324,10 +3351,17 @@ var VALOR_TOMA = { comio:1, probo:0.5, rechazo:0 };
 
 /* Las cinco comidas del día. Esta lista es el respaldo: si la pestaña
    Tipos_Comida tiene filas, mandan ellas — nombre, emoji e icono. */
+/* `entrada` dice cómo se apunta esa comida: con un plato con nombre, o con
+   alimentos sueltos. El desayuno, el almuerzo y la merienda no son platos
+   —tortita de arroz, babybel, mini bocata— y pedir "el plato" ahí es pedir
+   un nombre que no existe. Lo manda el Sheet; esto es solo el respaldo. */
 var TIPOS_COMIDA_FB = [
-  {id:'desayuno', nom:'Desayuno', em:'🥣'}, {id:'almuerzo', nom:'Almuerzo', em:'🍎'},
-  {id:'comida',   nom:'Comida',   em:'🍽️'}, {id:'merienda', nom:'Merienda', em:'🍪'},
-  {id:'cena',     nom:'Cena',     em:'🌙'}, {id:'otro',     nom:'Otra',     em:'🍴'}
+  {id:'desayuno', nom:'Desayuno', em:'🥣', entrada:'alimentos'},
+  {id:'almuerzo', nom:'Almuerzo', em:'🍎', entrada:'alimentos'},
+  {id:'comida',   nom:'Comida',   em:'🍽️', entrada:'plato'},
+  {id:'merienda', nom:'Merienda', em:'🍪', entrada:'alimentos'},
+  {id:'cena',     nom:'Cena',     em:'🌙', entrada:'plato'},
+  {id:'otro',     nom:'Otra',     em:'🍴', entrada:'plato'}
 ].map(function(t){ t._icono = 'com_' + t.id + '.webp'; return t; });
 var TIPOS_COMIDA = TIPOS_COMIDA_FB;
 
@@ -3434,11 +3468,20 @@ function alimentoPorNombre(n){
     return igualNombre(a.nombre, n); })[0] || null;
 }
 
+/**
+ * ¿Esta comida se apunta con un plato o con alimentos sueltos?
+ * Sin columna `entrada`, plato — que es como funcionaba antes.
+ */
+function modoEntrada(tipo){
+  var t = tipo ? tipoComida(tipo) : null;
+  return (t && t.entrada === 'alimentos') ? 'alimentos' : 'plato';
+}
+
 /** Un tipo de comida por id, sin suponer nunca cuántos hay ni en qué orden. */
 function tipoComida(id){
   return TIPOS_COMIDA.filter(function(x){ return x.id === String(id); })[0] ||
          TIPOS_COMIDA_FB.filter(function(x){ return x.id === String(id); })[0] ||
-         { id:'otro', nom:'Otra', em:'🍴', emoji:'🍴', icono:'' };
+         { id:'otro', nom:'Otra', em:'🍴', emoji:'🍴', icono:'', entrada:'plato' };
 }
 
 /** Refresca TIPOS_COMIDA con lo que diga el Sheet. Se llama tras cargar. */
@@ -3454,6 +3497,7 @@ function tiposComidaDelSheet(){
     var fb = TIPOS_COMIDA_FB.filter(function(x){ return x.id === String(r.id); })[0] || {};
     return { id:String(r.id), nom:String(r.nombre||fb.nom||r.id),
              em:String(r.emoji||fb.em||'🍴'), emoji:String(r.emoji||fb.em||'🍴'),
+             entrada:String(r.entrada||fb.entrada||'plato').toLowerCase(),
              icono:String(r.icono||''), _icono:String(r._icono||'') };
   });
 }
@@ -3489,16 +3533,25 @@ function objetivosSemana(){ return state.data.objetivos_semana || []; }
 /* Los mismos grupos que valida el backend, y los mismos alias. Están aquí
    duplicados a propósito: el menú del cole se lee y se reparte en checks
    antes de mandar nada, así que la app tiene que saber cuáles valen. */
+/* Los ids NO cambian aunque cambie el nombre que se lee: `cereales` es
+   «Hidratos» y `capricho` es «Dulces, bollería y galletas». Renombrar el id
+   obligaría a reescribir cada fila de Comidas y Alimentos que ya lo usa. */
 var GRUPOS = ['verduras', 'fruta', 'legumbres', 'pescado', 'proteina_blanca',
-              'carnes_rojas', 'huevos', 'lacteos', 'frutos_secos', 'cereales',
-              'ultraprocesado', 'capricho', 'permitido', 'bebidas', 'otros'];
+              'carnes_rojas', 'carnes_procesadas', 'huevos', 'lacteos',
+              'frutos_secos', 'cereales', 'ultraprocesado', 'capricho',
+              'bebidas_azucaradas', 'permitido', 'bebidas', 'otros'];
 var GRUPOS_ALIAS = { proteina:'proteina_blanca', libre:'permitido',
   cereales_integrales:'cereales', verdura:'verduras', agua:'bebidas',
   bebida:'bebidas', lacteo:'lacteos', carne_roja:'carnes_rojas',
   huevo:'huevos', fruto_seco:'frutos_secos', frutosecos:'frutos_secos',
   pasta:'cereales', arroz:'cereales', legumbre:'legumbres', tuberculos:'cereales',
   carne_blanca:'proteina_blanca', carne:'proteina_blanca', dulce:'capricho',
-  frutas:'fruta', pescados:'pescado', cereal:'cereales' };
+  frutas:'fruta', pescados:'pescado', cereal:'cereales',
+  hidratos:'cereales', hidrato:'cereales', dulces:'capricho', bolleria:'capricho',
+  galletas:'capricho', caprichos:'capricho',
+  bebida_azucarada:'bebidas_azucaradas', azucaradas:'bebidas_azucaradas',
+  carne_procesada:'carnes_procesadas', procesadas:'carnes_procesadas',
+  embutido:'carnes_procesadas', embutidos:'carnes_procesadas' };
 
 /* ============================================================
    CRECIMIENTO
@@ -4187,11 +4240,9 @@ function pintarAlimentacion(){
   }
 
   /* ---- Comidas del día ---- */
-  /* Si hoy cae dentro de la ventana, hoy es el día elegido aunque la
-     ventana no termine hoy: es el día del que se va a apuntar algo. */
-  var hoyDentro = state.data.hoy >= lun && state.data.hoy <= dom;
-  var dia = (state.aliDia && state.aliDia>=lun && state.aliDia<=dom)
-    ? state.aliDia : (hoyDentro ? state.data.hoy : lun);
+  /* El día que se está mirando ya NO depende de la ventana del índice: la
+     tira tiene su propia semana. Por defecto, hoy. */
+  var dia = state.aliDia || state.data.hoy;
   state.aliDia = dia;
   out += pintarDiaComidas(dia);
 
@@ -4325,17 +4376,29 @@ function pintarDiaComidas(f){
   var titulo = f===state.data.hoy ? 'Hoy'
              : f===addDays(state.data.hoy,-1) ? 'Ayer'
              : fechaCorta(f);
-  var lun = state.aliLunes;
-
-  /* Tira de días de la semana: cambiar de día no debería obligar a
-     salir de aquí. */
-  var tira = '<div class="dtira">' + [0,1,2,3,4,5,6].map(function(i){
-    var d = addDays(lun,i), on = d===f, fut = d > state.data.hoy;
-    var n = comidasDelDia(d).length;
-    return '<button class="dt'+(on?' on':'')+(fut?' fut':'')+'" data-alidia="'+d+'">' +
-      '<span class="dw">'+iniDow(d)+'</span><span class="nu">'+(+d.split('-')[2])+'</span>' +
-      '<span class="pt'+(n?' hay':'')+'"></span></button>';
-  }).join('') + '</div>';
+  /* La tira es la SEMANA NATURAL, de lunes a domingo, con navegación propia.
+     Estaba compartiendo la ventana móvil del índice y eso dejaba el día de
+     hoy siempre pegado al borde derecho: se leía como la semana pasada. Son
+     dos cosas distintas y ahora son dos ventanas distintas — el índice y la
+     tabla del final siguen midiendo los últimos siete días, que para medir
+     es lo correcto; para navegar por días, no. */
+  var lun = state.diaSem || lunesDe(f);
+  state.diaSem = lun;
+  var dom7 = addDays(lun,6);
+  var estaSem = lun === lunesDe(state.data.hoy);
+  var tira = '<div class="dtira-w">' +
+    '<button class="fl" id="semAnt">'+svg('chevronI',15)+'</button>' +
+    '<div class="dtira">' + [0,1,2,3,4,5,6].map(function(i){
+      var d = addDays(lun,i), on = d===f, fut = d > state.data.hoy;
+      var n = comidasDelDia(d).length;
+      return '<button class="dt'+(on?' on':'')+(fut?' fut':'')+'" data-alidia="'+d+'">' +
+        '<span class="dw">'+iniDow(d)+'</span><span class="nu">'+(+d.split('-')[2])+'</span>' +
+        '<span class="pt'+(n?' hay':'')+'"></span></button>';
+    }).join('') + '</div>' +
+    '<button class="fl" id="semSig"'+(estaSem?' style="visibility:hidden"':'')+'>' +
+      svg('chevron',15)+'</button></div>' +
+    (estaSem ? '' : '<div class="dtira-t">' + (+lun.split('-')[2]) + ' – ' +
+      (+dom7.split('-')[2]) + ' ' + MESES_C[+dom7.split('-')[1]-1] + '</div>');
 
   var filas = TIPOS_COMIDA.filter(function(t){ return t.id !== 'otro'; }).map(function(t){
     var lista = porTipo[t.id] || [];
@@ -4486,29 +4549,61 @@ function pintarHojaComida(){
      El plato es lo que se comió: "Tequeños con guacamole". Lo que cuenta
      para los objetivos son sus CATEGORÍAS, no una lista de ingredientes.
      Nadie va a dar de alta "tequeños" como alimento, ni tiene por qué. */
-  h += '<div class="f-lb">El plato</div>' +
-    '<input class="inp" id="inPlato" type="text" placeholder="Tequeños con guacamole…" ' +
-      'value="'+esc(b.plato||'')+'" autocomplete="off" autocorrect="off">';
+  /* ---------- CÓMO SE APUNTA ESTA COMIDA ----------
+     El desayuno, el almuerzo y la merienda no son platos: son cosas sueltas
+     —tortita de arroz, babybel, mini bocata—. Pedir "el plato" ahí es pedir
+     un nombre que no existe, y acabas inventándotelo. Lo dice el Sheet
+     (columna `entrada` de Tipos_Comida), no el código. */
+  var porAlimentos = modoEntrada(b.tipo_comida) === 'alimentos' && !b.forzarPlato;
 
-  /* ---------- TUS PLATOS ----------
-     Lo que sueles dar en ESA comida, de un toque. La pestaña `Platos` ya
-     guardaba plato → categorías, pero solo como caché para no repreguntar
-     a la IA: nunca se te ofrecía, así que cada arroz con tomate había que
-     montarlo otra vez teniendo la respuesta guardada. */
-  /* El contenedor se pinta siempre, aunque esté vacío: al escribir se
-     rellena solo este trozo, y repintar la hoja entera perdería el foco
-     del teclado en mitad de una palabra. */
-  h += '<div id="pltWrap"></div>';
+  if(porAlimentos){
+    /* El buscador de alimentos sube aquí arriba, que es lo que se viene a
+       hacer. El plato queda como una línea por si ese día sí lo hubo. */
+    h += '<div class="f-lb">Qué comió</div>' +
+      '<div class="busca"><span class="lupa i">'+svg('lupa',17)+'</span>' +
+      '<input class="inp" id="inBusca" type="text" ' +
+      'placeholder="Tortita de arroz, babybel, mini bocata…" ' +
+      'autocomplete="off" autocorrect="off"></div><div id="resBusca"></div>';
+  } else {
+    h += '<div class="f-lb">El plato</div>' +
+      '<input class="inp" id="inPlato" type="text" placeholder="Tequeños con guacamole…" ' +
+        'value="'+esc(b.plato||'')+'" autocomplete="off" autocorrect="off">';
 
-  h +=
-    /* Un input de foto SIN `capture` hace que el móvil pregunte solo:
-       "Cámara / Fototeca". Poner dos botones era duplicar un menú que el
-       sistema ya da, y encima no cabían. */
-    '<div class="plato-acc">' +
-      '<button class="pa" id="btnPlato">'+svg('destello',16)+'<span>Deducir</span></button>' +
-      '<label class="pa alt" for="inFoto">'+svg('camara',16)+'<span>Foto</span>' +
-        '<input type="file" id="inFoto" accept="image/*" hidden></label>' +
-    '</div>';
+    /* ---------- TUS PLATOS ----------
+       Lo que sueles dar en ESA comida, de un toque. La pestaña `Platos` ya
+       guardaba plato → categorías, pero solo como caché para no repreguntar
+       a la IA: nunca se te ofrecía, así que cada arroz con tomate había que
+       montarlo otra vez teniendo la respuesta guardada.
+       El contenedor se pinta siempre, aunque esté vacío: al escribir se
+       rellena solo este trozo, y repintar la hoja entera perdería el foco
+       del teclado en mitad de una palabra. */
+    h += '<div id="pltWrap"></div>';
+
+    h +=
+      /* Un input de foto SIN `capture` hace que el móvil pregunte solo:
+         "Cámara / Fototeca". Poner dos botones era duplicar un menú que el
+         sistema ya da, y encima no cabían. */
+      '<div class="plato-acc">' +
+        '<button class="pa" id="btnPlato">'+svg('destello',16)+'<span>Deducir</span></button>' +
+        '<label class="pa alt" for="inFoto">'+svg('camara',16)+'<span>Foto</span>' +
+          '<input type="file" id="inFoto" accept="image/*" hidden></label>' +
+      '</div>';
+
+    /* Guardar el plato en la biblioteca era un efecto secundario invisible de
+       tocar «Deducir»: se guardaba siempre y sin decirlo, y la lista se
+       llenaba de cosas de un solo día. Ahora es una decisión que se ve.
+       Marcado por defecto solo si es un plato con nombre y categorías, que
+       es cuando volver a usarlo tiene sentido. */
+    if(String(b.plato||'').trim() && b.items.some(function(it){ return !it.alimento_id; })){
+      var guarda = b.guardarPlato !== false;
+      h += '<button class="sw-plato'+(guarda?' on':'')+'" id="swPlato">' +
+        '<span class="bx">'+(guarda ? svg('check',12) : '')+'</span>' +
+        '<span class="tx"><b>Guardarlo en mis platos</b>' +
+        '<span>' + (guarda
+          ? 'La próxima vez lo tendrás de un toque.'
+          : 'Solo para esta comida. No se añade a la lista.') + '</span></span></button>';
+    }
+  }
 
 
   /* Hora, lugar y quién van DESPUÉS del plato: los tres aciertan solos
@@ -4637,10 +4732,18 @@ function pintarHojaComida(){
   h += atajos('bebida', 'Bebidas', '🥤', 'bebidas');
   h += atajos('postre', 'Postres', '🍮', '');
 
-  h += '<div class="f-lb">Y además <span class="op">opcional</span></div>' +
-    '<div class="busca"><span class="lupa i">'+svg('lupa',17)+'</span>' +
-    '<input class="inp" id="inBusca" type="text" placeholder="Añadir fruta, snack, guarnición…" ' +
-    'autocomplete="off" autocorrect="off"></div><div id="resBusca"></div>';
+  /* En modo alimentos el buscador ya está arriba: repetirlo aquí serían dos
+     campos con el mismo id, y el segundo se comería los eventos del primero.
+     En su lugar, la salida por si ese día SÍ hubo un plato con nombre. */
+  if(porAlimentos){
+    h += '<button class="lk-plato" id="ponerPlato">' + svg('destello',15) +
+      'Ponerle nombre de plato</button>';
+  } else {
+    h += '<div class="f-lb">Y además <span class="op">opcional</span></div>' +
+      '<div class="busca"><span class="lupa i">'+svg('lupa',17)+'</span>' +
+      '<input class="inp" id="inBusca" type="text" placeholder="Añadir fruta, snack, guarnición…" ' +
+      'autocomplete="off" autocorrect="off"></div><div id="resBusca"></div>';
+  }
 
   /* ---------- LAS CATEGORÍAS, AL FINAL ----------
      Se marcan solas con lo que ya has puesto; aquí solo se repasa y se
@@ -4942,6 +5045,9 @@ function fotoElegida(input){
 function recordarPlato(){
   var b = borrador;
   if(!b.plato) return Promise.resolve();
+  /* Solo si se ha dicho que sí. Antes se guardaba siempre, sin preguntar y
+     sin avisar: la biblioteca acababa llena de platos de un solo día. */
+  if(b.guardarPlato === false) return Promise.resolve();
   var grupos = b.items.filter(function(it){ return !it.alimento_id; })
                       .map(function(it){ return it.grupo; });
   if(!grupos.length) return Promise.resolve();
@@ -8756,9 +8862,19 @@ document.addEventListener('click', function(e){
   }
   /* ---------- alimentación ---------- */
   if(e.target.closest('#aliPrev')){ state.aliLunes = addDays(state.aliLunes,-7);
-    state.aliDia = null; pintarAlimentacion(); return; }
+    pintarAlimentacion(); return; }
   if(e.target.closest('#aliNext')){ state.aliLunes = addDays(state.aliLunes, 7);
-    state.aliDia = null; pintarAlimentacion(); return; }
+    pintarAlimentacion(); return; }
+  /* La tira tiene su propia semana: moverla NO mueve la ventana del índice.
+     Al cambiar de semana se salta al lunes, salvo que sea la de hoy. */
+  if(e.target.closest('#semAnt')){
+    state.diaSem = addDays(state.diaSem || lunesDe(state.data.hoy), -7);
+    state.aliDia = state.diaSem; pintarAlimentacion(); return; }
+  if(e.target.closest('#semSig')){
+    var sig = addDays(state.diaSem || lunesDe(state.data.hoy), 7);
+    state.diaSem = sig;
+    state.aliDia = (sig === lunesDe(state.data.hoy)) ? state.data.hoy : sig;
+    pintarAlimentacion(); return; }
   if(e.target.closest('#addComida')){ abrirComida(''); return; }
   var cm = e.target.closest('[data-comida]');
   if(cm){ abrirComida(cm.dataset.comida); return; }
@@ -8839,7 +8955,8 @@ document.addEventListener('click', function(e){
   var nc = e.target.closest('[data-nuevacomida]');
   if(nc){ abrirComida('', nc.dataset.nuevacomida); return; }
   var ad = e.target.closest('[data-alidia]');
-  if(ad){ state.aliDia = ad.dataset.alidia; pintarAlimentacion(); return; }
+  if(ad){ state.aliDia = ad.dataset.alidia;
+    state.diaSem = lunesDe(state.aliDia); pintarAlimentacion(); return; }
   /* El check va ANTES que el evento que lo contiene: tocar el círculo
      marca el recado, tocar el resto de la fila abre el evento. */
   var rtg = e.target.closest('[data-rectog]');
@@ -8861,6 +8978,13 @@ document.addEventListener('click', function(e){
   if(e.target.closest('#quitarMenu')){ quitarMenu(); pintarHojaComida(); return; }
   var pl = e.target.closest('[data-plato]');
   if(pl){ aplicarPlato(pl.dataset.plato); return; }
+  if(e.target.closest('#swPlato')){
+    borrador.guardarPlato = !(borrador.guardarPlato !== false);
+    pintarHojaComida(); return;
+  }
+  if(e.target.closest('#ponerPlato')){
+    borrador.forzarPlato = true; pintarHojaComida(); return;
+  }
   if(e.target.closest('#btnPlato')){ interpretarPlato(); return; }
   var ab = e.target.closest('[data-abrir]');
   if(ab){ borrador.items[+ab.dataset.abrir].abierto = true; pintarHojaComida(); return; }
