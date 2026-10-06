@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.29';
+const APP_VERSION = '0.9.30';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -414,6 +414,9 @@ const SEED = {
     ['color_carga', '', 'Fondo de la pantalla de carga y del PIN. Ej: #F2E3FB. Vacío = el de siempre'],
     ['moneda', '€', ''],
     ['cuota_mensual', '250', 'Lo que aporta cada progenitor al mes a la cuenta común'],
+    ['cole_automatico', 'TRUE', 'Apuntar sola la comida del cole con el menú del Sheet'],
+    ['cole_hora', '13:00', 'A qué hora se apunta la comida del comedor'],
+    ['cole_generado_hasta', '', 'Hasta qué día se han creado solas. Bájala para rellenar atrás'],
     ['carpeta_drive_id', '', 'Se rellena solo al correr crearCarpetaDocumentos()'],
     ['openai_activo', 'FALSE', 'TRUE activa el botón de describir comida con IA'],
     ['dias_min_ich', '3', 'Días registrados mínimos para enseñar el ICH de la semana'],
@@ -1275,6 +1278,9 @@ function handleGetBootstrap(p) {
      este proyecto. Es idempotente, así que llamarlo en cada arranque no
      duplica nada; y si falla, la app tiene que abrir igual. */
   try { _generarRecurrentes(true); } catch (err) { Logger.log('recurrentes: ' + err); }
+  /* La comida del comedor: el menú ya está en el Sheet, copiarlo a mano cada
+     día era el trabajo más tonto que había en Alimentación. */
+  try { _generarComidasCole(true); } catch (err) { Logger.log('cole: ' + err); }
   const desde = String(p.desde || '').trim() || _addDays(_hoy(), -400);
 
   const conf = {};
@@ -3743,6 +3749,139 @@ function verRecurrentes() {
     Logger.log('⏳ ' + p.n + ' filas pendientes:');
     p.detalle.forEach(function (d) { Logger.log('   ' + d); });
     Logger.log('Se crean solas al abrir la app.');
+  }
+}
+
+
+/* ============================================================
+   LA COMIDA DEL COLE, SOLA
+
+   De lunes a viernes come en el comedor y el menú ya está en el Sheet.
+   Apuntarlo a mano cada día era copiar una información que la app ya
+   tenía — el trabajo más tonto que había en Alimentación.
+
+   Se fabrica igual que lo recurrente: filas de verdad, al arrancar, con
+   una marca de hasta dónde se ha llegado. Desde que existen son comidas
+   normales: se editan y se borran como cualquier otra, y una borrada NO
+   vuelve sola.
+
+   Lo que NO hace, a propósito: inventarse el futuro. Solo hasta hoy. Y si
+   un día no fue al cole —puso malo, excursión, se llevó tupper— habrá
+   apuntada una comida que no ocurrió. Se borra en dos toques, pero más
+   vale decirlo que fingir que el dato es perfecto.
+   ============================================================ */
+
+/** Lee una clave de Config. */
+function _cfg(clave, porDefecto) {
+  const r = _readSheet('Config').filter(function (x) {
+    return String(x.clave).trim() === clave;
+  })[0];
+  const v = r ? String(r.valor == null ? '' : r.valor).trim() : '';
+  return v === '' ? (porDefecto === undefined ? '' : porDefecto) : v;
+}
+function _setCfg(clave, valor, nota) {
+  const r = _readSheet('Config').filter(function (x) {
+    return String(x.clave).trim() === clave;
+  })[0] || { clave: clave, nota: nota || '' };
+  r.valor = valor;
+  _upsert('Config', 'clave', r);
+}
+
+/**
+ * Crea las comidas del cole que falten, hasta hoy.
+ * `aplicar` a false solo informa.
+ */
+function _generarComidasCole(aplicar) {
+  const hace = aplicar !== false;
+  if (!_truthy(_cfg('cole_automatico', 'TRUE'))) return { n: 0, detalle: [] };
+
+  const hoy = _hoy();
+  const hora = _horaKey(_cfg('cole_hora', '13:00')) || '13:00';
+  /* Sin marca previa se empieza HOY, no en el principio de los tiempos:
+     rellenar tres meses hacia atrás de golpe sería una sorpresa, no una
+     ayuda. Para traer atrás, se baja a mano esta clave en Config. */
+  const ya = _fechaKey(_cfg('cole_generado_hasta', '')) || _addDays(hoy, -1);
+
+  /* Lo que ya hay apuntado como comida en el cole, por fecha. */
+  const ocupado = {};
+  _readSheet('Comidas').forEach(function (c) {
+    if (String(c.tipo_comida) !== 'comida' || String(c.lugar) !== 'cole') return;
+    ocupado[_fechaKey(c.fecha)] = true;
+  });
+
+  const menus = {};
+  _readSheet('Menu_Cole').forEach(function (r) { menus[_fechaKey(r.fecha)] = r; });
+
+  const hechas = [];
+  let ultima = ya, n = 0;
+  for (let i = 1; i <= 60; i++) {
+    const f = _addDays(ya, i);
+    if (f > hoy) break;
+    ultima = f;
+    const m = menus[f];
+    if (!m) continue;                       /* festivo, finde o sin cargar */
+    if (ocupado[f]) continue;               /* ya lo apuntasteis vosotros */
+    const als = _menuAlimentos(m);
+    if (!als.length) continue;              /* sin alimentos no hay nada que marcar */
+
+    hechas.push(f + '  ' + String(m.plato || '').slice(0, 40) +
+                '  (' + als.length + ' alim.)');
+    n++;
+    if (!hace) continue;
+
+    const gid = Utilities.getUuid();
+    const ts = new Date().toISOString();
+    als.forEach(function (a) {
+      _upsert('Comidas', 'id', {
+        id: Utilities.getUuid(), grupo_id: gid, fecha: f, hora: hora,
+        tipo_comida: 'comida', lugar: 'cole', con: '',
+        alimento_id: '', nombre: a.nombre, grupo: a.grupo,
+        estado_toma: 'comio', cantidad: '',
+        nota: String(m.plato || ''),
+        /* Sin autor: en la app, lo que no tiene dueño lo edita cualquiera.
+           Es correcto — esta comida no la apuntó ninguno de los dos. */
+        creado_por: '', timestamp: ts
+      });
+    });
+  }
+
+  if (hace && (n || ultima !== ya)) {
+    _setCfg('cole_generado_hasta', ultima,
+            'Hasta qué día se han creado solas las comidas del cole');
+    if (n) _invalidar();
+  }
+  return { n: n, detalle: hechas };
+}
+
+/** Qué haría la carga automática del cole, sin hacerlo. */
+function verComidasCole() {
+  Logger.log('Automático: ' + (_truthy(_cfg('cole_automatico', 'TRUE')) ? 'SÍ' : 'NO') +
+             '  ·  hora: ' + _cfg('cole_hora', '13:00') +
+             '  ·  generado hasta: ' + (_cfg('cole_generado_hasta', '') || '(nunca)'));
+  const p = _generarComidasCole(false);
+  if (!p.n) { Logger.log('✅ No hay nada pendiente de crear.'); return; }
+  Logger.log('⏳ ' + p.n + ' comidas se crearían al abrir la app:');
+  p.detalle.forEach(function (d) { Logger.log('   ' + d); });
+}
+
+/**
+ * Trae hacia atrás las comidas del cole desde una fecha.
+ * Para rellenar un mes que ya pasó: rellenarColeDesde('2026-10-01', true).
+ */
+function rellenarColeDesde(fecha, aplicar) {
+  const f = _fechaKey(fecha);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) {
+    Logger.log('❌ Pon una fecha como "2026-10-01".'); return;
+  }
+  const antes = _cfg('cole_generado_hasta', '');
+  if (aplicar === true) _setCfg('cole_generado_hasta', _addDays(f, -1), '');
+  const p = _generarComidasCole(aplicar === true);
+  if (aplicar !== true) {
+    Logger.log('ℹ️ Desde ' + f + ' se crearían las comidas que falten. ' +
+               'Corre rellenarColeDesde("' + f + '", true) para hacerlo.');
+    Logger.log('   (La marca actual es ' + (antes || '(ninguna)') + ')');
+  } else {
+    Logger.log('✅ ' + p.n + ' comidas creadas.');
   }
 }
 

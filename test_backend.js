@@ -200,6 +200,88 @@ _bootGuardar('{"ok":true}');
 _invalidar();
 ok('guardar un gasto deja la caché sin efecto', _bootLeer() === null);
 
+console.log('\n--- LA COMIDA DEL COLE, SOLA ---');
+/* De lunes a viernes come en el comedor y el menú ya está en el Sheet.
+   Apuntarlo a mano era copiar algo que la app ya tenía. */
+TABLAS['Comidas'] = [];
+TABLAS['Config'] = [
+  { clave:'cole_automatico', valor:'TRUE', nota:'' },
+  { clave:'cole_hora', valor:'13:00', nota:'' },
+  { clave:'cole_generado_hasta', valor:'2026-10-04', nota:'' }
+];
+TABLAS['Menu_Cole'] = [
+  { fecha:'2026-10-05', plato:'Ensalada de espirales y butifarra',
+    alimentos:'Espirales:cereales, Butifarra:carnes_procesadas, Rúcula:verduras', nota:'' },
+  { fecha:'2026-10-06', plato:'Garbanzos y tortilla',
+    alimentos:'Garbanzos:legumbres, Tortilla:huevos', nota:'' },
+  /* Festivo: fila sin platos. No se puede inventar una comida. */
+  { fecha:'2026-10-07', plato:'', alimentos:'', nota:'Festivo' },
+  /* Mañana: no se adelanta el futuro. */
+  { fecha:'2026-10-09', plato:'Arroz integral', alimentos:'Arroz:cereales', nota:'' }
+];
+_hoy = function () { return '2026-10-08'; };
+
+let p = _generarComidasCole(false);
+ok('sin aplicar solo informa', TABLAS['Comidas'].length === 0);
+ok('y dice cuántas crearía', p.n === 2, p.n);
+
+_generarComidasCole(true);
+const gids = () => [...new Set(TABLAS['Comidas'].map(c => c.grupo_id))];
+ok('crea las comidas que faltaban', gids().length === 2, gids().length);
+ok('una fila por alimento, agrupadas por comida',
+   TABLAS['Comidas'].length === 5, TABLAS['Comidas'].length);
+ok('en el cole y a la hora de comer',
+   TABLAS['Comidas'].every(c => c.lugar === 'cole' && c.tipo_comida === 'comida'));
+ok('a la hora que dice Config',
+   TABLAS['Comidas'].every(c => c.hora === '13:00'), TABLAS['Comidas'][0].hora);
+ok('con el nombre del plato', TABLAS['Comidas'][0].nota === 'Ensalada de espirales y butifarra',
+   TABLAS['Comidas'][0].nota);
+ok('y su grupo, que es lo que cuenta',
+   TABLAS['Comidas'].some(c => c.grupo === 'carnes_procesadas'));
+
+/* Sin autor: esta comida no la apuntó ninguno de los dos, así que en la app
+   la edita y la borra cualquiera (esMio devuelve true si no hay dueño). */
+ok('sin dueño: la puede tocar cualquiera de los dos',
+   TABLAS['Comidas'].every(c => c.creado_por === ''));
+
+ok('el festivo no inventa una comida',
+   !TABLAS['Comidas'].some(c => c.fecha === '2026-10-07'));
+ok('y el futuro tampoco: solo hasta hoy',
+   !TABLAS['Comidas'].some(c => c.fecha > '2026-10-08'),
+   TABLAS['Comidas'].map(c => c.fecha).join(','));
+ok('la marca avanza hasta hoy', _cfg('cole_generado_hasta') === '2026-10-08',
+   _cfg('cole_generado_hasta'));
+
+/* Lo que de verdad importa: no duplicar, y no resucitar lo borrado. */
+_generarComidasCole(true);
+ok('volver a arrancar no duplica nada', gids().length === 2, gids().length);
+
+TABLAS['Comidas'] = TABLAS['Comidas'].filter(c => c.fecha !== '2026-10-06');
+_generarComidasCole(true);
+ok('una comida borrada a mano NO vuelve sola',
+   !TABLAS['Comidas'].some(c => c.fecha === '2026-10-06'),
+   TABLAS['Comidas'].map(c => c.fecha).join(','));
+
+/* Si ya habíais apuntado vosotros esa comida, no se pisa. */
+TABLAS['Comidas'] = [];
+TABLAS['Config'] = TABLAS['Config'].map(c =>
+  c.clave === 'cole_generado_hasta' ? { ...c, valor:'2026-10-04' } : c);
+TABLAS['Comidas'].push({ id:'mio', grupo_id:'gmio', fecha:'2026-10-05', hora:'13:30',
+  tipo_comida:'comida', lugar:'cole', alimento_id:'', nombre:'Lo que fuera',
+  grupo:'verduras', estado_toma:'comio', creado_por:'papa' });
+_generarComidasCole(true);
+ok('lo que ya habíais apuntado no se pisa',
+   TABLAS['Comidas'].filter(c => c.fecha === '2026-10-05').length === 1,
+   TABLAS['Comidas'].filter(c => c.fecha === '2026-10-05').length);
+
+/* Y el interruptor manda. */
+TABLAS['Comidas'] = [];
+TABLAS['Config'] = TABLAS['Config'].map(c =>
+  c.clave === 'cole_automatico' ? { ...c, valor:'FALSE' }
+  : c.clave === 'cole_generado_hasta' ? { ...c, valor:'2026-10-04' } : c);
+_generarComidasCole(true);
+ok('apagado en Config, no crea nada', TABLAS['Comidas'].length === 0);
+
 console.log('\n--- REAJUSTAR LOS GRUPOS ---');
 /* completarCatalogos solo AÑADE filas que faltan. Al meter `momentos`, las
    filas que ya estaban se quedaron con la columna creada y vacía — y vacío

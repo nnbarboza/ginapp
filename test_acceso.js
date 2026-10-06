@@ -62,7 +62,14 @@ const ctx = {
     MimeType: { JSON:'json' }
   },
   Session: { getScriptTimeZone: () => 'Europe/Madrid' },
-  CacheService: { getScriptCache: () => ({ get: () => null, put: () => {}, remove: () => {} }) }
+  /* Faltaban los dos. Sin Logger, un catch que informa por Logger.log se
+     convertía él mismo en la excepción, y sin getAll/putAll la caché del
+     arranque reventaba en vez de no estar. Un stub a medias esconde el
+     fallo de verdad detrás de otro. */
+  Logger: { log: () => {} },
+  CacheService: { getScriptCache: () => ({
+    get: () => null, getAll: () => ({}), put: () => {}, putAll: () => {},
+    remove: () => {}, removeAll: () => {} }) }
 };
 ctx.globalThis = ctx;
 
