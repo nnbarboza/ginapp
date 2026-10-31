@@ -51,7 +51,27 @@ const BOOT={ ok:true, data:{
   cuenta:[{id:'mv1',fecha:'2026-08-01',tipo:'aporte',username:'papa',importe:250},
           {id:'mv2',fecha:'2026-08-01',tipo:'aporte',username:'mama',importe:250}],
   liquidaciones:[], categorias_gasto:[],
-  alimentos:[], comidas:[], objetivos_semana:[],
+  alimentos:[{id:'al_yogur',nombre:'Yogur',grupo:'lacteos'},
+             {id:'al_platano',nombre:'Plátano',grupo:'fruta'}],
+  /* Tres comidas a propósito, para que la portada tenga que ELEGIR:
+       · la del cole de ayer (la que entra sola)
+       · la merienda de hoy, que es la última de verdad
+       · una con fecha futura, que es siempre un dedazo y no puede ganar */
+  comidas:[
+    {id:'cm1',grupo_id:'g_cole',fecha:'2026-08-18',hora:'13:00',tipo_comida:'comida',
+     lugar:'cole',nota:'Lentejas y pollo',alimento_id:'',nombre:'Legumbres',
+     grupo:'legumbres',estado_toma:'comio',creado_por:''},
+    {id:'cm2',grupo_id:'g_mer',fecha:'2026-08-19',hora:'17:00',tipo_comida:'merienda',
+     lugar:'papa',nota:'',alimento_id:'al_yogur',nombre:'Yogur',
+     grupo:'lacteos',estado_toma:'comio',creado_por:'papa'},
+    {id:'cm3',grupo_id:'g_mer',fecha:'2026-08-19',hora:'17:00',tipo_comida:'merienda',
+     lugar:'papa',nota:'',alimento_id:'al_platano',nombre:'Plátano',
+     grupo:'fruta',estado_toma:'comio',creado_por:'papa'},
+    {id:'cm4',grupo_id:'g_futuro',fecha:'2026-08-25',hora:'13:30',tipo_comida:'comida',
+     lugar:'papa',nota:'Macarrones del futuro',alimento_id:'',nombre:'Cereales',
+     grupo:'cereales',estado_toma:'comio',creado_por:'papa'}
+  ],
+  objetivos_semana:[],
   citas:[{id:'c1',fecha:'2026-09-12',hora:'10:30',tipo:'pediatra',motivo:'Revisión'}],
   medicacion:[], dosis:[], episodios:[], vacunas:[], crecimiento:[], documentos:[],
   actividad:[{id:'a1',timestamp:'2026-08-18T19:22:00.000Z',username:'mama',seccion:'gastos',
@@ -134,7 +154,27 @@ setTimeout(async ()=>{
   ok('los 100 € adelantados salen como pendientes de devolver',
      secs.indexOf('100,00 € por devolver')>=0, secs.match(/devolver.{0,30}/s));
   ok('el gasto NO compartido no genera devolución', secs.indexOf('160,00')<0);
-  ok('alimentación en estado vacío honesto', secs.indexOf('Sin registros')>=0);
+  /* La tarjeta de alimentación enseña la ÚLTIMA COMIDA, no un recuento.
+     «N alimentos distintos» es un número de informe: no sirve para
+     decidir la cena, que es para lo que se abre la app a media tarde. */
+  ok('la tarjeta dice qué comida fue y cuándo', /Merienda · hoy 17:00/.test(secs),
+     secs.match(/Merienda.{0,40}/s));
+  ok('y qué comió, por alimentos', secs.indexOf('Yogur, Plátano')>=0,
+     secs.match(/Yogur.{0,40}/s));
+  /* `lugar` guarda ids ('casa', 'cole'); escribirlos tal cual dejaba un
+     «casa» suelto en la tarjeta que parecía un fallo de maquetación. */
+  ok('el sitio se escribe en castellano, no con el id', secs.indexOf('en casa')>=0,
+     secs.match(/Plátano.{0,30}/s));
+  ok('ya NO cuenta alimentos distintos en la portada',
+     secs.indexOf('Alimentos distintos')<0);
+  /* La del cole es ANTERIOR: si ganara, la portada se quedaría clavada en
+     el mediodía y no reflejaría nada de lo que pasa en casa por la tarde. */
+  ok('la del cole de ayer no gana a la merienda de hoy',
+     secs.indexOf('Lentejas y pollo')<0);
+  /* Una fila con fecha de mañana solo puede venir de un dedazo. Si
+     contara, se quedaría como «la última» para siempre. */
+  ok('una comida con fecha futura no puede ser la última',
+     secs.indexOf('Macarrones del futuro')<0);
   ok('salud enseña la próxima cita', secs.indexOf('Revisión')>=0);
 
   console.log('\n--- SEMANA ---');

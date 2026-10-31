@@ -477,6 +477,29 @@ setTimeout(() => {
   console.log('\n--- PANTALLA ---');
   const cuerpo = d.querySelector('#aliCuerpo').textContent;
   ok('muestra el valor del ICH', cuerpo.indexOf(String(i.total)) >= 0);
+
+  /* El índice va AL FINAL. Es lo que menos se mira: la decisión diaria es
+     «qué le pongo de cena», y para eso sirven las comidas del día y el
+     consejo. Arriba ocupaba la primera pantalla entera con una nota
+     sobre 100 que no cambia nada de lo que vas a hacer. */
+  /* Con la ventana móvil de verdad (hasta hoy), que es la única en la que
+     se pinta el consejo: mirando una semana pasada no hay «siguiente
+     comida» que recomendar. */
+  w.state.aliLunes = null; w.pintarAlimentacion();
+  const hijos = [...d.querySelector('#aliCuerpo').children];
+  const pos = sel => hijos.findIndex(e => e.matches(sel) || e.querySelector(sel));
+  const pIch = hijos.findIndex(e => e.classList.contains('ich-c'));
+  ok('el índice existe en la pantalla', pIch >= 0);
+  ok('las comidas del día van ANTES del índice',
+     pos('.dtira') >= 0 && pos('.dtira') < pIch, pos('.dtira') + ' vs ' + pIch);
+  ok('el consejo también', pos('.cons') >= 0 && pos('.cons') < pIch,
+     pos('.cons') + ' vs ' + pIch);
+  ok('y la tabla de la semana', pos('.tb') >= 0 && pos('.tb') < pIch,
+     pos('.tb') + ' vs ' + pIch);
+  ok('detrás del índice solo quedan los pies de navegación',
+     hijos.slice(pIch + 1).every(e => e.classList.contains('ali-pies')),
+     hijos.slice(pIch + 1).map(e => e.className).join(' | '));
+  w.state.aliLunes = LUN; w.pintarAlimentacion();
   ok('los componentes muestran puntuación, no los pesos',
      cuerpo.indexOf('peso 40%') >= 0 && cuerpo.indexOf(String(i.comp.variedad)) >= 0);
   ok('la tabla semanal lista los grupos', cuerpo.indexOf('Verduras') >= 0 && cuerpo.indexOf('Fruta') >= 0);

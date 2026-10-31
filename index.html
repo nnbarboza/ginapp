@@ -233,9 +233,6 @@ svg{display:block;flex-shrink:0}
 .kpi{display:flex;align-items:baseline;gap:5px;margin-top:4px}
 .kpi b{font-size:28px;font-weight:700;letter-spacing:-1.2px;line-height:1}
 .kpi span{font-size:12px;color:var(--t2);font-weight:500}
-.barra{height:8px;border-radius:99px;background:#fff;overflow:hidden;margin:9px 0 4px;
-  box-shadow:inset 0 0 0 1px rgba(15,23,42,.05)}
-.barra i{display:block;height:100%;border-radius:99px}
 .chip-d{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;
   margin-top:5px}
 .chip-d .pt{width:8px;height:8px;border-radius:50%}
@@ -1335,7 +1332,6 @@ svg{display:block;flex-shrink:0}
 .hr-i p{margin:3px 0 0;font-size:12.5px;color:var(--t2);line-height:1.4}
 .hr-i .aut{text-align:right;flex-shrink:0}
 .hr-i .aut b{display:block;font-size:12.5px;font-weight:700}
-.hr-i .aut span{display:block;font-size:11px;color:var(--t3);margin-top:1px}
 .hist-vacio{font-size:13px;color:var(--t3);padding:6px 0 14px}
 
 .cats{background:var(--surface);border-radius:var(--r-l);padding:16px 12px 14px;
@@ -1670,7 +1666,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.30';
+var APP_VERSION = '0.9.31';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -2981,22 +2977,36 @@ function tarjeta(c, ico, titulo, cuerpo, pie, ir){
 function pintarSecciones(){
   var out = [];
 
-  /* --- Alimentación --- */
-  var rs = resumenSemana(), ali;
-  if(rs.suficiente){
-    ali = '<div class="sec-l">Alimentos distintos</div>' +
-          '<div class="kpi"><b style="color:var(--ali-d)">'+rs.variedad+'</b>' +
-          '<span>esta semana</span></div>' +
-          '<div class="barra"><i style="width:'+Math.min(100, rs.variedad*3)+'%;' +
-          'background:var(--ali)"></i></div>' +
-          '<div class="sec-s">'+rs.diasConRegistro+' días registrados</div>';
-  } else if(rs.diasConRegistro){
-    ali = '<div class="vac"><b>'+rs.registrosHoy+' registros hoy</b>Faltan ' +
-          (rs.minDias-rs.diasConRegistro)+
-          ((rs.minDias-rs.diasConRegistro)===1?' día':' días')+
-          ' para calcular el índice.</div>';
+  /* --- Alimentación ---
+     Antes esta tarjeta ponía «N alimentos distintos esta semana». Es un
+     número de informe: no te dice nada que puedas usar al abrir la app, y
+     cuando no llegaba a los días mínimos se convertía en «faltan 2 días
+     para calcular el índice», que es la app hablando de sí misma.
+     Lo que sirve es saber qué fue lo último que comió — sobre todo ahora
+     que la comida del cole entra sola: entras a media tarde, ves que a
+     mediodía le dieron legumbres, y ya sabes qué cenar. La variedad sigue
+     estando, en el subtítulo de la propia sección. */
+  var uc = ultimaComida(), rs = resumenSemana(), ali;
+  if(uc){
+    var t = tipoComida(uc.tipo);
+    var als = alimentosDe(uc);
+    var qu = uc.nombre || als.slice(0,3).join(', ') || t.nom;
+    var pie = [];
+    if(als.length > (uc.nombre ? 0 : 3)){
+      pie.push(uc.nombre ? (als.length + (als.length===1?' alimento':' alimentos'))
+                         : ('+' + (als.length-3) + ' más'));
+    }
+    /* El id, no. `lugar` guarda 'casa'/'cole'/'fuera' y escribirlo tal cual
+       dejaba un «casa» suelto que parece un fallo de maquetación. */
+    var lg = { casa:'en casa', cole:'en el cole', fuera:'fuera de casa' }[uc.lugar];
+    if(lg) pie.push(lg);
+    ali = '<div class="sec-l">' + esc(t.nom) + ' · ' +
+            esc(cuando(uc.fecha).toLowerCase()) +
+            (uc.hora ? ' ' + esc(uc.hora) : '') + '</div>' +
+          '<div class="sec-v">' + esc(qu) + '</div>' +
+          (pie.length ? '<div class="sec-s">'+esc(pie.join(' · '))+'</div>' : '');
   } else {
-    ali = '<div class="vac"><b>Sin registros</b>Aún no hay nada apuntado esta semana.</div>';
+    ali = '<div class="vac"><b>Sin registros</b>Aún no hay ninguna comida apuntada.</div>';
   }
   out.push(tarjeta('ali','alimentacion','Alimentación', ali,
     rs.diasConRegistro ? 'Ver resumen semanal' : 'Registrar comida','alimentacion'));
@@ -4290,10 +4300,11 @@ function pintarAlimentacion(){
   var mismoMes = lun.slice(0,7)===dom.slice(0,7);
 
   /* Orden de la pantalla, de lo que se usa a diario a lo que se consulta:
-       1. el índice de la semana
-       2. las comidas de HOY, que es a lo que vienes
-       3. qué conviene para la siguiente
-       4. el selector de semana y la tabla, juntos: son la misma cosa */
+       1. las comidas de HOY, que es a lo que vienes
+       2. qué conviene para la siguiente
+       3. el selector de semana y la tabla, juntos: son la misma cosa
+       4. el mensaje de la semana
+       5. el índice, que es lo que menos se mira */
   var navSem = '<div class="ali-nav">' +
     '<button class="fl" id="aliPrev">'+svg('chevronI',17)+'</button>' +
     '<div class="rango">'+svg('calendario',18) +
@@ -4304,45 +4315,6 @@ function pintarAlimentacion(){
       svg('chevron',17)+'</button></div>';
 
   var out = '';
-
-  /* ---- ICH ---- */
-  var i = ich(lun), iAnt = ich(addDays(lun,-7));
-  if(i){
-    var d = iAnt ? i.total - iAnt.total : null;
-    var comps = [
-      {em:'🌿', nm:'Variedad',      v:i.comp.variedad, p:ICH_PESOS.variedad, c:'var(--ali-d)'},
-      {em:'💚', nm:'Grupos saludables', v:i.comp.grupos, p:ICH_PESOS.grupos, c:'var(--ali-d)'},
-      {em:'⭐', nm:'Nuevos alimentos', v:i.comp.nuevos, p:ICH_PESOS.nuevos, c:'var(--cal-d)'},
-      {em:'🛡️', nm:'Moderación',    v:i.comp.limites,  p:ICH_PESOS.limites, c:'var(--sal-d)'}
-    ];
-    out += '<div class="ich-c"><div class="ich-top">' +
-      '<div class="gauge">'+arcoGauge(i.total,104) +
-        '<div class="tx"><span class="lb">ICH</span>' +
-        '<span class="vl">'+i.total+'</span><span class="mx">/100</span></div></div>' +
-      '<div class="ich-tx"><h3>Índice de Construcción de Hábitos</h3>' +
-        (d===null
-          ? '<div class="ich-delta">Primera semana con datos suficientes</div>'
-          : '<div class="ich-delta">'+(d>0?'↑':d<0?'↓':'→')+' <b style="color:' +
-            (d>0?'var(--ali-d)':d<0?'var(--t2)':'var(--t2)')+'">'+(d>0?'+':'')+d+
-            ' pts</b> vs semana pasada</div>') +
-        '<div class="ich-chip">'+(i.total>=80?'¡Buena evolución! ⭐':
-           i.total>=60?'Vais construyendo 🌱':'Semana tranquila 🍃')+'</div>' +
-      '</div></div>' +
-      '<div class="ich-comp">' + comps.map(function(c){
-        return '<div><div class="em">'+c.em+'</div><div class="nm">'+c.nm+'</div>' +
-          '<div class="pc" style="color:'+c.c+'">'+c.v+'</div>' +
-          '<div class="pe">peso '+c.p+'%</div></div>';
-      }).join('') + '</div></div>';
-  } else {
-    var nd = diasConRegistro(lun), md = cfgNum('dias_min_ich',3);
-    out += '<div class="ich-c"><div class="ich-top">' +
-      '<div class="gauge">'+arcoGauge(0,104) +
-        '<div class="tx"><span class="lb">ICH</span>' +
-        '<span class="vl" style="color:var(--t3)">—</span></div></div>' +
-      '<div class="ich-tx"><h3>Aún no hay datos suficientes</h3>' +
-      '<div class="ich-delta">'+nd+' de '+md+' días registrados esta semana. ' +
-      'Sin eso, el índice sería un número inventado.</div></div></div></div>';
-  }
 
   /* ---- Comidas del día ---- */
   /* El día que se está mirando ya NO depende de la ventana del índice: la
@@ -4411,6 +4383,50 @@ function pintarAlimentacion(){
   out += '<div class="msg"><div class="em">'+iconoDe(m.k, 30, m.em)+'</div>' +
     '<div><b>'+esc(m.t)+'</b><p>'+esc(m.p)+'</p></div></div>';
 
+  /* ---- ICH, al final ----
+     Estaba arriba porque parecía lo más importante. Pero es lo que menos
+     se mira: la decisión diaria es «qué le pongo de cena», y para eso
+     sirven las comidas del día y el consejo, no una nota sobre 100.
+     Queda detrás del mensaje de la semana, que es su mismo gesto: mirar
+     atrás. Y delante de los pies, que son navegación, no contenido. */
+  var i = ich(lun), iAnt = ich(addDays(lun,-7));
+  if(i){
+    var d = iAnt ? i.total - iAnt.total : null;
+    var comps = [
+      {em:'🌿', nm:'Variedad',      v:i.comp.variedad, p:ICH_PESOS.variedad, c:'var(--ali-d)'},
+      {em:'💚', nm:'Grupos saludables', v:i.comp.grupos, p:ICH_PESOS.grupos, c:'var(--ali-d)'},
+      {em:'⭐', nm:'Nuevos alimentos', v:i.comp.nuevos, p:ICH_PESOS.nuevos, c:'var(--cal-d)'},
+      {em:'🛡️', nm:'Moderación',    v:i.comp.limites,  p:ICH_PESOS.limites, c:'var(--sal-d)'}
+    ];
+    out += '<div class="ich-c"><div class="ich-top">' +
+      '<div class="gauge">'+arcoGauge(i.total,104) +
+        '<div class="tx"><span class="lb">ICH</span>' +
+        '<span class="vl">'+i.total+'</span><span class="mx">/100</span></div></div>' +
+      '<div class="ich-tx"><h3>Índice de Construcción de Hábitos</h3>' +
+        (d===null
+          ? '<div class="ich-delta">Primera semana con datos suficientes</div>'
+          : '<div class="ich-delta">'+(d>0?'↑':d<0?'↓':'→')+' <b style="color:' +
+            (d>0?'var(--ali-d)':d<0?'var(--t2)':'var(--t2)')+'">'+(d>0?'+':'')+d+
+            ' pts</b> vs semana pasada</div>') +
+        '<div class="ich-chip">'+(i.total>=80?'¡Buena evolución! ⭐':
+           i.total>=60?'Vais construyendo 🌱':'Semana tranquila 🍃')+'</div>' +
+      '</div></div>' +
+      '<div class="ich-comp">' + comps.map(function(c){
+        return '<div><div class="em">'+c.em+'</div><div class="nm">'+c.nm+'</div>' +
+          '<div class="pc" style="color:'+c.c+'">'+c.v+'</div>' +
+          '<div class="pe">peso '+c.p+'%</div></div>';
+      }).join('') + '</div></div>';
+  } else {
+    var nd = diasConRegistro(lun), md = cfgNum('dias_min_ich',3);
+    out += '<div class="ich-c"><div class="ich-top">' +
+      '<div class="gauge">'+arcoGauge(0,104) +
+        '<div class="tx"><span class="lb">ICH</span>' +
+        '<span class="vl" style="color:var(--t3)">—</span></div></div>' +
+      '<div class="ich-tx"><h3>Aún no hay datos suficientes</h3>' +
+      '<div class="ich-delta">'+nd+' de '+md+' días registrados esta semana. ' +
+      'Sin eso, el índice sería un número inventado.</div></div></div></div>';
+  }
+
   /* ---- Al fondo, lo que se consulta de vez en cuando ---- */
   out += '<div class="ali-pies">' +
     '<button id="aliBib">'+svg('carpeta',18) +
@@ -4444,6 +4460,48 @@ function comidasDelDia(f){
   return Object.keys(g).map(function(k){ return g[k]; })
     .sort(function(a,b){ return (a.hora||'99:99').localeCompare(b.hora||'99:99'); });
 }
+
+/**
+ * La comida más reciente apuntada, de cualquier día.
+ *
+ * No es "la de hoy" a propósito: si hoy todavía no hay nada, lo útil al
+ * abrir la app es saber qué fue lo último que comió, no un hueco vacío.
+ *
+ * Se descartan fechas futuras. La comida es un REGISTRO de lo que pasó, y
+ * una fila con fecha de mañana solo puede venir de un dedazo; si se
+ * colase, se quedaría clavada como «la última» para siempre.
+ */
+function ultimaComida(){
+  var g = {};
+  state.data.comidas.forEach(function(c){
+    var k = String(c.grupo_id || c.id);
+    if(!g[k]) g[k] = { grupo_id:k, fecha:fechaKey(c.fecha), hora:String(c.hora||''),
+                       tipo:String(c.tipo_comida||'otro'), lugar:String(c.lugar||''),
+                       nombre:String(c.nota||''), items:[] };
+    g[k].items.push(c);
+  });
+  return Object.keys(g).map(function(k){ return g[k]; })
+    .filter(function(c){
+      return /^\d{4}-\d{2}-\d{2}$/.test(c.fecha) && c.fecha <= state.data.hoy;
+    })
+    .sort(function(a,b){
+      return (b.fecha+' '+(b.hora||'00:00')).localeCompare(a.fecha+' '+(a.hora||'00:00'));
+    })[0] || null;
+}
+
+/** Los alimentos de una comida, sin repetir, en texto plano. */
+function alimentosDe(c){
+  var vistos = {}, out = [];
+  c.items.forEach(function(it){
+    if(!it.alimento_id) return;              /* un check no es un alimento */
+    var n = String(it.nombre||'').trim();
+    if(!n || vistos[n.toLowerCase()]) return;
+    vistos[n.toLowerCase()] = true;
+    out.push(n);
+  });
+  return out;
+}
+
 /** Color del grupo predominante: informa de QUÉ comió, no de si estuvo bien. */
 function colorComida(items){
   var cuenta = {};
@@ -4555,14 +4613,7 @@ function pintarDiaComidas(f){
  * comida apuntada como plato con checks, es lo único que hay.
  */
 function resumenComida(c){
-  var vistos = {}, nombres = [];
-  c.items.forEach(function(it){
-    if(!it.alimento_id) return;              /* un check no es un alimento */
-    var n = String(it.nombre||'').trim();
-    if(!n || vistos[n.toLowerCase()]) return;
-    vistos[n.toLowerCase()] = true;
-    nombres.push(n);
-  });
+  var nombres = alimentosDe(c);
 
   if(!nombres.length){
     /* Sin alimentos, las categorías: es lo único que se apuntó. */
@@ -8016,8 +8067,11 @@ function pintarSalud(){
           fechaCorta(r.fecha)+'</span></div>' +
           r.lineas.slice(0,2).map(function(l){ return '<p>'+esc(l)+'</p>'; }).join('') +
         '</div>' +
+        /* Solo quién lo apuntó. La hora a la que se TECLEÓ el registro no
+           es la hora de nada: una cita de las 9:00 apuntada por la noche
+           ponía «21:34» al lado, que no significa nada para nadie. */
         '<div class="aut"><b style="color:'+colorDe(r.autor)+'">' +
-          esc(nombreDe(r.autor))+'</b><span>'+esc(r.ts?r.ts.slice(11,16):'')+'</span></div></div>';
+          esc(nombreDe(r.autor))+'</b></div></div>';
     }).join('');
   }
   out += '</div>';

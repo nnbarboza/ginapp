@@ -133,6 +133,15 @@ setTimeout(() => {
   ok('cada registro lleva autor', h.every(r => r.autor !== undefined));
   ok('en pantalla se ve quién lo apuntó',
      cuerpo().indexOf('Papá') >= 0 && cuerpo().indexOf('Mamá') >= 0);
+  /* La hora del timestamp es la hora a la que se TECLEÓ el registro, no la
+     hora de nada que le pasara a Gina: una cita de las 9:00 apuntada por
+     la noche ponía «21:34» al lado. El dato existe, pero no se enseña. */
+  const horasEnLista = [...d.querySelectorAll('#salCuerpo .hr-i .aut')]
+    .map(e => e.textContent).join(' | ');
+  ok('la lista de registros NO pone la hora de tecleo',
+     !/\d{1,2}:\d{2}/.test(horasEnLista), horasEnLista);
+  ok('pero sigue diciendo de qué día es cada registro',
+     [...d.querySelectorAll('#salCuerpo .hr-i .chip-f')].length === h.slice(0,4).length);
   ok('la caída aparece atribuida a mamá',
      h.find(r => r.id==='e2').autor === 'mama');
 
