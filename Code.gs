@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.31';
+const APP_VERSION = '0.9.32';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -1060,6 +1060,7 @@ const HANDLERS = {
   'deleteComentario': handleDeleteComentario,
   'subirDocumento': handleSubirDocumento,
   'subirArchivo': handleSubirArchivo,
+  'verDocumento': handleVerDocumento,
   'saveGinaFicha': handleSaveGinaFicha,
   'deleteGinaFicha': handleDeleteGinaFicha,
   'verSecreto': handleVerSecreto,
@@ -2522,7 +2523,11 @@ function handleSubirArchivo(p) {
     const blob = Utilities.newBlob(Utilities.base64Decode(b64), mime,
       _fechaKey(o.fecha || _hoy()) + ' · ' + titulo);
     const file = carpeta.createFile(blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    /* NO se hace público. Antes se ponía ANYONE_WITH_LINK «porque el enlace
+       solo viaja dentro de la app»: eso es falso en cuanto alguien reenvía
+       un mensaje. Un comprobante lleva nombre, dirección y a veces el centro
+       médico. El archivo hereda los permisos de la carpeta, que se comparte
+       con las dos cuentas y con nadie más (compartirCarpeta). */
     return _json({ ok: true, data: { url: file.getUrl(), id: file.getId(), nombre: titulo } });
   } catch (err) {
     return _json({ ok: false, error: 'No se pudo subir a Drive: ' + String(err) });
@@ -2549,9 +2554,11 @@ function handleSubirDocumento(p) {
     const blob = Utilities.newBlob(Utilities.base64Decode(b64), mime,
       _fechaKey(o.fecha || _hoy()) + ' · ' + titulo);
     file = carpeta.createFile(blob);
-    /* Cualquiera con el enlace: la madre no tiene por qué tener cuenta de Google
-       en el mismo dominio, y el enlace solo viaja dentro de la app. */
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    /* Privado. Son informes médicos de una niña: un enlace público que se
+       filtra los expone para siempre y sin aviso. El archivo hereda los
+       permisos de la carpeta, compartida con las dos cuentas (ver
+       compartirCarpeta). Para verlo dentro de la app sin depender de que
+       haya sesión de Google abierta está `verDocumento`. */
   } catch (err) {
     return _json({ ok: false, error: 'No se pudo subir a Drive: ' + String(err) });
   }
@@ -2572,6 +2579,52 @@ function handleSubirDocumento(p) {
   _upsert('Documentos', 'id', row);
   _log(row.creado_por, 'salud', 'sube_documento', titulo, row.id);
   return _json({ ok: true, data: row });
+}
+
+/**
+ * Devuelve el archivo en base64 para verlo DENTRO de la app.
+ *
+ * Existe porque los archivos son privados: el enlace de Drive solo abre si
+ * quien toca tiene sesión de Google con la cuenta correcta, y en un móvil
+ * eso falla justo el día que tienes prisa en la consulta. Por aquí el
+ * archivo viaja con el token de la app, que es el que ya gobierna todo lo
+ * demás.
+ *
+ * Solo sirve archivos que estén DENTRO de la carpeta de la app. Sin esta
+ * comprobación, cualquiera con un token podría pedir un id cualquiera y
+ * leerse el Drive entero de la cuenta que publica el script.
+ *
+ * Tope de 20 MB: por encima, Apps Script se queda sin memoria montando el
+ * base64 y devuelve un error feo en vez de un mensaje que se entienda.
+ */
+function handleVerDocumento(p) {
+  const id = String(p.id || p.file_id || '').trim();
+  if (!id) return _json({ ok: false, error: 'Falta id' });
+  const carpetaId = _config('carpeta_drive_id');
+  if (!carpetaId) return _json({ ok: false, error: 'Falta la carpeta de Drive.' });
+
+  let file;
+  try { file = DriveApp.getFileById(id); }
+  catch (err) { return _json({ ok: false, error: 'Ese archivo ya no está en Drive.' }); }
+
+  let dentro = false;
+  const padres = file.getParents();
+  while (padres.hasNext()) { if (padres.next().getId() === carpetaId) { dentro = true; break; } }
+  if (!dentro) return _json({ ok: false, error: 'Ese archivo no es de GINapp.' });
+
+  const bytes = file.getSize();
+  if (bytes > 20 * 1024 * 1024) {
+    return _json({ ok: false, error: 'Pesa más de 20 MB. Ábrelo en Drive.' });
+  }
+  try {
+    const blob = file.getBlob();
+    return _json({ ok: true, data: {
+      id: id, nombre: file.getName(), mime: blob.getContentType(), bytes: bytes,
+      b64: Utilities.base64Encode(blob.getBytes())
+    }});
+  } catch (err) {
+    return _json({ ok: false, error: 'No se pudo leer el archivo: ' + String(err) });
+  }
 }
 
 /** Borra el registro y el archivo de Drive. La fila queda en Papelera. */
@@ -4166,7 +4219,63 @@ function crearCarpetaDocumentos() {
   else _append(sh, { clave: 'carpeta_drive_id', valor: carpeta.getId(), nota: '' });
   Logger.log('✅ Carpeta creada y guardada en Config.');
   Logger.log(carpeta.getUrl());
-  Logger.log('👉 Compártela con la cuenta de Google de la madre para que ella también suba.');
+  Logger.log('👉 Ahora: compartirCarpeta("sucorreo@gmail.com")');
+}
+
+/**
+ * Da acceso a la carpeta a otra cuenta de Google. SOLO a esa carpeta: no
+ * toca el resto del Drive de quien publica el script.
+ *
+ * Como editora, no como lectora: si ella sube un informe desde la app, el
+ * archivo lo crea el script (que corre con tu cuenta), pero si algún día
+ * quiere meter algo a mano desde Drive tiene que poder.
+ */
+function compartirCarpeta(email) {
+  const correo = String(email || '').trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(correo)) {
+    Logger.log('❌ Pásame un correo: compartirCarpeta("alguien@gmail.com")');
+    return;
+  }
+  const id = _config('carpeta_drive_id');
+  if (!id) { Logger.log('❌ Antes corre crearCarpetaDocumentos().'); return; }
+  const carpeta = DriveApp.getFolderById(id);
+  carpeta.addEditor(correo);
+  Logger.log('✅ "' + carpeta.getName() + '" compartida con ' + correo);
+  Logger.log(carpeta.getUrl());
+  Logger.log('Para quitarle el acceso: DriveApp.getFolderById("' + id +
+             '").removeEditor("' + correo + '")');
+}
+
+/**
+ * Quita el «cualquiera con el enlace» de los archivos que ya están subidos.
+ *
+ * Hasta la 0.9.31 cada archivo se publicaba con enlace abierto. Cambiar el
+ * código no arregla lo ya subido: esos enlaces siguen vivos hasta que
+ * alguien los cierra, y son informes médicos. Por defecto solo informa.
+ */
+function cerrarEnlacesPublicos(aplicar) {
+  const id = _config('carpeta_drive_id');
+  if (!id) { Logger.log('❌ No hay carpeta configurada.'); return; }
+  const it = DriveApp.getFolderById(id).getFiles();
+  let abiertos = 0, cerrados = 0, fallos = 0;
+  while (it.hasNext()) {
+    const f = it.next();
+    let acceso;
+    try { acceso = f.getSharingAccess(); } catch (err) { fallos++; continue; }
+    if (acceso !== DriveApp.Access.ANYONE && acceso !== DriveApp.Access.ANYONE_WITH_LINK) continue;
+    abiertos++;
+    if (aplicar !== true) { Logger.log('🔓 ' + f.getName()); continue; }
+    try { f.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE); cerrados++; }
+    catch (err) { fallos++; Logger.log('⚠️ No pude cerrar: ' + f.getName() + ' — ' + err); }
+  }
+  if (aplicar !== true) {
+    Logger.log(abiertos ? '⚠️ ' + abiertos + ' archivo(s) con enlace público. ' +
+                          'Para cerrarlos: cerrarEnlacesPublicos(true)'
+                        : '✅ Ninguno tiene enlace público.');
+  } else {
+    Logger.log('🔒 ' + cerrados + ' de ' + abiertos + ' cerrados.' +
+               (fallos ? ' ' + fallos + ' fallo(s).' : ''));
+  }
 }
 
 /** Deja la pestaña Actividad en las últimas N entradas. Por defecto informa. */

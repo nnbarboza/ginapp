@@ -445,5 +445,94 @@ ok('sin peso ni talla no se guarda nada',
 ok('solo con el peso sí vale: no siempre se mide todo',
    r(handleSaveCrecimiento({ payload:{ fecha:'2026-08-21', peso_kg:'27', creado_por:'papa' } })).ok === true);
 
+console.log('\n--- DOCUMENTOS: LOS ARCHIVOS NO SON PÚBLICOS ---');
+/* Hasta la 0.9.31 cada archivo subido se publicaba con ANYONE_WITH_LINK
+   «porque el enlace solo viaja dentro de la app». Eso es falso en cuanto
+   alguien reenvía un mensaje, y son informes médicos de una niña. */
+TABLAS['Config'] = [{ clave:'carpeta_drive_id', valor:'CARPETA', nota:'' }];
+TABLAS['Documentos'] = [];
+const compartidos = [];
+function ficheroFalso(id, padreId, bytes, mime){
+  return {
+    _id:id, getId:()=>id, getName:()=>id+'.jpg', getSize:()=>(bytes||1000),
+    getUrl:()=>'https://drive.google.com/file/d/'+id+'/view',
+    getParents:()=>{ let n = padreId ? 1 : 0;
+      return { hasNext:()=>n>0, next:()=>{ n--; return { getId:()=>padreId }; } }; },
+    getBlob:()=>({ getContentType:()=>(mime||'image/jpeg'),
+                   getBytes:()=>toSigned(Buffer.from('BYTES')) }),
+    setSharing:(a,b)=>{ compartidos.push(id+':'+a); },
+    setTrashed:()=>{}
+  };
+}
+const EN_DRIVE = {};
+global.DriveApp = {
+  Access: { ANYONE:'ANYONE', ANYONE_WITH_LINK:'ANYONE_WITH_LINK', PRIVATE:'PRIVATE' },
+  Permission: { VIEW:'VIEW', NONE:'NONE' },
+  getFileById: id => { if(!EN_DRIVE[id]) throw new Error('no existe'); return EN_DRIVE[id]; },
+  getFolderById: id => {
+    if(id !== 'CARPETA') throw new Error('no existe');
+    return { getId:()=>'CARPETA', getName:()=>'GINapp · documentos',
+             getUrl:()=>'https://drive/CARPETA',
+             createFile: blob => { const f = ficheroFalso('NUEVO', 'CARPETA');
+                                   EN_DRIVE['NUEVO'] = f; return f; },
+             getFiles: () => { const ks = Object.keys(EN_DRIVE); let i = 0;
+                               return { hasNext:()=>i<ks.length, next:()=>EN_DRIVE[ks[i++]] }; },
+             addEditor: ()=>{} };
+  }
+};
+res = r(handleSubirDocumento({ payload:{
+  archivo:'data:image/jpeg;base64,RkFLRQ==', mime:'image/jpeg',
+  titulo:'Informe de la revisión', tipo:'informe', fecha:'2026-08-15',
+  creado_por:'papa' } }));
+ok('se sube y se crea la ficha', res.ok === true, res.error);
+ok('con su título y su tipo',
+   TABLAS['Documentos'][0].titulo === 'Informe de la revisión' &&
+   TABLAS['Documentos'][0].tipo === 'informe');
+ok('guardando el id de Drive, que es por donde se lee después',
+   TABLAS['Documentos'][0].file_id === 'NUEVO', TABLAS['Documentos'][0].file_id);
+ok('y NADIE lo pone con enlace público', compartidos.length === 0, compartidos.join(','));
+
+console.log('\n--- VER UN DOCUMENTO ---');
+res = r(handleVerDocumento({ id:'NUEVO' }));
+ok('devuelve los bytes para verlo dentro de la app', res.ok === true, res.error);
+ok('con su tipo, para saber si es foto o PDF', res.data.mime === 'image/jpeg', res.data.mime);
+ok('en base64', typeof res.data.b64 === 'string' && res.data.b64.length > 0);
+
+/* Sin esta comprobación, cualquiera con un token válido podría pedir un
+   id cualquiera y leerse el Drive ENTERO de la cuenta que publica el
+   script: facturas, contratos, lo que haya. */
+EN_DRIVE['AJENO'] = ficheroFalso('AJENO', 'OTRA_CARPETA');
+res = r(handleVerDocumento({ id:'AJENO' }));
+ok('un archivo que no está en la carpeta de la app NO se sirve', res.ok === false);
+ok('y se dice por qué, sin filtrar si existe o no',
+   /no es de GINapp/i.test(String(res.error)), res.error);
+EN_DRIVE['HUERFANO'] = ficheroFalso('HUERFANO', '');
+ok('uno sin carpeta tampoco', r(handleVerDocumento({ id:'HUERFANO' })).ok === false);
+ok('un id que no existe da error claro, no una excepción',
+   /ya no está/i.test(String(r(handleVerDocumento({ id:'FANTASMA' })).error)));
+ok('sin id, tampoco', r(handleVerDocumento({})).ok === false);
+
+/* 20 MB es donde Apps Script se queda sin memoria montando el base64 y
+   devuelve una excepción que no entiende nadie. Mejor decirlo. */
+EN_DRIVE['GORDO'] = ficheroFalso('GORDO', 'CARPETA', 30*1024*1024);
+res = r(handleVerDocumento({ id:'GORDO' }));
+ok('un archivo enorme se rechaza con un mensaje, no con una excepción',
+   res.ok === false && /Drive/.test(String(res.error)), res.error);
+
+console.log('\n--- LOS QUE YA ESTABAN SUBIDOS ---');
+/* Cambiar el código no cierra lo que ya está abierto: esos enlaces siguen
+   vivos hasta que alguien los cierra a mano. */
+EN_DRIVE['VIEJO'] = ficheroFalso('VIEJO', 'CARPETA');
+EN_DRIVE['VIEJO'].getSharingAccess = () => 'ANYONE_WITH_LINK';
+EN_DRIVE['NUEVO'].getSharingAccess = () => 'PRIVATE';
+compartidos.length = 0;
+cerrarEnlacesPublicos();
+ok('por defecto solo informa, no toca nada', compartidos.length === 0);
+cerrarEnlacesPublicos(true);
+ok('con true cierra el que estaba abierto',
+   compartidos.indexOf('VIEJO:PRIVATE') >= 0, compartidos.join(','));
+ok('y no toca el que ya era privado',
+   compartidos.indexOf('NUEVO:PRIVATE') < 0, compartidos.join(','));
+
 console.log('\n' + (fallos ? ('❌ ' + fallos + ' fallos') : '✅ TODOS LOS TESTS PASAN'));
 process.exit(fallos ? 1 : 0);
