@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.32';
+const APP_VERSION = '0.9.34';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -3844,16 +3844,23 @@ function _setCfg(clave, valor, nota) {
  * Crea las comidas del cole que falten, hasta hoy.
  * `aplicar` a false solo informa.
  */
-function _generarComidasCole(aplicar) {
+function _generarComidasCole(aplicar, desde) {
   const hace = aplicar !== false;
-  if (!_truthy(_cfg('cole_automatico', 'TRUE'))) return { n: 0, detalle: [] };
+  if (!_truthy(_cfg('cole_automatico', 'TRUE'))) {
+    return { n: 0, detalle: [], saltadas: {}, dias: 0, menus: 0, apagado: true };
+  }
 
   const hoy = _hoy();
   const hora = _horaKey(_cfg('cole_hora', '13:00')) || '13:00';
   /* Sin marca previa se empieza HOY, no en el principio de los tiempos:
      rellenar tres meses hacia atrás de golpe sería una sorpresa, no una
-     ayuda. Para traer atrás, se baja a mano esta clave en Config. */
-  const ya = _fechaKey(_cfg('cole_generado_hasta', '')) || _addDays(hoy, -1);
+     ayuda. Para traer atrás, se baja a mano esta clave en Config.
+     `desde` permite SIMULAR desde otro día sin tocar la marca: sin eso,
+     el informe de rellenarColeDesde("2026-10-01") contaba desde la marca
+     real y decía «nada que hacer» aunque octubre estuviera sin rellenar.
+     Un informe que no simula lo que dice que simula es peor que ninguno. */
+  const ya = (desde ? _addDays(_fechaKey(desde), -1) : '') ||
+             _fechaKey(_cfg('cole_generado_hasta', '')) || _addDays(hoy, -1);
 
   /* Lo que ya hay apuntado como comida en el cole, por fecha. */
   const ocupado = {};
@@ -3865,17 +3872,22 @@ function _generarComidasCole(aplicar) {
   const menus = {};
   _readSheet('Menu_Cole').forEach(function (r) { menus[_fechaKey(r.fecha)] = r; });
 
+  /* Por qué NO se creó cada día. «0 comidas creadas» a secas no dice si el
+     menú no está pegado, si ya estaban hechas o si el Sheet trae los días
+     sin alimentos: las tres se arreglan de forma distinta. */
+  const saltadas = { sinMenu: 0, ocupadas: 0, sinAlimentos: 0 };
   const hechas = [];
-  let ultima = ya, n = 0;
+  let ultima = ya, n = 0, dias = 0;
   for (let i = 1; i <= 60; i++) {
     const f = _addDays(ya, i);
     if (f > hoy) break;
     ultima = f;
+    dias++;
     const m = menus[f];
-    if (!m) continue;                       /* festivo, finde o sin cargar */
-    if (ocupado[f]) continue;               /* ya lo apuntasteis vosotros */
+    if (!m) { saltadas.sinMenu++; continue; }        /* festivo, finde o sin cargar */
+    if (ocupado[f]) { saltadas.ocupadas++; continue; } /* ya lo apuntasteis vosotros */
     const als = _menuAlimentos(m);
-    if (!als.length) continue;              /* sin alimentos no hay nada que marcar */
+    if (!als.length) { saltadas.sinAlimentos++; continue; }
 
     hechas.push(f + '  ' + String(m.plato || '').slice(0, 40) +
                 '  (' + als.length + ' alim.)');
@@ -3903,7 +3915,95 @@ function _generarComidasCole(aplicar) {
             'Hasta qué día se han creado solas las comidas del cole');
     if (n) _invalidar();
   }
-  return { n: n, detalle: hechas };
+  return { n: n, detalle: hechas, saltadas: saltadas, dias: dias,
+           menus: Object.keys(menus).length };
+}
+
+/**
+ * Qué hay cargado y qué falta, día a día. No toca nada.
+ *
+ * `verComidasCole()` solo mira hacia delante desde la marca, así que en
+ * cuanto la marca pasa de largo deja de poder contestar a la pregunta que
+ * de verdad importa: ¿están las comidas de octubre dentro de la app?
+ *
+ *   diagnosticoCole('2026-10-01', '2026-10-31')
+ */
+function diagnosticoCole(desde, hasta) {
+  const d = _fechaKey(desde || _addDays(_hoy(), -30));
+  const h = _fechaKey(hasta || _hoy());
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !/^\d{4}-\d{2}-\d{2}$/.test(h)) {
+    Logger.log('❌ Fechas tipo "2026-10-01".'); return;
+  }
+
+  const menus = {};
+  const fuera = [];
+  _readSheet('Menu_Cole').forEach(function (r) {
+    const f = _fechaKey(r.fecha);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) { fuera.push(String(r.fecha)); return; }
+    menus[f] = r;
+  });
+
+  const comidas = {};
+  _readSheet('Comidas').forEach(function (c) {
+    if (String(c.tipo_comida) !== 'comida' || String(c.lugar) !== 'cole') return;
+    const f = _fechaKey(c.fecha);
+    comidas[f] = (comidas[f] || 0) + 1;
+  });
+
+  Logger.log('Del ' + d + ' al ' + h + '  ·  marca: ' +
+             (_cfg('cole_generado_hasta', '') || '(ninguna)'));
+  Logger.log('Menu_Cole: ' + Object.keys(menus).length + ' fecha(s) legibles' +
+             (fuera.length ? ', ' + fuera.length + ' ILEGIBLES: ' +
+                             fuera.slice(0, 5).join(' | ') : ''));
+
+  let conMenu = 0, hechas = 0, faltan = 0;
+  const pendientes = [];
+  for (let f = d; f <= h; f = _addDays(f, 1)) {
+    const m = menus[f];
+    if (!m) continue;
+    conMenu++;
+    const als = _menuAlimentos(m);
+    if (comidas[f]) { hechas++; continue; }
+    faltan++;
+    pendientes.push(f + '  ' + (als.length ? als.length + ' alim.' : 'SIN ALIMENTOS') +
+                    '  ' + String(m.plato || '(sin plato)').slice(0, 38));
+  }
+
+  Logger.log('En ese rango: ' + conMenu + ' día(s) con menú · ' + hechas +
+             ' ya apuntados en la app · ' + faltan + ' sin apuntar.');
+  if (!conMenu) {
+    Logger.log('⚠️ Ningún día del rango tiene fila en Menu_Cole. O no está pegado,');
+    Logger.log('   o las fechas no se leen bien (8/9/26 tiene que ser 8 de septiembre).');
+  }
+  if (faltan) {
+    pendientes.slice(0, 40).forEach(function (p) { Logger.log('   ' + p); });
+    Logger.log('Para crearlas: rellenarColeDesde("' + d + '", true)');
+  }
+}
+
+/** Una línea que explica por qué NO se creó nada. */
+function _porQueNoCole(p) {
+  if (p.apagado) return 'cole_automatico está en FALSE en la pestaña Config.';
+  if (!p.menus) {
+    return 'La pestaña Menu_Cole está vacía: pega ahí el menú del mes ' +
+           '(columnas fecha / plato / alimentos / nota).';
+  }
+  if (!p.dias) {
+    return 'No hay días por revisar: la marca ya está en hoy. Para ver qué hay ' +
+           'cargado y qué falta de un mes concreto: diagnosticoCole("2026-10-01", ' +
+           '"2026-10-31").';
+  }
+  const s = p.saltadas;
+  if (s.ocupadas && !s.sinAlimentos) {
+    return s.ocupadas + ' día(s) ya tenían la comida del cole apuntada. Nada que hacer.';
+  }
+  if (s.sinAlimentos) {
+    return s.sinAlimentos + ' día(s) tienen menú pero la columna `alimentos` vacía ' +
+           'o con grupos que no existen. Sin alimentos no hay nada que marcar.';
+  }
+  return 'Ninguno de los ' + p.dias + ' día(s) revisados tiene fila en Menu_Cole. ' +
+         'Si el menú está pegado, mira el formato de la columna `fecha`: ' +
+         'tiene que leerse como día/mes (8/9/26 = 8 de septiembre).';
 }
 
 /** Qué haría la carga automática del cole, sin hacerlo. */
@@ -3911,8 +4011,13 @@ function verComidasCole() {
   Logger.log('Automático: ' + (_truthy(_cfg('cole_automatico', 'TRUE')) ? 'SÍ' : 'NO') +
              '  ·  hora: ' + _cfg('cole_hora', '13:00') +
              '  ·  generado hasta: ' + (_cfg('cole_generado_hasta', '') || '(nunca)'));
+  Logger.log('Menu_Cole: ' + _readSheet('Menu_Cole').length + ' fila(s).');
   const p = _generarComidasCole(false);
-  if (!p.n) { Logger.log('✅ No hay nada pendiente de crear.'); return; }
+  if (!p.n) {
+    Logger.log('✅ Nada pendiente de crear.');
+    Logger.log('   ' + _porQueNoCole(p));
+    return;
+  }
   Logger.log('⏳ ' + p.n + ' comidas se crearían al abrir la app:');
   p.detalle.forEach(function (d) { Logger.log('   ' + d); });
 }
@@ -3928,13 +4033,26 @@ function rellenarColeDesde(fecha, aplicar) {
   }
   const antes = _cfg('cole_generado_hasta', '');
   if (aplicar === true) _setCfg('cole_generado_hasta', _addDays(f, -1), '');
-  const p = _generarComidasCole(aplicar === true);
+  const p = _generarComidasCole(aplicar === true, f);
   if (aplicar !== true) {
-    Logger.log('ℹ️ Desde ' + f + ' se crearían las comidas que falten. ' +
-               'Corre rellenarColeDesde("' + f + '", true) para hacerlo.');
-    Logger.log('   (La marca actual es ' + (antes || '(ninguna)') + ')');
-  } else {
+    Logger.log('(La marca actual es ' + (antes || '(ninguna)') + '. Esto es un simulacro.)');
+    if (p.n) {
+      Logger.log('ℹ️ Desde ' + f + ' se crearían ' + p.n + ' comidas:');
+      p.detalle.forEach(function (d) { Logger.log('   ' + d); });
+      Logger.log('Para hacerlo: rellenarColeDesde("' + f + '", true)');
+    } else {
+      Logger.log('⚠️ Desde ' + f + ' no se crearía ninguna.');
+      Logger.log('   ' + _porQueNoCole(p));
+    }
+  } else if (p.n) {
     Logger.log('✅ ' + p.n + ' comidas creadas.');
+    p.detalle.forEach(function (d) { Logger.log('   ' + d); });
+  } else {
+    /* Decir «0 creadas» y callarse deja al que lo corre adivinando entre
+       tres causas que se arreglan de forma distinta. */
+    Logger.log('⚠️ 0 comidas creadas.');
+    Logger.log('   ' + _porQueNoCole(p));
+    Logger.log('   Menu_Cole tiene ' + _readSheet('Menu_Cole').length + ' fila(s) en total.');
   }
 }
 
@@ -4239,7 +4357,26 @@ function compartirCarpeta(email) {
   const id = _config('carpeta_drive_id');
   if (!id) { Logger.log('❌ Antes corre crearCarpetaDocumentos().'); return; }
   const carpeta = DriveApp.getFolderById(id);
-  carpeta.addEditor(correo);
+
+  /* No se lanza la excepción hacia arriba a propósito. Esto se corre
+     dentro de una tanda de puesta a punto, y que un fallo al compartir
+     —que se arregla en diez segundos a mano— impida que corra lo que va
+     detrás (cerrarEnlacesPublicos, que es lo que de verdad protege algo)
+     es el peor orden posible. */
+  try {
+    carpeta.addEditor(correo);
+  } catch (err) {
+    Logger.log('⚠️ Drive no ha dejado compartir con ' + correo + '.');
+    Logger.log('   (' + String(err).replace(/^Exception:\s*/, '') + ')');
+    Logger.log('   La causa casi siempre es que ese correo NO es una cuenta de');
+    Logger.log('   Google. Drive solo comparte con cuentas de Google, y desde');
+    Logger.log('   Apps Script el error llega sin explicación.');
+    Logger.log('   Compruébalo, o compártela a mano en diez segundos:');
+    Logger.log('   ' + carpeta.getUrl() + '  →  Compartir  →  su correo  →  Editor');
+    Logger.log('   El resto de la app funciona igual: compartir solo sirve para');
+    Logger.log('   que ella entre a la carpeta desde Drive, no para la app.');
+    return;
+  }
   Logger.log('✅ "' + carpeta.getName() + '" compartida con ' + correo);
   Logger.log(carpeta.getUrl());
   Logger.log('Para quitarle el acceso: DriveApp.getFolderById("' + id +

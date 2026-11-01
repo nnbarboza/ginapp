@@ -287,6 +287,38 @@ setTimeout(async () => {
   await p5;
   ok('y al terminar desaparece', d2.querySelector('#enviando').hidden);
 
+  console.log('\n--- EL AVISO DE VERSIONES APUNTA AL QUE VA DETRÁS ---');
+  /* Pasó de verdad: el backend estaba en la 0.9.33 y la app en la 0.9.32,
+     y el aviso decía «falta publicar el backend». Diez minutos
+     republicando algo que ya estaba publicado. El aviso miraba SI había
+     desfase, nunca hacia dónde. */
+  ok('"0.9.9" es ANTERIOR a "0.9.33", no posterior',
+     w.cmpVersion('0.9.9', '0.9.33') === -1, w.cmpVersion('0.9.9','0.9.33'));
+  ok('y "0.10.0" es posterior a "0.9.99"',
+     w.cmpVersion('0.10.0', '0.9.99') === 1);
+  ok('iguales son iguales', w.cmpVersion('0.9.33', '0.9.33') === 0);
+
+  const real = w.APP_VERSION;
+  w.state.data.version = real;
+  ok('sin desfase no hay aviso', w.desfase() === null);
+
+  /* El backend por detrás: ahí sí hay que publicar. */
+  w.state.data.version = '0.0.1';
+  let ds = w.desfase();
+  ok('si el backend va detrás, se manda a publicar', ds && ds.q === 'backend', ds && ds.q);
+  ok('y se explica cómo', /Implementar/.test(ds.p));
+
+  /* El backend por delante: la vieja es la app. */
+  w.state.data.version = '99.0.0';
+  ds = w.desfase();
+  ok('si la app va detrás, NO se manda a publicar el backend',
+     ds && ds.q === 'app', ds && ds.q);
+  ok('se dice que el backend ya está publicado',
+     /ya está publicado/.test(ds.p), ds.p);
+  ok('y se manda a Actualizar, que es lo que lo arregla',
+     /Actualizar/.test(ds.p), ds.p);
+  w.state.data.version = real;
+
   console.log('\n' + (fallos ? ('❌ ' + fallos + ' fallos') : '✅ TODOS LOS TESTS PASAN'));
   process.exit(fallos ? 1 : 0);
 }, 900);

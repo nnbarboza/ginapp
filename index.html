@@ -1700,7 +1700,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.32';
+var APP_VERSION = '0.9.34';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -1916,6 +1916,40 @@ function versionBackend(){
 function hayDesfase(){
   var b = versionBackend();
   return !!b && b !== APP_VERSION;
+}
+
+/** -1 si a < b, 1 si a > b, 0 si son la misma. "0.9.9" < "0.9.33". */
+function cmpVersion(a, b){
+  var x = String(a||'').split('.'), y = String(b||'').split('.');
+  for(var i=0; i<Math.max(x.length,y.length); i++){
+    var n = parseInt(x[i]||'0',10) || 0, m = parseInt(y[i]||'0',10) || 0;
+    if(n !== m) return n < m ? -1 : 1;
+  }
+  return 0;
+}
+
+/**
+ * Quién va por detrás, y por tanto qué hay que hacer.
+ *
+ * El aviso decía SIEMPRE «falta publicar el backend», mirase hacia donde
+ * mirase el desfase. Cuando la vieja era la app —que es lo normal: el
+ * backend se publica a mano y la app se baja sola— mandaba a republicar
+ * algo que ya estaba publicado. Perder diez minutos siguiendo una
+ * instrucción equivocada es peor que no tener aviso.
+ */
+function desfase(){
+  var b = versionBackend();
+  if(!b || b === APP_VERSION) return null;
+  if(cmpVersion(b, APP_VERSION) < 0){
+    return { q:'backend', t:'Falta publicar el backend',
+      p:'La app va por la ' + APP_VERSION + ' y el Apps Script por la ' + b +
+        '. Publica versión nueva: Implementar › Gestionar implementaciones › ✏️ › ' +
+        'Versión: Nueva. Hasta entonces, lo último puede no aparecer.' };
+  }
+  return { q:'app', t:'La app está vieja',
+    p:'El Apps Script va por la ' + b + ' y la app por la ' + APP_VERSION +
+      '. El backend ya está publicado: lo que falta es refrescar la app. ' +
+      'Toca Actualizar, abajo del todo.' };
 }
 
 function trasCargar(){
@@ -3343,12 +3377,10 @@ function pintarAtencion(){
   /* Aviso de despliegue a medias. Va arriba del todo porque explica por
      qué algo "no funciona": lo que se acaba de añadir al backend no está
      publicado, así que la app lo pide y no viene. */
-  var desf = hayDesfase()
-    ? '<div class="aten-v">'+svg('reloj',15)+'<div><b>Falta publicar el backend</b>' +
-      '<span>La app va por la ' + esc(APP_VERSION) + ' y el Apps Script por la ' +
-      esc(versionBackend()) + '. Publica versión nueva: Implementar › Gestionar ' +
-      'implementaciones › ✏️ › Versión: Nueva. Hasta entonces, lo último puede ' +
-      'no aparecer.</span></div></div>'
+  var ds = desfase();
+  var desf = ds
+    ? '<div class="aten-v">'+svg('reloj',15)+'<div><b>'+esc(ds.t)+'</b>' +
+      '<span>'+esc(ds.p)+'</span></div></div>'
     : '';
 
   if(!n.length && !desf){ $('#cardAten').hidden = true; $('#cardAten').innerHTML = ''; return; }

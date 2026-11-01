@@ -565,5 +565,35 @@ ok('si hay menú pero ningún día casa, se apunta al formato de fecha',
    /d.a\/mes/.test(_porQueNoCole({ menus:20, dias:5,
      saltadas:{ sinMenu:5, ocupadas:0, sinAlimentos:0 } })));
 
+console.log('\n--- EL SIMULACRO TIENE QUE SIMULAR LO QUE DICE ---');
+/* rellenarColeDesde("2026-10-01") sin `true` decía «desde esa fecha se
+   crearían las que falten», pero contaba desde la MARCA real. Con la
+   marca ya en hoy contestaba «nada que hacer» aunque octubre estuviera
+   entero sin rellenar: el informe negaba el problema que iba a buscar. */
+TABLAS['Comidas'] = [];
+TABLAS['Config'] = [
+  { clave:'cole_automatico', valor:'TRUE', nota:'' },
+  { clave:'cole_hora', valor:'13:00', nota:'' },
+  /* La marca, adelantada hasta hoy: el caso real. */
+  { clave:'cole_generado_hasta', valor:_hoy(), nota:'' }
+];
+TABLAS['Menu_Cole'] = [
+  { fecha:_addDays(_hoy(), -5), plato:'Lentejas',
+    alimentos:'Lentejas:legumbres, Zanahoria:verduras', nota:'' },
+  { fecha:_addDays(_hoy(), -4), plato:'Merluza al horno',
+    alimentos:'Merluza:pescado, Patata:cereales', nota:'' }
+];
+ok('con la marca en hoy, el generador normal no ve nada',
+   _generarComidasCole(false).n === 0);
+const sim = _generarComidasCole(false, _addDays(_hoy(), -6));
+ok('pero simulando desde antes sí ve los dos días', sim.n === 2, sim.n);
+ok('y no ha tocado la marca', _cfg('cole_generado_hasta', '') === _hoy());
+ok('ni ha creado nada', TABLAS['Comidas'].length === 0, TABLAS['Comidas'].length);
+
+/* Y el apagado también se explica, en vez de devolver 0 en silencio. */
+TABLAS['Config'] = [{ clave:'cole_automatico', valor:'FALSE', nota:'' }];
+ok('si está apagado se dice, no se devuelve 0 a secas',
+   /cole_automatico/.test(_porQueNoCole(_generarComidasCole(false))));
+
 console.log('\n' + (fallos ? ('❌ ' + fallos + ' fallos') : '✅ TODOS LOS TESTS PASAN'));
 process.exit(fallos ? 1 : 0);
