@@ -17,6 +17,7 @@ sw.js           service worker (network-first para el HTML)
 img/            iconos y fotos (ver IMAGENES.md para los nombres)
 test_*.js       la suite; se corre con `node test_algo.js`, sin instalar nada
 MENU_COLE.md    formato del menú del cole y el prompt para generarlo cada mes
+PLAYBOOK.md     lo aprendido montando esto, para arrancar o arreglar otra app
 ```
 
 ## Cómo se trabaja
