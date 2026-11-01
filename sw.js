@@ -1,4 +1,4 @@
-/* GINapp — Service Worker v0.9.34
+/* GINapp — Service Worker v0.9.35
  *
  * HTML: network-first  → los despliegues se ven sin trucos de caché.
  * Resto (iconos, manifest): stale-while-revalidate.
@@ -9,7 +9,7 @@
  *
  * Al subir una versión: cambiar CACHE y APP_VERSION en index.html a la vez.
  */
-const CACHE = 'ginapp-v0.9.34';
+const CACHE = 'ginapp-v0.9.35';
 
 self.addEventListener('install', function () { self.skipWaiting(); });
 
@@ -50,7 +50,12 @@ self.addEventListener('fetch', function (e) {
 
   if (esHTML) {
     e.respondWith(
-      fetch(req)
+      /* `no-store` no es decorativo: sin él, este fetch «de red» puede
+         resolverse contra la caché HTTP del navegador, que para GitHub
+         Pages dura minutos. Es decir, el network-first no llegaba a la
+         red y la app se quedaba en la versión anterior después de subir
+         uno nuevo — mirabas la caché equivocada todo el rato. */
+      fetch(req.url, { cache: 'no-store', credentials: 'same-origin' })
         .then(function (r) { return guardar(r, req); })
         .catch(function () {
           return caches.match(req).then(function (r) { return r || caches.match('./index.html'); });

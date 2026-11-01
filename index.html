@@ -1700,7 +1700,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.34';
+var APP_VERSION = '0.9.35';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -2844,7 +2844,43 @@ function recargarAMano(){
 
 /* Función aparte para poder comprobar en los tests que se llama:
    location.reload no se puede interceptar en jsdom. */
-function recargarPagina(){ location.reload(); }
+/**
+ * Recarga saltándose TAMBIÉN la caché HTTP del navegador.
+ *
+ * Tirar el service worker y hacer location.reload() no basta, y por eso
+ * «Actualizar» podía dejarte en la versión anterior: GitHub Pages sirve
+ * el HTML con un Cache-Control de minutos, así que el navegador vuelve a
+ * servir el index viejo de su PROPIA caché, sin tocar la red. El service
+ * worker no tenía nada que ver; estábamos limpiando la caché equivocada.
+ *
+ * Se recarga con un parámetro distinto cada vez porque es lo único que
+ * ninguna caché puede acertar: una URL que no ha visto nunca. Nada de
+ * `location.reload(true)`, que los navegadores ignoran desde hace años.
+ * El parámetro se quita solo al arrancar, así que no se queda pegado.
+ */
+/* Separadas de `location` a propósito: así se pueden probar. El objeto
+   location del navegador no se deja sustituir, y una función que solo se
+   puede comprobar a ojo en un móvil es una función sin probar. */
+function sinV(href){
+  return String(href).split('#')[0].replace(/[?&]v=\d+/g, '').replace(/\?$/, '');
+}
+function urlRecarga(href, ahora){
+  var u = sinV(href);
+  return u + (u.indexOf('?') < 0 ? '?' : '&') + 'v=' + ahora;
+}
+
+function recargarPagina(){
+  try { location.replace(urlRecarga(location.href, Date.now())); }
+  catch(e){ location.reload(); }
+}
+
+/** Quita el ?v= de la barra en cuanto ha hecho su trabajo. */
+function limpiarUrl(){
+  try {
+    if(String(location.search).indexOf('v=') < 0) return;
+    history.replaceState(null, '', sinV(location.href) + location.hash);
+  } catch(e){}
+}
 
 /** Borra cachés y desregistra el SW. Devuelve true si había algo que tirar. */
 function limpiarCache(){
@@ -9236,6 +9272,7 @@ function hojaPerfil(){
    ARRANQUE
    ============================================================ */
 function arrancar(){
+  limpiarUrl();
   $('#ver').textContent = APP_VERSION;
   $('#btnRecargar').querySelector('.ico').innerHTML = svg('recargar', 15);
   /* El enlace de rescate solo aparece si la constante sigue sin rellenar */

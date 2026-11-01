@@ -319,6 +319,35 @@ setTimeout(async () => {
      /Actualizar/.test(ds.p), ds.p);
   w.state.data.version = real;
 
+  console.log('\n--- ACTUALIZAR TIENE QUE SALTARSE LA CACHÉ DEL NAVEGADOR ---');
+  /* Pasó de verdad: tras tocar Actualizar, la app seguía en la versión
+     anterior. Limpiábamos el service worker, que no tenía nada que ver:
+     quien servía el index viejo era la caché HTTP del navegador, que
+     location.reload() respeta. La única URL que ninguna caché puede
+     acertar es una que no ha visto nunca. */
+  const base = 'https://x.test/ginapp/';
+  const u1 = w.urlRecarga(base, 1762000000000);
+  ok('se va a una URL con parámetro', /[?&]v=\d+/.test(u1), u1);
+
+  /* Dos veces seguidas no pueden ir a la misma URL: si el parámetro se
+     repitiera, la segunda vez volvería a servirse de la caché igual. */
+  const u2 = w.urlRecarga(u1, 1762000009999);
+  ok('dos veces seguidas no repiten parámetro', u2 !== u1, u1 + ' → ' + u2);
+  /* Y no se van acumulando: ?v=1&v=2&v=3 hasta reventar la URL. */
+  ok('ni se acumulan', (u2.match(/v=/g) || []).length === 1, u2);
+
+  /* Con un hash o con otro parámetro ya puesto, tampoco se rompe. */
+  ok('un hash no se arrastra al recargar',
+     w.urlRecarga(base + '#salud', 1).indexOf('#') < 0, w.urlRecarga(base+'#salud', 1));
+  ok('y un parámetro ajeno se respeta',
+     w.urlRecarga(base + '?modo=x', 7) === base + '?modo=x&v=7',
+     w.urlRecarga(base + '?modo=x', 7));
+
+  /* Y el parámetro no se queda pegado en la barra. */
+  ok('al arrancar se quita el parámetro', w.sinV(u1) === base, w.sinV(u1));
+  ok('sin tocar lo demás', w.sinV(base + '?modo=x&v=9') === base + '?modo=x',
+     w.sinV(base + '?modo=x&v=9'));
+
   console.log('\n' + (fallos ? ('❌ ' + fallos + ' fallos') : '✅ TODOS LOS TESTS PASAN'));
   process.exit(fallos ? 1 : 0);
 }, 900);
