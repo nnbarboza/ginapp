@@ -331,6 +331,10 @@ svg{display:block;flex-shrink:0}
 .plato-acc.gas .pa{background:var(--gas-s);color:var(--gas-d)}
 .plato-acc.gas .pa.alt{background:var(--surface2);color:var(--t2)}
 .plato-e.gas .sp{border-color:var(--gas-s);border-top-color:var(--gas)}
+/* Y en Salud, turquesa. Mismo bloque, tercer acento. */
+.plato-acc.sal .pa{background:var(--sal-s);color:var(--sal-d)}
+.plato-acc.sal .pa.alt{background:var(--surface2);color:var(--t2)}
+.plato-e.sal .sp{border-color:var(--sal-s);border-top-color:var(--sal)}
 .cmp{display:flex;align-items:center;gap:9px;margin-top:10px;padding:0 12px;height:44px;
   border-radius:var(--r-btn);background:var(--gas-s);color:var(--gas-d);font-size:13.5px}
 .cmp .i{display:flex;flex-shrink:0}
@@ -1346,7 +1350,8 @@ svg{display:block;flex-shrink:0}
 .cats-g button.on span{color:var(--sal-d)}
 
 .doc-b{background:var(--sal-c);border-radius:var(--r-l);padding:15px;box-shadow:var(--sh);
-  display:flex;gap:13px;align-items:center;margin-bottom:14px}
+  display:flex;gap:13px;align-items:center;margin-bottom:14px;width:100%}
+.doc-b:active{transform:scale(.99)}
 .doc-b .i{width:52px;height:52px;border-radius:18px;background:var(--sal-s);color:var(--sal-d);
   flex-shrink:0}
 .doc-b div{flex:1;min-width:0}
@@ -1410,6 +1415,35 @@ svg{display:block;flex-shrink:0}
 .btn:disabled{background:var(--dis)}
 .btn.sec{background:var(--surface2);color:var(--t2);margin-top:9px}
 .btn.del{background:transparent;color:var(--err);font-size:13.5px;padding:10px}
+/* Secundario: el mismo tamaño que el principal, sin competir con él. */
+.btn.alt{background:var(--surface2);color:var(--t1);margin-top:8px;display:block;
+  text-align:center;text-decoration:none}
+
+/* ---- Documentos ---- */
+.docs{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px}
+.doc-i{display:flex;align-items:center;gap:11px;padding:11px 12px;width:100%;
+  border-radius:var(--r-btn);background:var(--surface2)}
+.doc-i:active{transform:scale(.99)}
+.doc-i .ic{width:38px;height:38px;border-radius:13px;background:var(--sal-s);
+  color:var(--sal-d)}
+.doc-i .tx{flex:1;min-width:0}
+.doc-i .tx b{display:block;font-size:14px;font-weight:600;letter-spacing:-.2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc-i .tx span{display:block;font-size:11.5px;color:var(--t3);margin-top:2px}
+.doc-meta{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--t2);
+  margin:-4px 0 12px}
+/* El archivo manda sobre el alto: un informe es más alto que ancho y
+   recortarlo a una altura fija es justo esconder el texto. */
+.doc-img{display:block;width:100%;height:auto;border-radius:var(--r-btn);
+  background:var(--surface2)}
+.doc-pdf{display:block;width:100%;height:62vh;border:0;border-radius:var(--r-btn);
+  background:var(--surface2)}
+.doc-ko{font-size:13px;color:var(--err);background:var(--err-s);
+  padding:12px;border-radius:var(--r-btn)}
+.cmp.sal{background:var(--sal-s);color:var(--sal-d)}
+.cmp.sal .qt{color:var(--sal-d)}
+.cmp .nm{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
 
 /* ---------- NAVEGACIÓN ---------- */
 .nav{position:fixed;bottom:0;left:0;right:0;max-width:440px;margin:0 auto;
@@ -1666,7 +1700,7 @@ svg{display:block;flex-shrink:0}
    Un solo archivo, sin dependencias. Todo lo derivado (custodia,
    saldos, próximos eventos, novedades) se calcula en cada render.
    ============================================================ */
-var APP_VERSION = '0.9.31';
+var APP_VERSION = '0.9.32';
 
 /* ============================================================
    ⬇️  ÚNICO VALOR QUE HAY QUE TOCAR EN ESTE ARCHIVO  ⬇️
@@ -7533,42 +7567,28 @@ function leerFormGasto(){
 }
 
 /**
- * Sube el comprobante. Las fotos se reducen antes de mandarlas: un
- * ticket de móvil son 4 MB y a 1200px se lee igual ocupando el 3%.
- * Los ficheros que no son imagen van tal cual, con tope de 8 MB.
+ * Deja un archivo elegido listo para mandar: `cb(dataUrl, mime, nombre)`.
+ *
+ * Las fotos se reducen ANTES de salir del móvil. Una foto de informe son
+ * 4 MB, y en base64 son 5,5 MB por un POST de Apps Script: con datos
+ * móviles eso no sube, y si sube tarda tanto que parece que falló. A
+ * 1600px y JPEG 0,8 ocupa ~300 KB y se lee exactamente igual.
+ *
+ * Lo que no es imagen (un PDF del CAP) va tal cual, con tope: por encima
+ * Apps Script se queda sin memoria montando el base64 y devuelve un error
+ * que no entiende nadie.
+ *
+ * `max` existe porque un ticket de gasto se lee bien a 1200 y un informe
+ * con letra pequeña, no.
  */
-function comprobanteElegido(input){
-  var f = input.files && input.files[0];
-  if(!f) return;
-  input.value = '';
-  /* Adjuntar repinta la hoja: sin esto se perderían el concepto, el
-     importe y los comentarios que ya estuvieran escritos. */
-  leerFormGasto();
-  var esImagen = /^image\//.test(f.type);
+function prepararArchivo(f, opts, cb){
+  opts = opts || {};
+  var max = opts.max || 1200, tope = (opts.topeMB || 8) * 1024 * 1024;
+  var nombre = f.name || opts.nombre || 'Archivo';
 
-  function mandar(dataUrl, mime, nombre){
-    borradorGasto.subiendo = true;
-    pintarFormGasto();
-    llamarPost({ action:'subirArchivo', payload:{
-      archivo:dataUrl, mime:mime, titulo:nombre,
-      fecha:borradorGasto.fecha, creado_por:state.user } })
-      .then(function(d){
-        borradorGasto.subiendo = false;
-        borradorGasto.comprobante = d.url;
-        pintarFormGasto();
-        toast('Comprobante adjuntado');
-      })
-      .catch(function(err){
-        borradorGasto.subiendo = false;
-        pintarFormGasto();
-        toast(String(err.message||err), true);
-      });
-  }
-
-  if(esImagen){
+  if(/^image\//.test(f.type)){
     var img = new Image();
     img.onload = function(){
-      var max = 1200;
       var e = Math.min(1, max / Math.max(img.width, img.height));
       var cv = document.createElement('canvas');
       cv.width = Math.round(img.width * e);
@@ -7578,21 +7598,50 @@ function comprobanteElegido(input){
       try { url = cv.toDataURL('image/jpeg', 0.8); }
       catch(err){ toast('No he podido leer la foto', true); return; }
       URL.revokeObjectURL(img.src);
-      mandar(url, 'image/jpeg', f.name || 'Comprobante');
+      cb(url, 'image/jpeg', nombre);
     };
     img.onerror = function(){ toast('No he podido leer la foto', true); };
     img.src = URL.createObjectURL(f);
     return;
   }
 
-  if(f.size > 8 * 1024 * 1024){
-    toast('El fichero pesa más de 8 MB. Hazle una foto en vez de eso.', true); return;
+  if(f.size > tope){
+    toast('El fichero pesa más de '+(opts.topeMB||8)+' MB. Hazle una foto en vez de eso.', true);
+    return;
   }
   var fr = new FileReader();
-  fr.onload = function(){ mandar(String(fr.result), f.type || 'application/octet-stream',
-                                 f.name || 'Comprobante'); };
+  fr.onload = function(){ cb(String(fr.result), f.type || 'application/octet-stream', nombre); };
   fr.onerror = function(){ toast('No he podido leer el fichero', true); };
   fr.readAsDataURL(f);
+}
+
+/** Sube el comprobante de un gasto. */
+function comprobanteElegido(input){
+  var f = input.files && input.files[0];
+  if(!f) return;
+  input.value = '';
+  /* Adjuntar repinta la hoja: sin esto se perderían el concepto, el
+     importe y los comentarios que ya estuvieran escritos. */
+  leerFormGasto();
+  prepararArchivo(f, { max:1200, topeMB:8, nombre:'Comprobante' },
+    function(dataUrl, mime, nombre){
+      borradorGasto.subiendo = true;
+      pintarFormGasto();
+      llamarPost({ action:'subirArchivo', payload:{
+        archivo:dataUrl, mime:mime, titulo:nombre,
+        fecha:borradorGasto.fecha, creado_por:state.user } })
+        .then(function(d){
+          borradorGasto.subiendo = false;
+          borradorGasto.comprobante = d.url;
+          pintarFormGasto();
+          toast('Comprobante adjuntado');
+        })
+        .catch(function(err){
+          borradorGasto.subiendo = false;
+          pintarFormGasto();
+          toast(String(err.message||err), true);
+        });
+    });
 }
 
 function guardarGasto(){
@@ -8076,11 +8125,17 @@ function pintarSalud(){
   }
   out += '</div>';
 
-  /* ---- Documentos ---- */
-  out += '<div class="doc-b"><span class="i">'+svg('carpeta',24)+'</span>' +
-    '<div><b>Toda la información de salud, siempre organizada</b>' +
-    '<p>Informes, recetas, informes escolares…</p></div>' +
-    svg('chevron',16,' style="color:var(--sal-d)"')+'</div>';
+  /* ---- Documentos ----
+     Era un <div> decorativo que no llevaba a ningún sitio: prometía
+     «toda la información organizada» y al tocarlo no pasaba nada. Ahora
+     es un botón de verdad y dice cuántos hay, que es lo que distingue
+     una carpeta con algo dentro de una vacía. */
+  var nDoc = (state.data.documentos||[]).length;
+  out += '<button class="doc-b" id="salDocsB"><span class="i">'+svg('carpeta',24)+'</span>' +
+    '<div><b>Documentos de Gina</b>' +
+    '<p>'+(nDoc ? nDoc+(nDoc===1?' archivo guardado':' archivos guardados')
+                : 'Informes, recetas, papeles del cole…')+'</p></div>' +
+    svg('chevron',16,' style="color:var(--sal-d)"')+'</button>';
 
   $('#salCuerpo').innerHTML = out;
   $('#fabSalud').innerHTML = svg('mas',19) + 'Añadir';
@@ -8089,6 +8144,260 @@ function pintarSalud(){
     ? (meds.length===1 ? '1 tratamiento activo' : meds.length+' tratamientos activos')
     : prox ? 'Próxima cita: '+fechaCorta(fechaKey(prox.fecha))
     : 'Qué ha pasado y qué viene después.';
+}
+
+/* ============================================================
+   DOCUMENTOS
+
+   El archivo vive en una carpeta de Drive compartida con las dos
+   cuentas; en el Sheet solo la ficha (título, tipo, fecha, id). Los
+   archivos NO son públicos: un enlace abierto a un informe médico de una
+   niña se filtra una vez y ya no se recoge. Por eso verlos dentro de la
+   app pasa por `verDocumento`, que viaja con el token como todo lo demás,
+   y el enlace de Drive se ofrece aparte para quien quiera descargar o
+   imprimir.
+   ============================================================ */
+var TIPOS_DOC = [
+  {id:'informe', nom:'Informes',  ico:'pediatra'},
+  {id:'receta',  nom:'Recetas',   ico:'pastilla'},
+  {id:'cole',    nom:'Cole',      ico:'escuela'},
+  {id:'seguro',  nom:'Seguro',    ico:'escudo'},
+  {id:'otro',    nom:'Otros',     ico:'carpeta'}
+];
+function tipoDoc(id){
+  return TIPOS_DOC.filter(function(t){ return t.id === String(id); })[0] ||
+         { id:'otro', nom:'Otros', ico:'carpeta' };
+}
+
+/** Los documentos ordenados, del más reciente al más viejo. */
+function documentosOrdenados(filtro, q){
+  q = String(q||'').trim().toLowerCase();
+  return (state.data.documentos||[]).filter(function(dc){
+    if(filtro && String(dc.tipo||'otro') !== filtro) return false;
+    if(q && String(dc.titulo||'').toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  }).sort(function(a,b){
+    return String(fechaKey(b.fecha)).localeCompare(String(fechaKey(a.fecha))) ||
+           String(b.timestamp||'').localeCompare(String(a.timestamp||''));
+  });
+}
+
+function hojaDocumentos(){
+  state.docFiltro = state.docFiltro || '';
+  state.docQ = state.docQ || '';
+  pintarDocumentos();
+}
+
+function pintarDocumentos(){
+  var lista = documentosOrdenados(state.docFiltro, state.docQ);
+  /* Solo se ofrecen los tipos que tienen algo. Un filtro que siempre
+     devuelve cero es un filtro que sobra. */
+  var hay = {};
+  (state.data.documentos||[]).forEach(function(dc){ hay[String(dc.tipo||'otro')] = true; });
+
+  var h = '<h3>Documentos de Gina</h3>' +
+    '<div class="busca"><span class="lupa i">'+svg('lupa',17)+'</span>' +
+    '<input class="inp" id="docQ" type="text" placeholder="Buscar…" ' +
+      'value="'+esc(state.docQ)+'" autocomplete="off"></div>';
+
+  if(Object.keys(hay).length > 1){
+    h += '<div class="cats-h" style="margin-top:10px">' +
+      '<button data-docf="" class="'+(state.docFiltro?'':'on')+'" style="' +
+        (state.docFiltro?'':'background:var(--sal-d);color:#fff')+'">Todos</button>' +
+      TIPOS_DOC.filter(function(t){ return hay[t.id]; }).map(function(t){
+        var on = state.docFiltro === t.id;
+        return '<button data-docf="'+t.id+'" class="'+(on?'on':'')+'" style="' +
+          (on?'background:var(--sal-d);color:#fff':'')+'">'+svg(t.ico,14)+esc(t.nom)+'</button>';
+      }).join('') + '</div>';
+  }
+
+  if(!lista.length){
+    h += '<div class="hist-vacio">' +
+      (state.docQ || state.docFiltro
+        ? 'Nada con ese filtro.'
+        : 'Todavía no hay ningún documento. Hazle una foto al informe cuando ' +
+          'salgas de la consulta y queda guardado para los dos.') + '</div>';
+  } else {
+    h += '<div class="docs">' + lista.map(function(dc){
+      var t = tipoDoc(dc.tipo);
+      return '<button class="doc-i" data-doc="'+esc(dc.id)+'">' +
+        '<span class="ic i">'+svg(t.ico,19)+'</span>' +
+        '<div class="tx"><b>'+esc(dc.titulo||'Documento')+'</b>' +
+          '<span>'+esc(t.nom)+' · '+fechaCorta(fechaKey(dc.fecha)) +
+          (dc.creado_por ? ' · '+esc(nombreDe(dc.creado_por)) : '')+'</span></div>' +
+        svg('chevron',15,' style="color:var(--sal-d);opacity:.5"')+'</button>';
+    }).join('') + '</div>';
+  }
+
+  h += '<button class="btn" style="background:var(--sal)" id="docNuevo">' +
+       'Añadir documento</button>';
+  abrirHoja(h);
+}
+
+/* ---------- alta ---------- */
+var borradorDoc = null;
+
+function formDocumento(){
+  borradorDoc = { titulo:'', tipo:'informe', fecha:state.data.hoy,
+                  archivo:'', mime:'', nombre:'', subiendo:false };
+  pintarFormDoc();
+}
+
+function leerFormDoc(){
+  var e = $('#dcTit'); if(e) borradorDoc.titulo = String(e.value||'').trim();
+  var f = $('#dcFecha'); if(f) borradorDoc.fecha = String(f.value||'') || borradorDoc.fecha;
+}
+
+function pintarFormDoc(){
+  var b = borradorDoc;
+  var h = '<h3>Nuevo documento</h3>' +
+    '<div class="f-lb">Qué es</div><div class="chips">' + TIPOS_DOC.map(function(t){
+      return '<button class="chip'+(b.tipo===t.id?' on':'')+'" style="' +
+        (b.tipo===t.id?'background:var(--sal)':'')+'" data-doctipo="'+t.id+'">' +
+        esc(t.nom)+'</button>'; }).join('') + '</div>' +
+    campo('Título','dcTit',b.titulo,'Informe de la revisión anual') +
+    '<div class="f-lb">Fecha del documento</div>' +
+    '<input class="inp" id="dcFecha" type="date" value="'+esc(b.fecha)+'">' +
+    '<div class="f-lb">Archivo</div>';
+
+  if(b.archivo){
+    h += '<div class="cmp sal"><span class="i">'+svg('carpeta',17)+'</span>' +
+      '<span class="nm">'+esc(b.nombre)+'</span>' +
+      '<button class="qt" id="dcQuita">'+svg('cerrar',14)+'</button></div>';
+  } else {
+    /* Sin `capture`: el móvil ofrece cámara o carrete, y en la consulta
+       casi siempre es la cámara. El segundo acepta cualquier fichero,
+       que es como llegan los PDF del CAP. */
+    h += '<div class="plato-acc sal">' +
+      '<label class="pa" for="dcFoto">'+svg('camara',16)+'<span>Foto</span>' +
+        '<input type="file" id="dcFoto" accept="image/*" hidden></label>' +
+      '<label class="pa alt" for="dcFich">'+svg('carpeta',16)+'<span>Fichero</span>' +
+        '<input type="file" id="dcFich" hidden></label>' +
+      '</div>';
+  }
+
+  if(b.subiendo){
+    h += '<div class="plato-e sal"><i class="sp"></i>Subiendo a Drive…</div>' +
+         '<button class="btn" style="background:var(--sal);opacity:.5" disabled>Subiendo…</button>';
+  } else {
+    h += '<button class="btn" style="background:var(--sal)" id="dcGuardar">' +
+         'Guardar documento</button>';
+  }
+  abrirHoja(h);
+}
+
+function docArchivoElegido(input){
+  var f = input.files && input.files[0];
+  if(!f) return;
+  input.value = '';
+  /* Elegir repinta la hoja: sin esto se perdería el título ya escrito. */
+  leerFormDoc();
+  /* 1600px, no 1200 como en los tickets: un informe lleva letra pequeña
+     y a 1200 se pierde justo lo que querías guardar. */
+  prepararArchivo(f, { max:1600, topeMB:15, nombre:'Documento' },
+    function(dataUrl, mime, nombre){
+      borradorDoc.archivo = dataUrl;
+      borradorDoc.mime = mime;
+      borradorDoc.nombre = nombre;
+      if(!borradorDoc.titulo) borradorDoc.titulo = String(nombre).replace(/\.[a-z0-9]+$/i,'');
+      pintarFormDoc();
+    });
+}
+
+/**
+ * No es optimista a propósito. Lo optimista sirve cuando la red es lo
+ * único lento; aquí lo lento es subir 300 KB y crear el archivo, y
+ * pintar la fila antes de tiempo sería mentir sobre algo que puede
+ * fallar de verdad (cuota de Drive, carpeta borrada).
+ */
+function guardarDocumento(){
+  leerFormDoc();
+  var b = borradorDoc;
+  if(!b.archivo){ toast('Elige una foto o un fichero', true); return; }
+  if(!b.titulo){ toast('Ponle un título', true); return; }
+  b.subiendo = true;
+  pintarFormDoc();
+  llamarPost({ action:'subirDocumento', payload:{
+    archivo:b.archivo, mime:b.mime, titulo:b.titulo, tipo:b.tipo,
+    fecha:b.fecha, creado_por:state.user } })
+    .then(function(fila){
+      state.data.documentos = (state.data.documentos||[]).concat([fila]);
+      borradorDoc = null;
+      guardarCache(state.data);
+      pintarSalud();
+      pintarDocumentos();
+      toast('Documento guardado');
+    })
+    .catch(function(err){
+      b.subiendo = false;
+      pintarFormDoc();
+      toast(String(err.message||err), true);
+    });
+}
+
+/* ---------- ver ---------- */
+/* La caché vive solo mientras la app está abierta: un informe son cientos
+   de KB y no tiene sentido meterlos en localStorage junto al bootstrap. */
+var cacheDoc = {};
+
+function verDocumento(id){
+  var dc = (state.data.documentos||[]).filter(function(x){
+    return String(x.id) === String(id); })[0];
+  if(!dc) return;
+  if(cacheDoc[id]){ pintarVisorDoc(dc, cacheDoc[id]); return; }
+  pintarVisorDoc(dc, null);
+  llamar('verDocumento', { id:String(dc.file_id||'') })
+    .then(function(d){ cacheDoc[id] = d; pintarVisorDoc(dc, d); })
+    .catch(function(err){ pintarVisorDoc(dc, { error:String(err.message||err) }); });
+}
+
+function pintarVisorDoc(dc, d){
+  var t = tipoDoc(dc.tipo);
+  var h = '<h3>'+esc(dc.titulo||'Documento')+'</h3>' +
+    '<div class="doc-meta">'+svg(t.ico,15)+esc(t.nom)+' · ' +
+      esc(fechaCorta(fechaKey(dc.fecha))) +
+      (dc.creado_por ? ' · lo subió '+esc(nombreDe(dc.creado_por).toLowerCase()) : '') +
+    '</div>';
+
+  if(!d){
+    h += '<div class="plato-e sal"><i class="sp"></i>Abriendo el archivo…</div>';
+  } else if(d.error){
+    h += '<div class="doc-ko">'+esc(d.error)+'</div>';
+  } else if(/^image\//.test(String(d.mime))){
+    h += '<img class="doc-img" alt="'+esc(dc.titulo||'Documento')+'" ' +
+         'src="data:'+esc(d.mime)+';base64,'+d.b64+'">';
+  } else if(String(d.mime) === 'application/pdf'){
+    h += '<iframe class="doc-pdf" title="'+esc(dc.titulo||'Documento')+'" ' +
+         'src="data:application/pdf;base64,'+d.b64+'"></iframe>' +
+         /* Safari en iOS no pinta un PDF dentro de un iframe con data:.
+            En vez de enseñar un recuadro en blanco y que parezca roto,
+            se dice y se ofrece la salida. */
+         '<div class="plato-e sal">Si se queda en blanco, es cosa del navegador: ' +
+         'ábrelo en Drive.</div>';
+  } else {
+    h += '<div class="plato-e sal">Este tipo de archivo no se puede ver aquí.</div>';
+  }
+
+  if(dc.url){
+    h += '<a class="btn alt" href="'+esc(dc.url)+'" target="_blank" rel="noopener">' +
+         'Abrir en Drive</a>';
+  }
+  h += '<button class="btn del" data-docborra="'+esc(dc.id)+'">Borrar este documento</button>';
+  abrirHoja(h);
+}
+
+function borrarDocumento(id){
+  var dc = (state.data.documentos||[]).filter(function(x){
+    return String(x.id) === String(id); })[0];
+  if(!dc) return;
+  /* Borra TAMBIÉN el archivo de Drive (va a la papelera, recuperable 30
+     días). Dejar la ficha fuera y el archivo dentro es peor que las dos
+     cosas: nadie vuelve a mirar en Drive. */
+  delete cacheDoc[dc.id];
+  borrarOptimista({ tabla:'documentos', id:dc.id, accion:'deleteDocumento',
+    mensaje:'Documento borrado',
+    reintentar:function(){ borrarDocumento(id); } })
+    .catch(function(){});
 }
 
 /* ---------- registro ---------- */
@@ -9398,7 +9707,24 @@ document.addEventListener('click', function(e){
   if(ct){ formCita(ct.dataset.cita); return; }
   if(e.target.closest('#salGuardar')){ guardarSalud(); return; }
   if(e.target.closest('#salBorrar')){ borrarSalud(); return; }
-  if(e.target.closest('#salDocs')){ toast('Los documentos llegan en la siguiente entrega'); return; }
+  /* Las dos puertas a lo mismo: el contador de arriba y la carpeta de
+     abajo. Antes la de arriba sacaba un aviso y la de abajo no hacía
+     nada de nada. */
+  if(e.target.closest('#salDocs') || e.target.closest('#salDocsB')){
+    hojaDocumentos(); return; }
+  if(e.target.closest('#docNuevo')){ formDocumento(); return; }
+  var df = e.target.closest('[data-docf]');
+  if(df){ state.docFiltro = df.dataset.docf; pintarDocumentos(); return; }
+  var dcv = e.target.closest('[data-doc]');
+  if(dcv){ verDocumento(dcv.dataset.doc); return; }
+  var dtp = e.target.closest('[data-doctipo]');
+  if(dtp){ leerFormDoc(); borradorDoc.tipo = dtp.dataset.doctipo; pintarFormDoc(); return; }
+  if(e.target.closest('#dcQuita')){
+    leerFormDoc(); borradorDoc.archivo = ''; borradorDoc.nombre = '';
+    pintarFormDoc(); return; }
+  if(e.target.closest('#dcGuardar')){ guardarDocumento(); return; }
+  var dcb = e.target.closest('[data-docborra]');
+  if(dcb){ borrarDocumento(dcb.dataset.docborra); return; }
 
   if(e.target.closest('#semPrev')){ state.lunes = addDays(state.lunes,-7); pintarSemana(); return; }
   if(e.target.closest('#semNext')){ state.lunes = addDays(state.lunes, 7); pintarSemana(); return; }
@@ -9411,6 +9737,8 @@ document.addEventListener('change', function(e){
   if(e.target.id === 'inFoto'){ fotoElegida(e.target); return; }
   if(e.target.id === 'gFoto' || e.target.id === 'gFich'){
     comprobanteElegido(e.target); return; }
+  if(e.target.id === 'dcFoto' || e.target.id === 'dcFich'){
+    docArchivoElegido(e.target); return; }
   if(e.target.id === 'gnFa'){ fotoGinaElegida(e.target, 'foto_a'); return; }
   if(e.target.id === 'gnFb'){ fotoGinaElegida(e.target, 'foto_b'); return; }
 });
@@ -9420,6 +9748,9 @@ document.addEventListener('input', function(e){
   if(e.target.id === 'bibQ'){ state.bibQ = e.target.value;
     var pos = e.target.selectionStart; pintarBiblioteca();
     var n = $('#bibQ'); if(n){ n.focus(); n.setSelectionRange(pos,pos); } return; }
+  if(e.target.id === 'docQ'){ state.docQ = e.target.value;
+    var pd = e.target.selectionStart; pintarDocumentos();
+    var nd = $('#docQ'); if(nd){ nd.focus(); nd.setSelectionRange(pd,pd); } return; }
   if(e.target.id === 'inHora' && borrador){ borrador.hora = e.target.value; return; }
   if(e.target.id === 'inPlato' && borrador){
     borrador.plato = e.target.value;

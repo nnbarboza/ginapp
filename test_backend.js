@@ -534,5 +534,36 @@ ok('con true cierra el que estaba abierto',
 ok('y no toca el que ya era privado',
    compartidos.indexOf('NUEVO:PRIVATE') < 0, compartidos.join(','));
 
+console.log('\n--- COMPARTIR LA CARPETA NO PUEDE TUMBAR LA TANDA ---');
+/* Pasó de verdad: addEditor lanzó «Acceso denegado: DriveApp» y se llevó
+   por delante el cerrarEnlacesPublicos() que iba detrás — justo lo único
+   de la tanda que protegía algo. */
+let dioError = false;
+global.DriveApp.getFolderById = id => ({
+  getId:()=>'CARPETA', getName:()=>'GINapp · documentos',
+  getUrl:()=>'https://drive/CARPETA',
+  addEditor:()=>{ throw new Error('Exception: Acceso denegado: DriveApp.'); }
+});
+try { compartirCarpeta('alguien@gmail.com'); } catch (e) { dioError = true; }
+ok('si Drive no deja compartir, no se lanza la excepción hacia arriba', !dioError);
+
+console.log('\n--- 0 COMIDAS DEL COLE: POR QUÉ ---');
+/* «0 comidas creadas» a secas deja adivinando entre tres causas que se
+   arreglan de forma distinta: el menú sin pegar, los días ya apuntados,
+   o la columna `alimentos` vacía. */
+ok('sin Menu_Cole se dice que está vacía',
+   /Menu_Cole está vacía/.test(_porQueNoCole({ menus:0, dias:5, saltadas:{} })));
+ok('si ya estaban apuntadas, se dice que no hay nada que hacer',
+   /ya tenían/.test(_porQueNoCole({ menus:20, dias:5,
+     saltadas:{ sinMenu:0, ocupadas:5, sinAlimentos:0 } })));
+ok('si el menú está pero sin alimentos, se señala esa columna',
+   /alimentos. vac/.test(_porQueNoCole({ menus:20, dias:5,
+     saltadas:{ sinMenu:0, ocupadas:0, sinAlimentos:5 } })));
+/* La trampa real: el menú está pegado pero con las fechas al revés
+   (8/9/26 leído como 9 de agosto), así que ningún día casa. */
+ok('si hay menú pero ningún día casa, se apunta al formato de fecha',
+   /d.a\/mes/.test(_porQueNoCole({ menus:20, dias:5,
+     saltadas:{ sinMenu:5, ocupadas:0, sinAlimentos:0 } })));
+
 console.log('\n' + (fallos ? ('❌ ' + fallos + ' fallos') : '✅ TODOS LOS TESTS PASAN'));
 process.exit(fallos ? 1 : 0);
