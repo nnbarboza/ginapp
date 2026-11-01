@@ -19,7 +19,7 @@
  */
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
-const APP_VERSION = '0.9.35';
+const APP_VERSION = '0.9.36';
 
 /* ============================================================
    ESQUEMA DE TABLAS
@@ -3979,6 +3979,65 @@ function diagnosticoCole(desde, hasta) {
     pendientes.slice(0, 40).forEach(function (p) { Logger.log('   ' + p); });
     Logger.log('Para crearlas: rellenarColeDesde("' + d + '", true)');
   }
+}
+
+/**
+ * Rehace las comidas del cole de un rango con el menú que haya AHORA.
+ *
+ * Hace falta cuando se corrige un menú ya cargado: cambiar la pestaña
+ * Menu_Cole no toca las comidas que ya se crearon, así que sin esto la
+ * corrección no llega nunca a la app.
+ *
+ * Solo borra las que creó el generador —las que no tienen autor—. Las que
+ * apuntasteis vosotros no se tocan ni aunque sean del cole: borrar lo que
+ * ha escrito una persona para poner lo que dice un PDF es exactamente al
+ * revés. Por defecto informa; con `true` actúa.
+ */
+function rehacerColeDesde(desde, hasta, aplicar) {
+  const d = _fechaKey(desde), h = _fechaKey(hasta || _hoy());
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !/^\d{4}-\d{2}-\d{2}$/.test(h)) {
+    Logger.log('❌ Fechas tipo "2026-10-01".'); return;
+  }
+  const propias = [], vuestros = {};
+  _readSheet('Comidas').forEach(function (c) {
+    if (String(c.tipo_comida) !== 'comida' || String(c.lugar) !== 'cole') return;
+    const f = _fechaKey(c.fecha);
+    if (f < d || f > h) return;
+    if (String(c.creado_por || '').trim() === '') propias.push(c);
+    else vuestros[f] = true;
+  });
+
+  /* Un día donde alguien apuntó SU comida del cole no se toca. El
+     generador no vuelve a crear nada ahí —por diseño, para no duplicar lo
+     que ha escrito una persona—, así que borrar la fila automática de ese
+     día sería perderla sin reponer nada. Antes que eso, no se borra. */
+  const mias = propias.filter(function (c) { return !vuestros[_fechaKey(c.fecha)]; });
+  const bloqueadas = propias.length - mias.length;
+
+  if (aplicar !== true) {
+    Logger.log('Del ' + d + ' al ' + h + ':');
+    Logger.log('  ' + mias.length + ' fila(s) se borrarían y se volverían a crear.');
+    Logger.log('  ' + Object.keys(vuestros).length + ' día(s) tienen comida del cole ' +
+               'apuntada por vosotros → intactos' +
+               (bloqueadas ? ' (y con ellos ' + bloqueadas + ' fila(s) automáticas, ' +
+                             'que se perderían sin reponerse)' : ''));
+    Logger.log('Para hacerlo: rehacerColeDesde("' + d + '", "' + h + '", true)');
+    return;
+  }
+
+  mias.forEach(function (c) {
+    _aPapelera('Comidas', String(c.id), '');
+    _deleteRow('Comidas', 'id', String(c.id));
+  });
+  _setCfg('cole_generado_hasta', _addDays(d, -1), '');
+  const p = _generarComidasCole(true);
+  Logger.log('🗑️ ' + mias.length + ' fila(s) borradas (quedan en Papelera).');
+  Logger.log('✅ ' + p.n + ' comida(s) creadas de nuevo.');
+  if (bloqueadas) {
+    Logger.log('↩️ ' + bloqueadas + ' fila(s) no se han tocado: ese día ya tenéis ' +
+               'apuntada vuestra propia comida del cole.');
+  }
+  if (!p.n) Logger.log('   ' + _porQueNoCole(p));
 }
 
 /** Una línea que explica por qué NO se creó nada. */

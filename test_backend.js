@@ -86,6 +86,21 @@ _upsert = function (tab, keyCol, obj) {
   const i = TABLAS[tab].findIndex(r => String(r[keyCol]) === String(obj[keyCol]));
   if (i >= 0) TABLAS[tab][i] = Object.assign({}, obj); else TABLAS[tab].push(Object.assign({}, obj));
 };
+/* Borrar y Papelera, que hasta ahora no se tocaban desde aquí. Sin estos
+   dos, cualquier función que borre revienta dentro de _findRow y el test
+   parece un fallo del código cuando es un hueco del andamio. */
+_deleteRow = function (tab, keyCol, keyVal) {
+  const antes = (TABLAS[tab] || []).length;
+  TABLAS[tab] = (TABLAS[tab] || []).filter(r => String(r[keyCol]) !== String(keyVal));
+  return antes - TABLAS[tab].length;
+};
+_aPapelera = function (tab, id, quien) {
+  const fila = (TABLAS[tab] || []).filter(r => String(r.id) === String(id))[0];
+  if (!fila) return;
+  TABLAS['Papelera'] = TABLAS['Papelera'] || [];
+  TABLAS['Papelera'].push({ tabla:tab, fila_id:id, borrado_por:String(quien || ''),
+                            datos:JSON.stringify(fila) });
+};
 _log = function () {};
 
 let fallos = 0;
@@ -594,6 +609,64 @@ ok('ni ha creado nada', TABLAS['Comidas'].length === 0, TABLAS['Comidas'].length
 TABLAS['Config'] = [{ clave:'cole_automatico', valor:'FALSE', nota:'' }];
 ok('si está apagado se dice, no se devuelve 0 a secas',
    /cole_automatico/.test(_porQueNoCole(_generarComidasCole(false))));
+
+console.log('\n--- REHACER EL COLE CUANDO SE CORRIGE UN MENÚ ---');
+/* Corregir Menu_Cole no toca las comidas ya creadas, así que sin esto la
+   corrección no llega nunca a la app. Pasó: a octubre le faltaba la
+   fruta de temporada en todos los días. */
+TABLAS['Config'] = [
+  { clave:'cole_automatico', valor:'TRUE', nota:'' },
+  { clave:'cole_hora', valor:'13:00', nota:'' },
+  { clave:'cole_generado_hasta', valor:_hoy(), nota:'' }
+];
+const DIA = _addDays(_hoy(), -3);
+TABLAS['Menu_Cole'] = [
+  { fecha:DIA, plato:'Lentejas', alimentos:'Lentejas:legumbres, Fruta:fruta', nota:'' }
+];
+TABLAS['Comidas'] = [
+  /* Las que creó el generador: sin autor. */
+  { id:'a1', grupo_id:'g1', fecha:DIA, hora:'13:00', tipo_comida:'comida', lugar:'cole',
+    nombre:'Lentejas', grupo:'legumbres', estado_toma:'comio', creado_por:'' },
+  /* Una que apuntó una persona ESE MISMO DÍA. */
+  { id:'a2', grupo_id:'g2', fecha:DIA, hora:'13:30', tipo_comida:'comida', lugar:'cole',
+    nombre:'Yogur', grupo:'lacteos', estado_toma:'comio', creado_por:'mama' },
+  /* Y una cena de casa, que no pinta nada aquí. */
+  { id:'a3', grupo_id:'g3', fecha:DIA, hora:'21:00', tipo_comida:'cena', lugar:'casa',
+    nombre:'Sopa', grupo:'verduras', estado_toma:'comio', creado_por:'papa' }
+];
+TABLAS['Papelera'] = [];
+rehacerColeDesde(DIA, DIA);
+ok('por defecto no borra nada', TABLAS['Comidas'].length === 3, TABLAS['Comidas'].length);
+
+/* Ese día mamá tiene SU comida del cole apuntada. El generador no vuelve
+   a crear nada ahí —por diseño, para no duplicar lo que escribió una
+   persona—, así que borrar la fila automática sería perderla sin reponer
+   nada. Antes que eso, no se toca el día entero. */
+rehacerColeDesde(DIA, DIA, true);
+let quedan = TABLAS['Comidas'].map(c => String(c.id));
+ok('con una comida vuestra ese día, no se borra la automática',
+   quedan.indexOf('a1') >= 0, quedan.join(','));
+ok('la de mamá sigue ahí', quedan.indexOf('a2') >= 0, quedan.join(','));
+ok('la cena de casa también', quedan.indexOf('a3') >= 0, quedan.join(','));
+ok('y no se ha tirado nada a la Papelera', TABLAS['Papelera'].length === 0,
+   TABLAS['Papelera'].length);
+
+/* Sin esa colisión, sí se rehace. */
+TABLAS['Comidas'] = TABLAS['Comidas'].filter(c => String(c.id) !== 'a2');
+TABLAS['Config'] = TABLAS['Config'].map(c =>
+  c.clave === 'cole_generado_hasta' ? { clave:c.clave, valor:_hoy(), nota:'' } : c);
+rehacerColeDesde(DIA, DIA, true);
+quedan = TABLAS['Comidas'].map(c => String(c.id));
+ok('ahora sí se borra la vieja', quedan.indexOf('a1') < 0, quedan.join(','));
+ok('y queda recuperable en la Papelera', TABLAS['Papelera'].length === 1,
+   TABLAS['Papelera'].length);
+const nuevas = TABLAS['Comidas'].filter(c => String(c.creado_por || '') === '');
+ok('se vuelve a crear desde el menú de AHORA', nuevas.length === 2, nuevas.length);
+ok('con la fruta que antes faltaba',
+   nuevas.some(c => String(c.grupo) === 'fruta'), nuevas.map(c => c.grupo).join(','));
+ok('sin dueño, como todas las del generador',
+   nuevas.every(c => String(c.creado_por || '') === ''));
+ok('y la cena de casa sigue sin enterarse', quedan.indexOf('a3') >= 0, quedan.join(','));
 
 console.log('\n' + (fallos ? ('❌ ' + fallos + ' fallos') : '✅ TODOS LOS TESTS PASAN'));
 process.exit(fallos ? 1 : 0);

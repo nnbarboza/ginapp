@@ -22,9 +22,9 @@ trata como "este día no hay menú", que es lo correcto.
 pero el alimento cae en `otros` y deja de contar para la variedad:
 
 ```
-verduras · fruta · legumbres · pescado · proteina_blanca · carnes_rojas
+verduras · fruta · legumbres · pescado · proteina_blanca · carnes_procesadas
 huevos · lacteos · frutos_secos · cereales · ultraprocesado · capricho
-permitido · bebidas · otros
+bebidas_azucaradas · permitido · bebidas · otros
 ```
 
 `verMenu('2026-09')` en el editor de Apps Script avisa de los que estén mal.
@@ -53,17 +53,27 @@ Reglas:
    tomàquet / Croquetes de pollastre amb remolatxa` → `Espaguetis y croquetas`.
 4. **`alimentos`**: los ingredientes reales del día, en formato
    `Nombre:grupo`, separados por comas. Incluye los del primer plato, los del
-   segundo y las guarniciones. No metas condimentos (aceite, sal, especias) ni
-   el postre. Nombres en singular y en mayúscula inicial: `Tomate`, no
-   `tomates`.
+   segundo, las guarniciones **y el postre**. Nombres en singular y en
+   mayúscula inicial: `Tomate`, no `tomates`. Los condimentos no (aceite, sal,
+   especias): no son una ración de nada.
+
+   **El postre cuenta.** En octubre se dejó fuera, y como casi todos los días
+   ponen «Fruita de temporada», la app se quedó sin cinco raciones de fruta a
+   la semana y recomendaba fruta a una niña que la comía todos los días. Si el
+   PDF no dice cuál, va `Fruta de temporada:fruta`; si dice `Iogurt`, va
+   `Yogur:lacteos`.
 5. **`grupo`** tiene que ser uno de estos, exactamente como están escritos:
    `verduras`, `fruta`, `legumbres`, `pescado`, `proteina_blanca`,
-   `carnes_rojas`, `huevos`, `lacteos`, `frutos_secos`, `cereales`,
-   `ultraprocesado`, `capricho`, `permitido`, `bebidas`, `otros`.
-   - `proteina_blanca` es pollo, pavo y conejo.
-   - `carnes_rojas` es ternera y cerdo.
-   - `cereales` incluye pasta, arroz, pan y patata.
-   - `permitido` es lo que no es sano ni insano: aceitunas, pesto, salsas.
+   `carnes_procesadas`, `huevos`, `lacteos`, `frutos_secos`, `cereales`,
+   `ultraprocesado`, `capricho`, `bebidas_azucaradas`, `permitido`, `bebidas`,
+   `otros`.
+   - `proteina_blanca` es toda la carne y el huevo de carne: pollo, pavo,
+     conejo, ternera y cerdo. Ya no hay `carnes_rojas`.
+   - `carnes_procesadas` es butifarra, salchicha, embutido y hamburguesa
+     industrial. Es un grupo de los de «sin pasarse», así que importa
+     distinguirlo de la carne a secas.
+   - `cereales` incluye pasta, arroz, pan, patata y boniato.
+   - `permitido` es lo que no es sano ni insano: aceitunas, pesto, mayonesa.
    - Los guisantes van en `legumbres`.
 6. **Días festivos o sin comedor**: fila con la fecha, `plato` y `alimentos`
    vacíos, y el motivo en `nota` (`Diada — festivo, no hay cole`).
@@ -73,7 +83,7 @@ Ejemplo de dos filas bien hechas:
 
 ```
 fecha	plato	alimentos	nota
-2026-09-08	Espaguetis y croquetas	Espaguetis:cereales, Tomate:verduras, Croquetas de pollo:proteina_blanca, Remolacha:verduras	
+2026-09-08	Espaguetis y croquetas	Espaguetis:cereales, Tomate:verduras, Croquetas de pollo:proteina_blanca, Remolacha:verduras, Fruta de temporada:fruta	
 2026-09-11			Diada — festivo, no hay cole
 ```
 
@@ -85,6 +95,17 @@ Se selecciona la pestaña `Menu_Cole`, se borran las filas del mes anterior
 (dejando la cabecera) y se pega desde `A2`. Si Google Sheets convierte las
 fechas a su propio formato no pasa nada: la app entiende tanto la fecha de
 verdad como el texto.
+
+Si se corrige un menú que YA estaba cargado, cambiar la pestaña no basta:
+las comidas creadas siguen como estaban. Hay que rehacerlas:
+
+```js
+rehacerColeDesde('2026-11-01', '2026-11-30')        // informa
+rehacerColeDesde('2026-11-01', '2026-11-30', true)  // lo hace
+```
+
+Solo borra las que creó el generador, y ni eso en los días donde alguien
+apuntó su propia comida del cole. Lo borrado queda en `Papelera`.
 
 Si el texto llega con los acentos rotos (`tom√†quet` en vez de `tomàquet`), es
 que se ha pegado desde un fichero leído con la codificación equivocada. Pegar
